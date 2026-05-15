@@ -1,0 +1,36 @@
+# ---- Python / Django (backend) ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.Python
+backend/venv/
+backend/.venv/
+venv/
+.venv/
+*.sqlite3
+backend/staticfiles/
+backend/media/
+.coverage
+htmlcov/
+.pytest_cache/
+
+# ---- Node / React (frontend) ----
+node_modules/
+frontend/dist/
+frontend/.vite/
+*.local
+
+# ---- 環境変数 / シークレット ----
+.env
+.env.*
+!.env.example
+*.pem
+
+# ---- エディタ / OS ----
+.vscode/
+.idea/
+.DS_Store
+*.swp
+
+# ---- ログ ----
+*.log
