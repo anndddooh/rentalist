@@ -45,6 +45,11 @@ class SeriesViewSet(viewsets.ModelViewSet):
         ctx["shop_id"] = self.request.query_params.get("shop")
         return ctx
 
+    def perform_update(self, serializer):
+        """更新後に完結判定を再評価する（total_volumes を後から設定した場合に対応）。"""
+        series = serializer.save()
+        series.recalculate_current_volume()
+
     @action(detail=False, methods=["get"])
     def search(self, request):
         """楽天ブックスでシリーズ候補を検索する。"""
@@ -164,9 +169,19 @@ class CartItemViewSet(viewsets.ModelViewSet):
                 )
                 affected[item.series_id] = item.series
             CartItem.objects.filter(user=request.user).delete()
+            newly_completed = []
             for series in affected.values():
+                was_completed = series.status == Series.STATUS_COMPLETED
                 series.recalculate_current_volume()
-        return Response({"detail": "確定しました。", "count": len(items)})
+                if series.status == Series.STATUS_COMPLETED and not was_completed:
+                    newly_completed.append({"id": series.id, "title": series.title})
+        return Response(
+            {
+                "detail": "確定しました。",
+                "count": len(items),
+                "completed_series": newly_completed,
+            }
+        )
 
 
 class RentalHistoryViewSet(viewsets.ModelViewSet):

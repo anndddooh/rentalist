@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { checkout, listCart, removeFromCart } from "../api/cart.js";
+import Celebration from "../components/Celebration.jsx";
 import { errorMessage } from "../lib/errors.js";
 
 export default function Cart() {
@@ -7,6 +8,7 @@ export default function Cart() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [celebration, setCelebration] = useState([]);
 
   async function load() {
     setLoading(true);
@@ -32,6 +34,9 @@ export default function Cart() {
     try {
       const result = await checkout();
       setMessage(`${result.count}件を確定しました。巻数を繰り上げました。`);
+      if (result.completed_series?.length) {
+        setCelebration(result.completed_series.map((s) => s.title));
+      }
       load();
     } catch (err) {
       setMessage(errorMessage(err));
@@ -42,6 +47,9 @@ export default function Cart() {
 
   return (
     <div className="space-y-3 p-3">
+      {celebration.length > 0 && (
+        <Celebration titles={celebration} onClose={() => setCelebration([])} />
+      )}
       <h1 className="text-lg font-bold text-slate-700">カート</h1>
 
       {message && (
