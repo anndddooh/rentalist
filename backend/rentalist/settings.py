@@ -152,6 +152,9 @@ CORS_ALLOWED_ORIGINS = env_list("CORS_ALLOWED_ORIGINS", "http://localhost:5173")
 
 # 楽天ブックスAPI（未設定ならモック動作）
 RAKUTEN_APP_ID = os.environ.get("RAKUTEN_APP_ID", "")
+# 本番（Heroku）では送信元IPが固定されないため、静的IPアドオンの
+# プロキシURLを設定して楽天APIをそのIP経由で呼ぶ。未設定なら直接接続。
+RAKUTEN_PROXY_URL = os.environ.get("RAKUTEN_PROXY_URL", "")
 
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")

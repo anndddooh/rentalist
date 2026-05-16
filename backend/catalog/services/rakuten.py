@@ -15,6 +15,12 @@ BOOKS_COMIC_GENRE = "001001"  # 本 > コミック
 REQUEST_TIMEOUT = 6
 
 
+def _proxies():
+    """静的IPプロキシが設定されていれば proxies 辞書を返す（楽天のIP制限対策）。"""
+    url = settings.RAKUTEN_PROXY_URL
+    return {"http": url, "https": url} if url else None
+
+
 def _normalize_item(item):
     """楽天 API の Item を Rentalist の候補形式に変換する。"""
     return {
@@ -65,7 +71,12 @@ def search_series(query):
         "sort": "sales",
     }
     try:
-        resp = requests.get(RAKUTEN_ENDPOINT, params=params, timeout=REQUEST_TIMEOUT)
+        resp = requests.get(
+            RAKUTEN_ENDPOINT,
+            params=params,
+            timeout=REQUEST_TIMEOUT,
+            proxies=_proxies(),
+        )
         resp.raise_for_status()
         data = resp.json()
     except (requests.RequestException, ValueError) as exc:
@@ -94,7 +105,12 @@ def find_volume_cover(title, volume_number):
         "format": "json",
     }
     try:
-        resp = requests.get(RAKUTEN_ENDPOINT, params=params, timeout=REQUEST_TIMEOUT)
+        resp = requests.get(
+            RAKUTEN_ENDPOINT,
+            params=params,
+            timeout=REQUEST_TIMEOUT,
+            proxies=_proxies(),
+        )
         resp.raise_for_status()
         data = resp.json()
     except (requests.RequestException, ValueError) as exc:
