@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createSeries, searchSeries } from "../api/series.js";
 import CoverImage from "../components/CoverImage.jsx";
@@ -16,13 +16,23 @@ const EMPTY_FORM = {
   status: "active",
 };
 
+// 「ONE PIECE 114」のような末尾の巻数表記を取り除いてシリーズ名にする
+function cleanSeriesTitle(rawTitle) {
+  return (rawTitle || "")
+    .replace(/[\s　（(]+第?\s*\d+\s*巻?\s*[）)]?\s*$/, "")
+    .trim();
+}
+
 export default function AddSeries() {
   const navigate = useNavigate();
+  const formRef = useRef(null);
   const [query, setQuery] = useState("");
   const [candidates, setCandidates] = useState([]);
   const [searching, setSearching] = useState(false);
   const [searched, setSearched] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
+  const [pickedCover, setPickedCover] = useState("");
+  const [selectedIndex, setSelectedIndex] = useState(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -40,18 +50,22 @@ export default function AddSeries() {
     }
   }
 
-  function pickCandidate(c) {
-    // 楽天の検索結果は巻ごと。title は「ONE PIECE 114」のように巻数を含むため
-    // 必要に応じて利用者がフォームで編集する。seriesName はコミックスレーベル。
+  function pickCandidate(candidate, index) {
     setForm((prev) => ({
       ...prev,
-      title: c.title,
-      author: c.author || "",
-      author_kana: c.author_kana || "",
-      publisher: c.publisher || "",
-      magazine_label: c.series_name || prev.magazine_label,
+      title: cleanSeriesTitle(candidate.title),
+      author: candidate.author || "",
+      author_kana: candidate.author_kana || "",
+      publisher: candidate.publisher || "",
+      magazine_label: candidate.series_name || prev.magazine_label,
     }));
-    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+    setPickedCover(candidate.cover_url || "");
+    setSelectedIndex(index);
+    setError("");
+    // フォームへスクロールして「反映された」ことを分かるようにする
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
   }
 
   async function handleCreate(e) {
@@ -62,6 +76,8 @@ export default function AddSeries() {
       const payload = {
         ...form,
         total_volumes: form.total_volumes ? Number(form.total_volumes) : null,
+        // 検索候補から選んだ表紙は1巻の表紙として一緒に保存される
+        cover_url: pickedCover || "",
       };
       await createSeries(payload);
       navigate(form.status === "wishlist" ? "/wishlist" : "/");
@@ -110,36 +126,61 @@ export default function AddSeries() {
       )}
 
       {candidates.length > 0 && (
-        <ul className="space-y-2">
-          {candidates.map((c, i) => (
-            <li key={`${c.isbn}-${i}`}>
-              <button
-                onClick={() => pickCandidate(c)}
-                className="flex w-full gap-3 rounded-lg bg-white p-2 text-left shadow-sm"
-              >
-                <CoverImage
-                  url={c.cover_url}
-                  alt={c.title}
-                  className="h-20 w-14"
-                />
-                <div className="flex-1 text-sm">
-                  <div className="font-semibold">{c.title}</div>
-                  <div className="text-xs text-slate-500">{c.author}</div>
-                  <div className="text-xs text-slate-400">{c.publisher}</div>
-                </div>
-              </button>
-            </li>
-          ))}
-        </ul>
+        <div>
+          <p className="mb-1 text-xs text-slate-500">
+            該当の作品をタップすると、下のフォームに内容が反映されます。
+          </p>
+          <ul className="space-y-2">
+            {candidates.map((c, i) => {
+              const selected = selectedIndex === i;
+              return (
+                <li key={`${c.isbn}-${i}`}>
+                  <button
+                    onClick={() => pickCandidate(c, i)}
+                    className={`flex w-full gap-3 rounded-lg p-2 text-left shadow-sm ${
+                      selected
+                        ? "bg-brand-light ring-2 ring-brand"
+                        : "bg-white"
+                    }`}
+                  >
+                    <CoverImage
+                      url={c.cover_url}
+                      alt={c.title}
+                      className="h-20 w-14"
+                    />
+                    <div className="flex-1 text-sm">
+                      <div className="font-semibold">{c.title}</div>
+                      <div className="text-xs text-slate-500">{c.author}</div>
+                      <div className="text-xs text-slate-400">
+                        {c.publisher}
+                      </div>
+                    </div>
+                    {selected && (
+                      <span className="self-center text-xs font-bold text-brand">
+                        ✓ 選択中
+                      </span>
+                    )}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       )}
 
       <form
+        ref={formRef}
         onSubmit={handleCreate}
-        className="space-y-3 rounded-lg bg-white p-3 shadow-sm"
+        className="scroll-mt-3 space-y-3 rounded-lg bg-white p-3 shadow-sm"
       >
         <p className="text-sm font-semibold text-slate-600">
           シリーズ情報（検索候補を選ぶと自動入力されます）
         </p>
+        {selectedIndex !== null && (
+          <p className="rounded bg-brand-light px-2 py-1.5 text-xs text-brand-dark">
+            検索結果から「{form.title}」を反映しました。内容を確認して登録してください。
+          </p>
+        )}
         {error && (
           <p className="rounded bg-rose-50 px-2 py-1 text-xs text-rose-600">
             {error}
