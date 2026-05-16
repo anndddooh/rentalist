@@ -31,7 +31,6 @@ export default function AddSeries() {
   const [searching, setSearching] = useState(false);
   const [searched, setSearched] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
-  const [pickedCover, setPickedCover] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -59,7 +58,6 @@ export default function AddSeries() {
       publisher: candidate.publisher || "",
       magazine_label: candidate.series_name || prev.magazine_label,
     }));
-    setPickedCover(candidate.cover_url || "");
     setSelectedIndex(index);
     setError("");
     // フォームへスクロールして「反映された」ことを分かるようにする
@@ -76,8 +74,6 @@ export default function AddSeries() {
       const payload = {
         ...form,
         total_volumes: form.total_volumes ? Number(form.total_volumes) : null,
-        // 検索候補から選んだ表紙は1巻の表紙として一緒に保存される
-        cover_url: pickedCover || "",
       };
       await createSeries(payload);
       navigate(form.status === "wishlist" ? "/wishlist" : "/");

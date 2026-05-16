@@ -9,6 +9,7 @@ from .models import (
     ShopAvailability,
     VolumeCover,
 )
+from .services import rakuten
 
 
 class VolumeCoverSerializer(serializers.ModelSerializer):
@@ -27,8 +28,6 @@ class SeriesSerializer(serializers.ModelSerializer):
     next_cover_url = serializers.SerializerMethodField()
     availability_status = serializers.SerializerMethodField()
     availability_map = serializers.SerializerMethodField()
-    # 作成時のみ: 検索候補で選んだ表紙URLを1巻の表紙として保存する
-    cover_url = serializers.URLField(write_only=True, required=False, allow_blank=True)
 
     class Meta:
         model = Series
@@ -36,7 +35,7 @@ class SeriesSerializer(serializers.ModelSerializer):
             "id", "title", "author", "author_kana", "publisher", "magazine_label",
             "status", "current_volume", "total_volumes", "favorite_score",
             "next_volume", "cart_count", "next_cover_url", "availability_status",
-            "availability_map", "cover_url", "created_at", "updated_at",
+            "availability_map", "created_at", "updated_at",
         )
         read_only_fields = ("id", "current_volume", "created_at", "updated_at")
 
@@ -62,10 +61,11 @@ class SeriesSerializer(serializers.ModelSerializer):
         return {a.shop_id: a.status for a in obj.availabilities.all()}
 
     def create(self, validated_data):
-        # 検索候補で選んだ表紙があれば1巻の表紙として保存する
-        cover_url = validated_data.pop("cover_url", "")
         validated_data["user"] = self.context["request"].user
         series = super().create(validated_data)
+        # どの巻を検索候補から選んでも1巻の表紙を楽天から取得してキャッシュする
+        # （見つからない・手動入力・APIキー未設定なら None で何もしない）
+        cover_url = rakuten.find_volume_cover(series.title, 1)
         if cover_url:
             VolumeCover.objects.create(
                 series=series,

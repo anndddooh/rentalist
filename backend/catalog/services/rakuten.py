@@ -81,7 +81,7 @@ def search_series(query):
         **_auth_params(),
         "title": query,
         "booksGenreId": BOOKS_COMIC_GENRE,
-        "hits": 20,
+        "hits": 30,  # 楽天APIの1ページ最大件数
         "format": "json",
         "sort": "sales",
     }

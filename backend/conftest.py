@@ -24,3 +24,10 @@ def api(user):
     client = APIClient()
     client.force_authenticate(user=user)
     return client
+
+
+@pytest.fixture(autouse=True)
+def _disable_rakuten_network(settings):
+    """テスト中は楽天APIを呼ばない（認証情報を空にしてモック動作させる）。"""
+    settings.RAKUTEN_APP_ID = ""
+    settings.RAKUTEN_ACCESS_KEY = ""
