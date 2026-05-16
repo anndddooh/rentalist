@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { listHistory } from "../api/history.js";
 import {
   deleteSeries,
@@ -10,6 +10,7 @@ import {
 } from "../api/series.js";
 import { listShops } from "../api/shops.js";
 import CoverImage from "../components/CoverImage.jsx";
+import Icon from "../components/Icon.jsx";
 import ShopStatusEditor from "../components/ShopStatusEditor.jsx";
 import StarRating from "../components/StarRating.jsx";
 import { errorMessage } from "../lib/errors.js";
@@ -23,6 +24,7 @@ const STATUS_LABELS = {
 export default function SeriesDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [series, setSeries] = useState(null);
   const [shops, setShops] = useState([]);
   const [history, setHistory] = useState([]);
@@ -109,6 +111,15 @@ export default function SeriesDetail() {
     navigate("/");
   }
 
+  function goBack() {
+    // 遷移元の画面に戻る。直接開いた等で履歴が無ければホームへ。
+    if (location.key !== "default") {
+      navigate(-1);
+    } else {
+      navigate("/");
+    }
+  }
+
   const f = (key) => ({
     value: form[key],
     onChange: (e) => setForm({ ...form, [key]: e.target.value }),
@@ -116,6 +127,14 @@ export default function SeriesDetail() {
 
   return (
     <div className="space-y-4 p-3 md:mx-auto md:max-w-2xl">
+      <button
+        onClick={goBack}
+        className="flex items-center gap-1 text-sm font-medium text-slate-500 hover:text-brand"
+      >
+        <Icon name="arrowLeft" className="h-5 w-5" />
+        戻る
+      </button>
+
       <div className="flex gap-3 rounded-lg bg-white p-3 shadow-sm">
         <CoverImage url={coverUrl} alt={series.title} className="h-32 w-24" />
         <div className="text-sm">
