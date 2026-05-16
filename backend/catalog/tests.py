@@ -55,6 +55,20 @@ def test_checkout_empty_cart_fails(api):
     assert resp.status_code == 400
 
 
+def test_cart_clear_empties_without_advancing_volume(api, user):
+    """全削除はカートを空にするだけで current_volume は繰り上げない。"""
+    series = make_series(user)
+    api.post("/api/cart/", {"series_id": series.id}, format="json")
+    api.post("/api/cart/", {"series_id": series.id}, format="json")
+    resp = api.post("/api/cart/clear/", {}, format="json")
+    assert resp.status_code == 200
+    assert resp.data["count"] == 2
+    assert api.get("/api/cart/").data["count"] == 0
+    series.refresh_from_db()
+    assert series.current_volume == 0
+    assert RentalHistory.objects.filter(series=series).count() == 0
+
+
 def test_history_delete_rolls_back_current_volume(api, user):
     series = make_series(user)
     api.post("/api/cart/", {"series_id": series.id}, format="json")

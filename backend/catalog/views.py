@@ -183,6 +183,12 @@ class CartItemViewSet(viewsets.ModelViewSet):
             }
         )
 
+    @action(detail=False, methods=["post"])
+    def clear(self, request):
+        """カートを全削除する（確定はしない・巻数は繰り上げない）。"""
+        count, _ = CartItem.objects.filter(user=request.user).delete()
+        return Response({"detail": "カートを空にしました。", "count": count})
+
 
 class RentalHistoryViewSet(viewsets.ModelViewSet):
     """読破記録。手動追加と削除で current_volume を再計算する。"""

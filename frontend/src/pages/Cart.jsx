@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { checkout, listCart, removeFromCart } from "../api/cart.js";
+import { checkout, clearCart, listCart, removeFromCart } from "../api/cart.js";
 import Celebration from "../components/Celebration.jsx";
 import { useCart } from "../context/CartContext.jsx";
 import { errorMessage } from "../lib/errors.js";
@@ -10,6 +10,7 @@ export default function Cart() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [celebration, setCelebration] = useState([]);
+  const [confirmClear, setConfirmClear] = useState(false);
   const { refreshCart } = useCart();
 
   async function load() {
@@ -29,6 +30,18 @@ export default function Cart() {
     await removeFromCart(id);
     refreshCart();
     load();
+  }
+
+  async function handleClear() {
+    setBusy(true);
+    try {
+      await clearCart();
+      setConfirmClear(false);
+      refreshCart();
+      await load();
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function handleCheckout() {
@@ -70,6 +83,34 @@ export default function Cart() {
         </p>
       ) : (
         <>
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-slate-500">{items.length}件</span>
+            {confirmClear ? (
+              <span className="flex items-center gap-1.5 text-xs">
+                <span className="text-slate-500">空にしますか？</span>
+                <button
+                  onClick={handleClear}
+                  disabled={busy}
+                  className="rounded bg-rose-500 px-2 py-1 font-semibold text-white disabled:opacity-50"
+                >
+                  全削除
+                </button>
+                <button
+                  onClick={() => setConfirmClear(false)}
+                  className="rounded bg-slate-200 px-2 py-1 font-semibold text-slate-600"
+                >
+                  キャンセル
+                </button>
+              </span>
+            ) : (
+              <button
+                onClick={() => setConfirmClear(true)}
+                className="text-xs font-semibold text-rose-500 underline"
+              >
+                カートを全削除
+              </button>
+            )}
+          </div>
           <ul className="space-y-2">
             {items.map((item) => (
               <li

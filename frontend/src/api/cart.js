@@ -14,6 +14,11 @@ export async function removeFromCart(itemId) {
   await api.delete(`/cart/${itemId}/`);
 }
 
+export async function clearCart() {
+  const { data } = await api.post("/cart/clear/", {});
+  return data;
+}
+
 export async function checkout() {
   const { data } = await api.post("/cart/checkout/", {});
   return data;
