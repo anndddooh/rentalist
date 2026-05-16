@@ -158,3 +158,7 @@ if not DEBUG:
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 3600
+    # Django admin を HTTPS 経由で使うため。追加のオリジンは env で渡せる
+    CSRF_TRUSTED_ORIGINS = ["https://*.herokuapp.com"]
+    CSRF_TRUSTED_ORIGINS += env_list("CSRF_TRUSTED_ORIGINS")
