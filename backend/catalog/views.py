@@ -1,5 +1,7 @@
 """カタログ API のビュー。すべて request.user でスコープされる。"""
 from django.db import transaction
+from django.db.models import Count
+from django.db.models.functions import TruncMonth, TruncYear
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import status, viewsets
@@ -211,6 +213,32 @@ class RentalHistoryViewSet(viewsets.ModelViewSet):
         series = instance.series
         instance.delete()
         series.recalculate_current_volume()
+
+    @action(detail=False, methods=["get"])
+    def stats(self, request):
+        """期間（月・年）ごとに読破した巻数を集計して返す（読書統計画面用）。"""
+        qs = RentalHistory.objects.filter(user=request.user)
+
+        def by_period(trunc, fmt):
+            rows = (
+                qs.annotate(period=trunc("rented_at"))
+                .values("period")
+                .annotate(count=Count("id"))
+                .order_by("period")
+            )
+            return [
+                {"period": r["period"].strftime(fmt), "count": r["count"]}
+                for r in rows
+                if r["period"] is not None
+            ]
+
+        return Response(
+            {
+                "total": qs.count(),
+                "monthly": by_period(TruncMonth, "%Y-%m"),
+                "yearly": by_period(TruncYear, "%Y"),
+            }
+        )
 
 
 class RentalShopViewSet(viewsets.ModelViewSet):

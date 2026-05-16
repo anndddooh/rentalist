@@ -190,6 +190,30 @@ def test_series_search_returns_candidates(api):
     assert "title" in resp.data[0]
 
 
+def test_reading_stats_aggregates_by_period(api, user):
+    """読書統計が月・年ごとに読破巻数を集計して返す。"""
+    series = make_series(user)
+    for vol, date in [
+        (1, "2025-01-10"),
+        (2, "2025-01-20"),
+        (3, "2025-03-05"),
+        (4, "2026-02-15"),
+    ]:
+        api.post(
+            "/api/history/",
+            {"series_id": series.id, "volume_number": vol,
+             "rented_at": f"{date}T03:00:00Z"},
+            format="json",
+        )
+    resp = api.get("/api/history/stats/")
+    assert resp.status_code == 200
+    assert resp.data["total"] == 4
+    monthly = {r["period"]: r["count"] for r in resp.data["monthly"]}
+    assert monthly == {"2025-01": 2, "2025-03": 1, "2026-02": 1}
+    yearly = {r["period"]: r["count"] for r in resp.data["yearly"]}
+    assert yearly == {"2025": 3, "2026": 1}
+
+
 def test_series_delete_cascades(api, user):
     series = make_series(user)
     api.post("/api/cart/", {"series_id": series.id}, format="json")

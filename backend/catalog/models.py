@@ -47,7 +47,8 @@ class Series(models.Model):
     class Meta:
         verbose_name = "シリーズ"
         verbose_name_plural = "シリーズ"
-        ordering = ["-favorite_score", "title"]
+        # お気に入り度降順 → 出版社昇順（セカンドキー） → タイトル昇順
+        ordering = ["-favorite_score", "publisher", "title"]
 
     def __str__(self):
         return self.title

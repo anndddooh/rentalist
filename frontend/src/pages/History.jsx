@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { addHistory, deleteHistory, listHistory } from "../api/history.js";
 import { listSeries } from "../api/series.js";
+import ReadingStats from "../components/ReadingStats.jsx";
 import { errorMessage } from "../lib/errors.js";
 
 function todayISODate() {
@@ -19,6 +20,8 @@ export default function History() {
     rentedAt: todayISODate(),
   });
   const [error, setError] = useState("");
+  // 履歴の追加・削除時にこの値を変えて統計セクションを再取得させる
+  const [statsToken, setStatsToken] = useState(0);
 
   async function load() {
     setLoading(true);
@@ -48,6 +51,7 @@ export default function History() {
       });
       setShowForm(false);
       setForm({ seriesId: "", volumeNumber: "", rentedAt: todayISODate() });
+      setStatsToken((t) => t + 1);
       load();
     } catch (err) {
       setError(errorMessage(err));
@@ -63,6 +67,7 @@ export default function History() {
       return;
     }
     await deleteHistory(id);
+    setStatsToken((t) => t + 1);
     load();
   }
 
@@ -77,6 +82,8 @@ export default function History() {
           {showForm ? "閉じる" : "+ 追加"}
         </button>
       </div>
+
+      <ReadingStats reloadToken={statsToken} />
 
       {showForm && (
         <form

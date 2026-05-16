@@ -18,3 +18,8 @@ export async function addHistory({ seriesId, volumeNumber, rentedAt }) {
 export async function deleteHistory(id) {
   await api.delete(`/history/${id}/`);
 }
+
+export async function getReadingStats() {
+  const { data } = await api.get("/history/stats/");
+  return data;
+}
