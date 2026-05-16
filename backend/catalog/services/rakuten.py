@@ -4,6 +4,7 @@ RAKUTEN_APP_ID が未設定の場合はモックデータを返すため、
 APIキー取得前でもフロント／バックエンドの開発・テストが進められる。
 """
 import logging
+import re
 
 import requests
 from django.conf import settings
@@ -100,23 +101,37 @@ def search_series(query):
     return [_normalize_item(entry["Item"]) for entry in data.get("Items", [])]
 
 
+# 巻タイトル末尾の巻数表記（例: 「（2）」「 79」「 第3巻」）から数字を取り出す
+_VOLUME_SUFFIX_RE = re.compile(r"[\s　]*[（(]?\s*第?\s*(\d+)\s*巻?\s*[）)]?\s*$")
+
+
+def _split_volume(item_title):
+    """巻タイトルを (シリーズ名, 巻数) に分解する。巻数表記が無ければ巻数は None。"""
+    item_title = (item_title or "").strip()
+    match = _VOLUME_SUFFIX_RE.search(item_title)
+    if not match:
+        return item_title, None
+    stem = item_title[: match.start()].strip()
+    return stem, int(match.group(1))
+
+
 def find_volume_cover(title, volume_number):
-    """「<タイトル> <N>巻」で表紙画像URLを1件取得する。見つからなければ None。"""
+    """シリーズ名で検索し、該当巻の表紙画像URLを返す。見つからなければ None。
+
+    楽天の巻タイトルは作品ごとに「（N）」「 N」など表記がまちまちなので、
+    巻数を付けずに検索し、各候補のタイトルから巻数をパースして一致巻を選ぶ。
+    """
     title = (title or "").strip()
-    if not title:
-        return None
-
-    query = f"{title} {volume_number}"
-
-    if not _is_configured():
+    if not title or not _is_configured():
         return None
 
     params = {
         **_auth_params(),
-        "title": query,
+        "title": title,
         "booksGenreId": BOOKS_COMIC_GENRE,
-        "hits": 1,
+        "hits": 30,
         "format": "json",
+        "sort": "sales",
     }
     try:
         resp = requests.get(
@@ -131,8 +146,14 @@ def find_volume_cover(title, volume_number):
         logger.warning("楽天API表紙取得に失敗しました: %s", exc)
         return None
 
-    items = data.get("Items", [])
-    if not items:
-        return None
-    item = items[0]["Item"]
-    return item.get("largeImageUrl", "") or item.get("mediumImageUrl", "") or None
+    for entry in data.get("Items", []):
+        item = entry["Item"]
+        stem, volume = _split_volume(item.get("title", ""))
+        # シリーズ名が一致し、かつ目的の巻であるものだけ採用（別シリーズ除外）
+        if volume == volume_number and stem == title:
+            return (
+                item.get("largeImageUrl", "")
+                or item.get("mediumImageUrl", "")
+                or None
+            )
+    return None
