@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
+import Logo from "../components/Logo.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { errorMessage } from "../lib/errors.js";
 
@@ -35,7 +36,9 @@ export default function Login() {
         onSubmit={handleSubmit}
         className="w-full max-w-sm space-y-4 rounded-xl bg-white p-6 shadow"
       >
-        <h1 className="text-center text-2xl font-bold text-brand">Rentalist</h1>
+        <div className="flex justify-center">
+          <Logo size={48} withText textClassName="text-2xl text-brand" />
+        </div>
         <p className="text-center text-sm text-slate-500">
           漫画レンタル管理にログイン
         </p>

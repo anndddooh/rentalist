@@ -8,14 +8,26 @@ import {
 } from "react-router-dom";
 import { listCart } from "../api/cart.js";
 import { useAuth } from "../context/AuthContext.jsx";
+import Icon from "./Icon.jsx";
+import Logo from "./Logo.jsx";
 
 // モバイル下部ナビ（5タブ）
 const MOBILE_NAV = [
-  { to: "/", label: "ホーム", icon: "🏠", end: true },
-  { to: "/wishlist", label: "Wishlist", icon: "📑" },
-  { to: "/history", label: "履歴", icon: "📖" },
-  { to: "/completed", label: "完結", icon: "🏆" },
-  { to: "/settings", label: "設定", icon: "⚙️" },
+  { to: "/", label: "ホーム", icon: "home", end: true },
+  { to: "/wishlist", label: "Wishlist", icon: "bookmark" },
+  { to: "/history", label: "履歴", icon: "history" },
+  { to: "/completed", label: "完結", icon: "trophy" },
+  { to: "/settings", label: "設定", icon: "settings" },
+];
+
+// デスクトップ左サイドバー
+const SIDEBAR_NAV = [
+  { to: "/", label: "ホーム", icon: "home", end: true },
+  { to: "/wishlist", label: "Wishlist", icon: "bookmark" },
+  { to: "/history", label: "履歴", icon: "history" },
+  { to: "/completed", label: "完結", icon: "trophy" },
+  { to: "/add", label: "シリーズ追加", icon: "plus" },
+  { to: "/settings", label: "設定", icon: "settings" },
 ];
 
 export default function Layout() {
@@ -39,24 +51,18 @@ export default function Layout() {
     <div className="flex h-full">
       {/* デスクトップ: 左サイドバー */}
       <aside className="hidden w-56 shrink-0 flex-col bg-brand-dark text-white md:flex">
-        <Link
-          to="/"
-          className="px-5 py-4 text-xl font-bold tracking-wide text-white"
-        >
-          Rentalist
+        <Link to="/" className="px-5 py-4">
+          <Logo size={30} withText textClassName="text-xl text-white" />
         </Link>
         <nav className="flex-1 space-y-1 px-2">
-          <SidebarLink to="/" icon="🏠" label="ホーム" end />
-          <SidebarLink to="/wishlist" icon="📑" label="Wishlist" />
-          <SidebarLink to="/history" icon="📖" label="履歴" />
-          <SidebarLink to="/completed" icon="🏆" label="完結" />
-          <SidebarLink to="/add" icon="➕" label="シリーズ追加" />
+          {SIDEBAR_NAV.map((item) => (
+            <SidebarLink key={item.to} {...item} />
+          ))}
           <SidebarLink
             to="/cart"
-            icon="🛒"
+            icon="cart"
             label={`カート${cartCount > 0 ? `（${cartCount}）` : ""}`}
           />
-          <SidebarLink to="/settings" icon="⚙️" label="設定" />
         </nav>
         <div className="border-t border-white/10 p-4">
           <div className="text-sm text-brand-light">{user?.username}</div>
@@ -72,13 +78,13 @@ export default function Layout() {
       {/* メインカラム */}
       <div className="flex h-full flex-1 flex-col">
         {/* モバイル: ヘッダー */}
-        <header className="flex items-center justify-between bg-brand px-4 py-3 text-white md:hidden">
-          <Link to="/" className="text-lg font-bold tracking-wide">
-            Rentalist
+        <header className="flex items-center justify-between bg-brand px-4 py-2.5 text-white md:hidden">
+          <Link to="/">
+            <Logo size={26} withText textClassName="text-lg text-white" />
           </Link>
           <div className="flex items-center gap-3">
-            <Link to="/cart" className="relative text-xl" aria-label="カート">
-              🛒
+            <Link to="/cart" className="relative" aria-label="カート">
+              <Icon name="cart" className="h-6 w-6" />
               {cartCount > 0 && (
                 <span className="absolute -right-2 -top-2 rounded-full bg-rose-500 px-1.5 text-xs font-bold">
                   {cartCount}
@@ -104,10 +110,10 @@ export default function Layout() {
       {/* モバイル: シリーズ追加 FAB */}
       <Link
         to="/add"
-        className="fixed bottom-20 right-4 z-10 flex h-14 w-14 items-center justify-center rounded-full bg-brand text-3xl text-white shadow-lg md:hidden"
+        className="fixed bottom-20 right-4 z-10 flex h-14 w-14 items-center justify-center rounded-full bg-brand text-white shadow-lg md:hidden"
         aria-label="シリーズを追加"
       >
-        +
+        <Icon name="plus" className="h-7 w-7" strokeWidth={2.4} />
       </Link>
 
       {/* モバイル: 下部ナビ */}
@@ -119,12 +125,12 @@ export default function Layout() {
                 to={item.to}
                 end={item.end}
                 className={({ isActive }) =>
-                  `flex flex-col items-center py-2 text-xs ${
+                  `flex flex-col items-center gap-0.5 py-2 text-xs ${
                     isActive ? "text-brand" : "text-slate-400"
                   }`
                 }
               >
-                <span className="text-xl">{item.icon}</span>
+                <Icon name={item.icon} className="h-6 w-6" />
                 {item.label}
               </NavLink>
             </li>
@@ -148,7 +154,7 @@ function SidebarLink({ to, icon, label, end }) {
         }`
       }
     >
-      <span className="text-lg">{icon}</span>
+      <Icon name={icon} className="h-5 w-5" />
       {label}
     </NavLink>
   );

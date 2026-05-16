@@ -30,8 +30,9 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState("");
 
+  // loading は初回のみ true。レンタル等の再取得ではグリッドを保持し、
+  // 一覧をアンマウントしない（スクロール位置が飛ぶのを防ぐ）。
   const load = useCallback(async () => {
-    setLoading(true);
     try {
       const data = await listSeries({
         status: "active",

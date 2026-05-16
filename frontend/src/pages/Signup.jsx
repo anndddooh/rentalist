@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { checkInvite, signup } from "../api/auth.js";
+import Logo from "../components/Logo.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { errorMessage } from "../lib/errors.js";
 
@@ -44,7 +45,9 @@ export default function Signup() {
   return (
     <div className="flex min-h-full items-center justify-center p-6">
       <div className="w-full max-w-sm space-y-4 rounded-xl bg-white p-6 shadow">
-        <h1 className="text-center text-2xl font-bold text-brand">Rentalist</h1>
+        <div className="flex justify-center">
+          <Logo size={48} withText textClassName="text-2xl text-brand" />
+        </div>
 
         {tokenState === "checking" && (
           <p className="text-center text-sm text-slate-500">
