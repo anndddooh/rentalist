@@ -55,8 +55,10 @@ export default function SeriesDetail() {
       favorite_score: data.favorite_score,
       status: data.status,
     });
-    setCoverVolume(data.next_volume);
-    getCover(data.id, data.next_volume)
+    // 読破済みは「次の巻」が存在しないため1巻の表紙を表示する
+    const coverVol = data.status === "completed" ? 1 : data.next_volume;
+    setCoverVolume(coverVol);
+    getCover(data.id, coverVol)
       .then((c) => setCoverUrl(c.resolved_url))
       .catch(() => {});
   }
@@ -98,7 +100,8 @@ export default function SeriesDetail() {
       });
       setCoverInputUrl("");
       setCoverFile(null);
-      const c = await getCover(id, series.next_volume);
+      const displayVol = series.status === "completed" ? 1 : series.next_volume;
+      const c = await getCover(id, displayVol);
       setCoverUrl(c.resolved_url);
     } catch (err) {
       setError(errorMessage(err));
@@ -146,7 +149,11 @@ export default function SeriesDetail() {
             読了 {series.current_volume}巻
             {series.total_volumes ? ` / 全${series.total_volumes}巻` : ""}
           </p>
-          <p className="text-slate-500">次の巻: {series.next_volume}巻</p>
+          {series.status === "completed" ? (
+            <p className="font-semibold text-brand">🎉 全巻読破</p>
+          ) : (
+            <p className="text-slate-500">次の巻: {series.next_volume}巻</p>
+          )}
           <StarRating value={series.favorite_score} size="text-sm" />
         </div>
       </div>

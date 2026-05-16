@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import {
   Link,
   NavLink,
@@ -6,8 +6,8 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
-import { listCart } from "../api/cart.js";
 import { useAuth } from "../context/AuthContext.jsx";
+import { useCart } from "../context/CartContext.jsx";
 import Icon from "./Icon.jsx";
 import Logo from "./Logo.jsx";
 
@@ -32,15 +32,14 @@ const SIDEBAR_NAV = [
 
 export default function Layout() {
   const { user, logout } = useAuth();
+  const { cartCount, refreshCart } = useCart();
   const location = useLocation();
   const navigate = useNavigate();
-  const [cartCount, setCartCount] = useState(0);
 
+  // 画面遷移ごとに念のため再取得（他端末での変更などの取りこぼし対策）
   useEffect(() => {
-    listCart()
-      .then((items) => setCartCount(items.length))
-      .catch(() => setCartCount(0));
-  }, [location.pathname]);
+    refreshCart();
+  }, [location.pathname, refreshCart]);
 
   function handleLogout() {
     logout();

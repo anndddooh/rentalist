@@ -1,5 +1,10 @@
 import { useState } from "react";
 
+// 楽天サムネイルは既定 200x200 で粗い。_ex パラメータを上げて高解像度版を取得する
+function hiRes(url) {
+  return url ? url.replace(/_ex=\d+x\d+/, "_ex=400x400") : url;
+}
+
 /**
  * 表紙画像。URL が無い・読み込み失敗時はプレースホルダを表示する。
  */
@@ -17,7 +22,7 @@ export default function CoverImage({ url, alt, className = "" }) {
         </span>
       ) : (
         <img
-          src={url}
+          src={hiRes(url)}
           alt={alt}
           className="h-full w-full object-cover"
           onError={() => setFailed(true)}

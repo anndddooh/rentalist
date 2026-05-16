@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { checkout, listCart, removeFromCart } from "../api/cart.js";
 import Celebration from "../components/Celebration.jsx";
+import { useCart } from "../context/CartContext.jsx";
 import { errorMessage } from "../lib/errors.js";
 
 export default function Cart() {
@@ -9,6 +10,7 @@ export default function Cart() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [celebration, setCelebration] = useState([]);
+  const { refreshCart } = useCart();
 
   async function load() {
     setLoading(true);
@@ -25,6 +27,7 @@ export default function Cart() {
 
   async function handleRemove(id) {
     await removeFromCart(id);
+    refreshCart();
     load();
   }
 
@@ -37,6 +40,7 @@ export default function Cart() {
       if (result.completed_series?.length) {
         setCelebration(result.completed_series.map((s) => s.title));
       }
+      refreshCart();
       load();
     } catch (err) {
       setMessage(errorMessage(err));

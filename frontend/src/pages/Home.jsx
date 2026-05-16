@@ -3,6 +3,7 @@ import { addToCart } from "../api/cart.js";
 import { listSeries, setAvailability } from "../api/series.js";
 import { listShops } from "../api/shops.js";
 import SeriesCard from "../components/SeriesCard.jsx";
+import { useCart } from "../context/CartContext.jsx";
 import { errorMessage } from "../lib/errors.js";
 
 // 貸出状況バッジをタップしたときの遷移順
@@ -29,6 +30,7 @@ export default function Home() {
   });
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState("");
+  const { refreshCart } = useCart();
 
   // loading は初回のみ true。レンタル等の再取得ではグリッドを保持し、
   // 一覧をアンマウントしない（スクロール位置が飛ぶのを防ぐ）。
@@ -61,6 +63,7 @@ export default function Home() {
     try {
       await addToCart(target.id);
       flash(`「${target.title}」をカートに追加しました`);
+      refreshCart();
       load();
     } catch (err) {
       flash(errorMessage(err));
@@ -129,7 +132,7 @@ export default function Home() {
           進行中のシリーズがありません。右下の＋から追加できます。
         </p>
       ) : (
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {visibleSeries.map((s) => (
             <SeriesCard
               key={s.id}

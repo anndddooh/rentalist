@@ -41,7 +41,7 @@ export default function Wishlist() {
           Wishlist は空です。＋からシリーズを追加できます。
         </p>
       ) : (
-        <div className="grid grid-cols-1 items-start gap-3 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 items-start gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {series.map((s) => (
             <div key={s.id} className="rounded-lg bg-white p-3 shadow-sm">
               <div className="flex gap-3 md:flex-col md:gap-2">
