@@ -56,7 +56,7 @@ class Series(models.Model):
     status          = CharField(choices=[
                         ('active', '進行中'),
                         ('wishlist', 'いつか読みたい'),
-                        ('completed', '完結・読破済み'),
+                        ('completed', '読破済み'),
                       ])
     current_volume  = PositiveIntegerField(default=0)      # = max(RentalHistory.volume_number) で常に再計算
     total_volumes   = PositiveIntegerField(null=True)      # 完結作品なら全巻数、連載中は null
@@ -189,7 +189,7 @@ next_volume = series.current_volume + (該当シリーズのカート内アイ�
 | 履歴 | RentalHistory 一覧。シリーズフィルタ、「+追加」、レコード削除 |
 | シリーズ追加 | タイトル検索 → 楽天候補 → 選択／手動入力フォールバック |
 | シリーズ詳細 | 現巻数・完結巻数・お気に入り度・掲載誌/レーベル・出版社・作者(ふりがな)・表紙設定・ショップ別状態編集・関連履歴・編集・削除（強警告） |
-| 完結 | status=completed 一覧（読破済みシリーズ） |
+| 読破 | status=completed 一覧（読破済みシリーズ） |
 | 設定 | ショップ管理（一覧・追加・編集・削除）、招待リンク発行（管理者のみ表示） |
 
 ### ホーム画面のショップ絞り込み（追加グリル）

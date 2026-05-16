@@ -11,21 +11,21 @@ import { useAuth } from "../context/AuthContext.jsx";
 import Icon from "./Icon.jsx";
 import Logo from "./Logo.jsx";
 
-// モバイル下部ナビ（5タブ）
+// モバイル下部ナビ（5タブ・幅が狭いため一部は短縮表記）
 const MOBILE_NAV = [
   { to: "/", label: "ホーム", icon: "home", end: true },
-  { to: "/wishlist", label: "Wishlist", icon: "bookmark" },
+  { to: "/wishlist", label: "読みたい", icon: "bookmark" },
   { to: "/history", label: "履歴", icon: "history" },
-  { to: "/completed", label: "完結", icon: "trophy" },
+  { to: "/completed", label: "読破", icon: "trophy" },
   { to: "/settings", label: "設定", icon: "settings" },
 ];
 
 // デスクトップ左サイドバー
 const SIDEBAR_NAV = [
   { to: "/", label: "ホーム", icon: "home", end: true },
-  { to: "/wishlist", label: "Wishlist", icon: "bookmark" },
+  { to: "/wishlist", label: "いつか読みたい", icon: "bookmark" },
   { to: "/history", label: "履歴", icon: "history" },
-  { to: "/completed", label: "完結", icon: "trophy" },
+  { to: "/completed", label: "読破", icon: "trophy" },
   { to: "/add", label: "シリーズ追加", icon: "plus" },
   { to: "/settings", label: "設定", icon: "settings" },
 ];

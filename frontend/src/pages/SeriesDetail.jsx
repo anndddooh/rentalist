@@ -18,7 +18,7 @@ import { errorMessage } from "../lib/errors.js";
 const STATUS_LABELS = {
   active: "進行中",
   wishlist: "いつか読みたい",
-  completed: "完結・読破済み",
+  completed: "読破済み",
 };
 
 export default function SeriesDetail() {
@@ -201,7 +201,7 @@ export default function SeriesDetail() {
           <select className="input" {...f("status")}>
             <option value="active">進行中</option>
             <option value="wishlist">いつか読みたい</option>
-            <option value="completed">完結・読破済み</option>
+            <option value="completed">読破済み</option>
           </select>
         </Field>
         <button

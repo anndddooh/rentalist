@@ -16,7 +16,7 @@ export default function Completed() {
 
   return (
     <div className="space-y-3 p-3">
-      <h1 className="text-lg font-bold text-slate-700">完結・読破済み</h1>
+      <h1 className="text-lg font-bold text-slate-700">読破済み</h1>
 
       {loading ? (
         <p className="py-10 text-center text-sm text-slate-400">読み込み中…</p>

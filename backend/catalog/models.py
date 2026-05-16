@@ -13,7 +13,7 @@ class Series(models.Model):
     STATUS_CHOICES = [
         (STATUS_ACTIVE, "進行中"),
         (STATUS_WISHLIST, "いつか読みたい"),
-        (STATUS_COMPLETED, "完結・読破済み"),
+        (STATUS_COMPLETED, "読破済み"),
     ]
 
     user = models.ForeignKey(
