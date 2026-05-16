@@ -41,12 +41,15 @@ export default function AddSeries() {
   }
 
   function pickCandidate(c) {
+    // 楽天の検索結果は巻ごと。title は「ONE PIECE 114」のように巻数を含むため
+    // 必要に応じて利用者がフォームで編集する。seriesName はコミックスレーベル。
     setForm((prev) => ({
       ...prev,
-      title: c.series_name || c.title,
+      title: c.title,
       author: c.author || "",
       author_kana: c.author_kana || "",
       publisher: c.publisher || "",
+      magazine_label: c.series_name || prev.magazine_label,
     }));
     window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
   }

@@ -10,7 +10,9 @@ from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
-RAKUTEN_ENDPOINT = "https://app.rakuten.co.jp/services/api/BooksBook/Search/20170404"
+RAKUTEN_ENDPOINT = (
+    "https://openapi.rakuten.co.jp/services/api/BooksBook/Search/20170404"
+)
 BOOKS_COMIC_GENRE = "001001"  # 本 > コミック
 REQUEST_TIMEOUT = 6
 
@@ -19,6 +21,18 @@ def _proxies():
     """静的IPプロキシが設定されていれば proxies 辞書を返す（楽天のIP制限対策）。"""
     url = settings.RAKUTEN_PROXY_URL
     return {"http": url, "https": url} if url else None
+
+
+def _is_configured():
+    """新方式の楽天API認証（applicationId + accessKey）が揃っているか。"""
+    return bool(settings.RAKUTEN_APP_ID and settings.RAKUTEN_ACCESS_KEY)
+
+
+def _auth_params():
+    return {
+        "applicationId": settings.RAKUTEN_APP_ID,
+        "accessKey": settings.RAKUTEN_ACCESS_KEY,
+    }
 
 
 def _normalize_item(item):
@@ -58,12 +72,12 @@ def search_series(query):
     if not query:
         return []
 
-    if not settings.RAKUTEN_APP_ID:
-        logger.info("RAKUTEN_APP_ID 未設定のためモックデータを返します。")
+    if not _is_configured():
+        logger.info("楽天APIの認証情報が未設定のためモックデータを返します。")
         return _mock_search(query)
 
     params = {
-        "applicationId": settings.RAKUTEN_APP_ID,
+        **_auth_params(),
         "title": query,
         "booksGenreId": BOOKS_COMIC_GENRE,
         "hits": 20,
@@ -94,11 +108,11 @@ def find_volume_cover(title, volume_number):
 
     query = f"{title} {volume_number}"
 
-    if not settings.RAKUTEN_APP_ID:
+    if not _is_configured():
         return None
 
     params = {
-        "applicationId": settings.RAKUTEN_APP_ID,
+        **_auth_params(),
         "title": query,
         "booksGenreId": BOOKS_COMIC_GENRE,
         "hits": 1,
