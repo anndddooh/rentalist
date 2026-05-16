@@ -43,8 +43,9 @@ export default function Wishlist() {
           Wishlist は空です。＋からシリーズを追加できます。
         </p>
       ) : (
-        series.map((s) => (
-          <div key={s.id} className="rounded-lg bg-white p-3 shadow-sm">
+        <div className="grid grid-cols-1 items-start gap-3 md:grid-cols-2 lg:grid-cols-3">
+          {series.map((s) => (
+            <div key={s.id} className="rounded-lg bg-white p-3 shadow-sm">
             <div className="flex items-start justify-between">
               <div>
                 <Link
@@ -80,8 +81,9 @@ export default function Wishlist() {
                 />
               </div>
             )}
-          </div>
-        ))
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );

@@ -75,7 +75,7 @@ export default function AddSeries() {
   });
 
   return (
-    <div className="space-y-4 p-3">
+    <div className="space-y-4 p-3 md:mx-auto md:max-w-2xl">
       <h1 className="text-lg font-bold text-slate-700">シリーズを追加</h1>
 
       <form

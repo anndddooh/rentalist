@@ -67,7 +67,7 @@ export default function History() {
   }
 
   return (
-    <div className="space-y-3 p-3">
+    <div className="space-y-3 p-3 md:mx-auto md:max-w-2xl">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-bold text-slate-700">レンタル履歴</h1>
         <button

@@ -115,7 +115,7 @@ export default function SeriesDetail() {
   });
 
   return (
-    <div className="space-y-4 p-3">
+    <div className="space-y-4 p-3 md:mx-auto md:max-w-2xl">
       <div className="flex gap-3 rounded-lg bg-white p-3 shadow-sm">
         <CoverImage url={coverUrl} alt={series.title} className="h-32 w-24" />
         <div className="text-sm">

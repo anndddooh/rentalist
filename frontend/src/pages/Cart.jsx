@@ -46,7 +46,7 @@ export default function Cart() {
   }
 
   return (
-    <div className="space-y-3 p-3">
+    <div className="space-y-3 p-3 md:mx-auto md:max-w-2xl">
       {celebration.length > 0 && (
         <Celebration titles={celebration} onClose={() => setCelebration([])} />
       )}

@@ -24,21 +24,23 @@ export default function Completed() {
           読破済みのシリーズはまだありません。
         </p>
       ) : (
-        series.map((s) => (
-          <Link
-            key={s.id}
-            to={`/series/${s.id}`}
-            className="flex items-center justify-between rounded-lg bg-white p-3 shadow-sm"
-          >
-            <div>
-              <div className="font-bold text-slate-800">{s.title}</div>
-              <div className="text-xs text-slate-500">
-                全{s.total_volumes ?? s.current_volume}巻 読破
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+          {series.map((s) => (
+            <Link
+              key={s.id}
+              to={`/series/${s.id}`}
+              className="flex items-center justify-between rounded-lg bg-white p-3 shadow-sm"
+            >
+              <div>
+                <div className="font-bold text-slate-800">{s.title}</div>
+                <div className="text-xs text-slate-500">
+                  全{s.total_volumes ?? s.current_volume}巻 読破
+                </div>
               </div>
-            </div>
-            <StarRating value={s.favorite_score} size="text-sm" />
-          </Link>
-        ))
+              <StarRating value={s.favorite_score} size="text-sm" />
+            </Link>
+          ))}
+        </div>
       )}
     </div>
   );

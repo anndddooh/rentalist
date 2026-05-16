@@ -79,7 +79,7 @@ export default function Settings() {
   }
 
   return (
-    <div className="space-y-5 p-3">
+    <div className="space-y-5 p-3 md:mx-auto md:max-w-2xl">
       <h1 className="text-lg font-bold text-slate-700">設定</h1>
 
       {/* ショップ管理 */}

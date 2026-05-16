@@ -83,7 +83,7 @@ export default function Home() {
 
   return (
     <div className="space-y-3 p-3">
-      <div className="rounded-lg bg-white p-3 shadow-sm">
+      <div className="rounded-lg bg-white p-3 shadow-sm md:max-w-sm">
         <label className="text-xs font-semibold text-slate-500">
           ショップで絞り込み
         </label>
@@ -128,15 +128,17 @@ export default function Home() {
           進行中のシリーズがありません。右下の＋から追加できます。
         </p>
       ) : (
-        visibleSeries.map((s) => (
-          <SeriesCard
-            key={s.id}
-            series={s}
-            shopMode={shopMode}
-            onRent={handleRent}
-            onCycleAvailability={handleCycleAvailability}
-          />
-        ))
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+          {visibleSeries.map((s) => (
+            <SeriesCard
+              key={s.id}
+              series={s}
+              shopMode={shopMode}
+              onRent={handleRent}
+              onCycleAvailability={handleCycleAvailability}
+            />
+          ))}
+        </div>
       )}
 
       {toast && (
