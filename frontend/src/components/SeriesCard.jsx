@@ -1,7 +1,5 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getCover } from "../api/series.js";
-import CoverImage from "./CoverImage.jsx";
+import SeriesCover from "./SeriesCover.jsx";
 import StarRating from "./StarRating.jsx";
 
 export const AVAILABILITY = {
@@ -11,7 +9,7 @@ export const AVAILABILITY = {
 };
 
 /**
- * シリーズカード。
+ * ホームのシリーズカード。
  * - モバイル: 表紙が左・情報が右の横並び
  * - デスクトップ (md+): 表紙を主役にした縦長ポスター
  * shopMode=true のとき手掛かり情報と貸出状況バッジを展開表示する。
@@ -22,24 +20,6 @@ export default function SeriesCard({
   onRent,
   onCycleAvailability,
 }) {
-  const [coverUrl, setCoverUrl] = useState(series.next_cover_url);
-
-  useEffect(() => {
-    let active = true;
-    if (series.next_cover_url) {
-      setCoverUrl(series.next_cover_url);
-    } else {
-      getCover(series.id, series.next_volume)
-        .then((cover) => {
-          if (active) setCoverUrl(cover.resolved_url);
-        })
-        .catch(() => {});
-    }
-    return () => {
-      active = false;
-    };
-  }, [series.id, series.next_volume, series.next_cover_url]);
-
   const avail = AVAILABILITY[series.availability_status] || AVAILABILITY.unknown;
 
   return (
@@ -48,8 +28,10 @@ export default function SeriesCard({
         to={`/series/${series.id}`}
         className="relative shrink-0 md:w-full"
       >
-        <CoverImage
-          url={coverUrl}
+        <SeriesCover
+          seriesId={series.id}
+          volume={series.next_volume}
+          initialUrl={series.next_cover_url}
           alt={series.title}
           className="h-28 w-20 md:h-auto md:w-full md:aspect-[2/3]"
         />

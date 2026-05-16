@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { listSeries } from "../api/series.js";
+import SeriesCover from "../components/SeriesCover.jsx";
 import StarRating from "../components/StarRating.jsx";
 
 export default function Completed() {
@@ -29,15 +30,25 @@ export default function Completed() {
             <Link
               key={s.id}
               to={`/series/${s.id}`}
-              className="flex items-center justify-between rounded-lg bg-white p-3 shadow-sm"
+              className="flex gap-3 rounded-lg bg-white p-3 shadow-sm md:flex-col md:gap-2"
             >
-              <div>
-                <div className="font-bold text-slate-800">{s.title}</div>
+              <SeriesCover
+                seriesId={s.id}
+                volume={1}
+                alt={s.title}
+                className="h-28 w-20 md:h-auto md:w-full md:aspect-[2/3]"
+              />
+              <div className="flex flex-1 flex-col">
+                <div className="font-bold leading-tight text-slate-800 md:text-lg">
+                  {s.title}
+                </div>
                 <div className="text-xs text-slate-500">
                   全{s.total_volumes ?? s.current_volume}巻 読破
                 </div>
+                <div className="mt-auto pt-1">
+                  <StarRating value={s.favorite_score} size="text-sm" />
+                </div>
               </div>
-              <StarRating value={s.favorite_score} size="text-sm" />
             </Link>
           ))}
         </div>
