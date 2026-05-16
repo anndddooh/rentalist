@@ -34,3 +34,5 @@ frontend/.vite/
 
 # ---- ログ ----
 *.log
+
+.claude/settings.local.json

@@ -1,0 +1,10 @@
+{
+  // Cloudflare Workers (Static Assets) で Vite ビルド成果物を配信する設定。
+  // Workers Builds がこのファイルを読み、dist/ を SPA として配信する。
+  "name": "rentalist",
+  "compatibility_date": "2025-05-01",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  }
+}
