@@ -20,7 +20,9 @@
    - **データ利用目的**: 例「家族向けの漫画レンタル進捗管理アプリで、漫画の検索と
      書影表示に利用。非営利・個人利用」
    - **予想QPS**: `1`（表紙はキャッシュするため実リクエストは少ない）
-3. 発行された **applicationId** を控える → これが `RAKUTEN_APP_ID`
+3. 発行画面で **applicationId** と **accessKey** の両方を控える
+   → それぞれ `RAKUTEN_APP_ID`・`RAKUTEN_ACCESS_KEY`。
+   両方そろわないと実APIを呼ばずモック動作になる
 
 ---
 
@@ -58,6 +60,7 @@ heroku config:set \
   SECRET_KEY="$(python3 -c 'import secrets;print(secrets.token_urlsafe(50))')" \
   DEBUG=False \
   RAKUTEN_APP_ID="（手順1のapplicationId）" \
+  RAKUTEN_ACCESS_KEY="（手順1のaccessKey）" \
   RAKUTEN_PROXY_URL="$(heroku config:get FIXIE_URL)" \
   CORS_ALLOWED_ORIGINS="https://（手順4のPagesのURL）" \
   USE_R2=False
@@ -112,6 +115,7 @@ heroku config:set \
    - **ビルドコマンド**: `npm run build`
    - **出力ディレクトリ**: `dist`
 4. 環境変数: `VITE_API_BASE_URL` = `https://（手順2のHerokuアプリURL）`
+   （アプリのルートURL。`/api` は付けない・末尾スラッシュも付けない）
 5. デプロイ実行 → 払い出された `https://xxx.pages.dev` を控える
 6. SPA ルーティングは `frontend/public/_redirects` で対応済み
 
@@ -139,6 +143,8 @@ heroku config:set CORS_ALLOWED_ORIGINS="https://xxx.pages.dev"
 | `SECRET_KEY` | ランダム文字列 |
 | `DEBUG` | `False` |
 | `RAKUTEN_APP_ID` | 楽天の applicationId |
+| `RAKUTEN_ACCESS_KEY` | 楽天の accessKey |
+| `RAKUTEN_PROXY_URL` | Fixie の `FIXIE_URL`（静的IP経由で楽天APIを呼ぶ場合） |
 | `CORS_ALLOWED_ORIGINS` | Pages の URL |
 | `DATABASE_URL` | Postgres アドオンが自動設定 |
 | `APP_BASE` | `backend` |
