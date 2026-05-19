@@ -39,3 +39,4 @@ frontend/.vite/
 .wrangler
 .dev.vars*
 !.dev.vars.example
+.claude/settings.local.json
