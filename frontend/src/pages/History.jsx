@@ -34,6 +34,8 @@ export default function History() {
 
   useEffect(() => {
     load();
+    // load は filterSeries に依存しており、filterSeries の変化のみを契機に再取得すれば十分
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterSeries]);
 
   useEffect(() => {
