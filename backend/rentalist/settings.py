@@ -75,9 +75,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "rentalist.wsgi.application"
 
-# データベース: DATABASE_URL があれば使用、無ければローカル sqlite。
-# 本番（DEBUG=False）で DATABASE_URL が未設定だと、Heroku の ephemeral FS 上の
-# SQLite に黙ってフォールバックして dyno 再起動で全ユーザーが消えるため、起動を止める。
+# データベース: DATABASE_URL があれば使用、無ければローカル sqlite
 DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
 if DATABASE_URL:
     DATABASES = {
@@ -85,18 +83,13 @@ if DATABASE_URL:
             DATABASE_URL, conn_max_age=600, ssl_require=not DEBUG
         )
     }
-elif DEBUG:
+else:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
             "NAME": BASE_DIR / "db.sqlite3",
         }
     }
-else:
-    raise RuntimeError(
-        "DATABASE_URL is not set. Refusing to start in production with the "
-        "ephemeral SQLite fallback (Heroku dyno restarts would wipe all data)."
-    )
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
