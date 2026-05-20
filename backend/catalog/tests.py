@@ -2,7 +2,7 @@
 import pytest
 from django.test import override_settings
 
-from catalog.models import RentalHistory, Series
+from catalog.models import RentalHistory, RentalShop, Series, VolumeCover
 
 pytestmark = pytest.mark.django_db
 
@@ -220,3 +220,103 @@ def test_series_delete_cascades(api, user):
     api.delete(f"/api/series/{series.id}/")
     assert Series.objects.filter(id=series.id).count() == 0
     assert api.get("/api/cart/").data["count"] == 0
+
+
+def test_series_cover_get_returns_cached(api, user):
+    """既にキャッシュされた表紙レコードがあればそれを返す（楽天は呼ばれない）。"""
+    series = make_series(user)
+    VolumeCover.objects.create(
+        series=series,
+        volume_number=1,
+        image_url="https://example.com/cover.jpg",
+        source=VolumeCover.SOURCE_RAKUTEN,
+    )
+    resp = api.get(f"/api/series/{series.id}/cover/?volume=1")
+    assert resp.status_code == 200
+    assert resp.data["volume_number"] == 1
+    assert resp.data["resolved_url"] == "https://example.com/cover.jpg"
+
+
+def test_series_cover_get_without_cache_returns_null_in_mock(api, user):
+    """未キャッシュかつ楽天モック動作（_is_configured=False で None）の場合は resolved_url=null。"""
+    series = make_series(user)
+    resp = api.get(f"/api/series/{series.id}/cover/?volume=2")
+    assert resp.status_code == 200
+    assert resp.data["volume_number"] == 2
+    assert resp.data["resolved_url"] is None
+    # DB にも作成されない
+    assert series.covers.filter(volume_number=2).count() == 0
+
+
+def test_series_cover_get_defaults_to_next_volume(api, user):
+    """volume パラメータ未指定時は next_volume を使う。"""
+    series = make_series(user)
+    resp = api.get(f"/api/series/{series.id}/cover/")
+    assert resp.status_code == 200
+    # current_volume=0 + cart=0 + 1 = 1
+    assert resp.data["volume_number"] == 1
+
+
+def test_series_cover_put_sets_manual_url(api, user):
+    """PUT で手動URLを設定でき、レコードが作成される。"""
+    series = make_series(user)
+    resp = api.put(
+        f"/api/series/{series.id}/cover/",
+        {"volume_number": 1, "image_url": "https://example.com/manual.jpg"},
+        format="json",
+    )
+    assert resp.status_code == 200
+    assert resp.data["volume_number"] == 1
+    assert resp.data["resolved_url"] == "https://example.com/manual.jpg"
+    assert resp.data["source"] == VolumeCover.SOURCE_MANUAL
+    assert series.covers.count() == 1
+
+
+def test_series_cover_put_updates_existing(api, user):
+    """既にレコードがある巻に対する PUT は update_or_create で更新される。"""
+    series = make_series(user)
+    VolumeCover.objects.create(
+        series=series,
+        volume_number=1,
+        image_url="https://example.com/old.jpg",
+        source=VolumeCover.SOURCE_RAKUTEN,
+    )
+    resp = api.put(
+        f"/api/series/{series.id}/cover/",
+        {"volume_number": 1, "image_url": "https://example.com/new.jpg"},
+        format="json",
+    )
+    assert resp.status_code == 200
+    assert resp.data["resolved_url"] == "https://example.com/new.jpg"
+    assert resp.data["source"] == VolumeCover.SOURCE_MANUAL
+    assert series.covers.count() == 1
+
+
+def test_rental_shop_create_and_list_scoped_to_user(api, user, other_user):
+    """ショップの作成・一覧がユーザーごとにスコープされる。"""
+    RentalShop.objects.create(user=other_user, name="他人の店")
+
+    create = api.post("/api/shops/", {"name": "TSUTAYA", "memo": "近所"}, format="json")
+    assert create.status_code == 201
+    assert create.data["name"] == "TSUTAYA"
+    assert create.data["memo"] == "近所"
+
+    listed = api.get("/api/shops/")
+    assert listed.status_code == 200
+    results = listed.data["results"]
+    names = [s["name"] for s in results]
+    assert "TSUTAYA" in names
+    assert "他人の店" not in names
+    # DB 上は他人の店も存在しているが API では返らない
+    assert RentalShop.objects.filter(name="他人の店").count() == 1
+
+
+def test_rental_shop_update_and_delete(api, user):
+    """PATCH と DELETE が動作する。"""
+    shop = api.post("/api/shops/", {"name": "店A"}, format="json").data
+    upd = api.patch(f"/api/shops/{shop['id']}/", {"memo": "メモ追加"}, format="json")
+    assert upd.status_code == 200
+    assert upd.data["memo"] == "メモ追加"
+    delete = api.delete(f"/api/shops/{shop['id']}/")
+    assert delete.status_code == 204
+    assert RentalShop.objects.filter(id=shop["id"]).count() == 0

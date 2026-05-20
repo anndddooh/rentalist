@@ -74,3 +74,21 @@ def test_jwt_token_obtain(user):
     )
     assert resp.status_code == 200
     assert "access" in resp.data and "refresh" in resp.data
+
+
+def test_me_returns_authenticated_user(api, user):
+    """GET /api/auth/me/ がログイン中ユーザーの情報を返す。"""
+    resp = api.get("/api/auth/me/")
+    assert resp.status_code == 200
+    assert resp.data["id"] == user.id
+    assert resp.data["username"] == "taro"
+    assert resp.data["is_staff"] is False
+
+
+def test_me_requires_authentication():
+    """未認証では /api/auth/me/ は 401。"""
+    from rest_framework.test import APIClient
+
+    anon = APIClient()
+    resp = anon.get("/api/auth/me/")
+    assert resp.status_code == 401
