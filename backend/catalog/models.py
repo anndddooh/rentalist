@@ -56,7 +56,8 @@ class Series(models.Model):
     @property
     def cart_count(self):
         """このシリーズで現在カートに入っている巻数。"""
-        return self.cart_items.count()
+        # prefetch_related("cart_items") のキャッシュを使うため len(...all()) を用いる
+        return len(self.cart_items.all())
 
     @property
     def next_volume(self):
