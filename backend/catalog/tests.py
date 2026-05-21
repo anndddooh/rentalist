@@ -320,3 +320,58 @@ def test_rental_shop_update_and_delete(api, user):
     delete = api.delete(f"/api/shops/{shop['id']}/")
     assert delete.status_code == 204
     assert RentalShop.objects.filter(id=shop["id"]).count() == 0
+
+
+def _populate_series_with_related(user, count):
+    """count 件の Series と、各 series に紐づく cart/cover/availability を作成する。"""
+    from catalog.models import CartItem, ShopAvailability
+
+    Series.objects.filter(user=user).delete()
+    shop = RentalShop.objects.create(user=user, name="店X")
+    for i in range(count):
+        s = make_series(user, title=f"S{i}")
+        # prefetch 対象を実際に持たせる（キャッシュが効くかを意味のある形で検証する）
+        CartItem.objects.create(user=user, series=s, volume_number=1)
+        VolumeCover.objects.create(
+            series=s, volume_number=1, image_url="https://example.com/c.jpg",
+            source=VolumeCover.SOURCE_RAKUTEN,
+        )
+        ShopAvailability.objects.create(
+            user=user, series=s, shop=shop, status=ShopAvailability.STATUS_AVAILABLE,
+        )
+
+
+def _measure_series_list_queries(api, user, count):
+    """series を count 件作成し /api/series/ を呼んで発行クエリ数を返す。"""
+    from django.db import connection
+    from django.test.utils import CaptureQueriesContext
+
+    _populate_series_with_related(user, count)
+    with CaptureQueriesContext(connection) as ctx:
+        resp = api.get("/api/series/")
+    assert resp.status_code == 200
+    assert resp.data["count"] == count
+    return len(ctx.captured_queries)
+
+
+def test_series_list_query_count_is_constant(api, user):
+    """シリーズ一覧 API の発行クエリ数が series 件数に比例しないことを保証する。
+
+    prefetch_related("covers", "availabilities", "cart_items") による N+1 解消の
+    リグレッション防止ガード。1件・20件で同じクエリ数になることと、絶対値が
+    想定範囲内に収まることの2点を検証する。
+    """
+    queries_1 = _measure_series_list_queries(api, user, 1)
+    queries_20 = _measure_series_list_queries(api, user, 20)
+    # series 件数が 1 → 20 になってもクエリ数は同一でなければならない。
+    assert queries_1 == queries_20, (
+        f"Series 一覧で N+1 が再発している可能性: 1件で {queries_1} 件、"
+        f"20件で {queries_20} 件のクエリが発行された。"
+    )
+    # 絶対値ガード: 現状は COUNT + Series 本体 + covers/availabilities/cart_items
+    # の prefetch 3本 = 計 5 クエリ。新たな N+1（select_related 漏れや loop 内
+    # クエリの追加）を持ち込むとここで弾かれる。
+    assert queries_1 <= 6, (
+        f"Series 一覧で想定より多くのクエリが発行されている: {queries_1} 件。"
+        f"prefetch / select_related の漏れが無いか確認すること。"
+    )
