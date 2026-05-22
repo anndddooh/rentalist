@@ -1,6 +1,6 @@
 # Rentalist デプロイ手順
 
-バックエンドを Heroku、フロントエンドを Cloudflare Pages、画像を Cloudflare R2 に公開する。
+バックエンドを Heroku、フロントエンドを Cloudflare Workers (Static Assets)、画像を Cloudflare R2 に公開する。
 構成は `backend/`（Django）と `frontend/`（React）のモノレポ。
 
 順番は **1 → 2 →（3）→ 4 → 5**。3（R2）は画像アップロード機能を使う場合のみ必要で、後回しでもよい。
@@ -62,7 +62,7 @@ heroku config:set \
   RAKUTEN_APP_ID="（手順1のapplicationId）" \
   RAKUTEN_ACCESS_KEY="（手順1のaccessKey）" \
   RAKUTEN_PROXY_URL="$(heroku config:get FIXIE_URL)" \
-  CORS_ALLOWED_ORIGINS="https://（手順4のPagesのURL）" \
+  CORS_ALLOWED_ORIGINS="https://（手順4のWorkersのURL）" \
   USE_R2=False
 ```
 - `RAKUTEN_PROXY_URL` を設定すると、楽天APIへの通信が固定IP経由になる
@@ -106,30 +106,34 @@ heroku config:set \
 
 ---
 
-## 4. フロントエンド（Cloudflare Pages）
+## 4. フロントエンド（Cloudflare Workers, Static Assets）
 
-1. コードを GitHub にプッシュ（Pages は GitHub 連携が簡単）
-2. Cloudflare ダッシュボード → Workers & Pages → Pages → Git 連携でリポジトリを選択
+`frontend/wrangler.jsonc` に Workers Builds 用の設定が含まれており、`./dist` を Static Assets として配信、
+SPA ルーティングは `assets.not_found_handling: "single-page-application"` で 404 を `index.html` にフォールバックする。
+
+1. コードを GitHub にプッシュ（Workers Builds は GitHub 連携が簡単）
+2. Cloudflare ダッシュボード → Workers & Pages → 「Create」→「Connect to Git」でリポジトリを選択
 3. ビルド設定:
    - **ルートディレクトリ**: `frontend`
    - **ビルドコマンド**: `npm run build`
-   - **出力ディレクトリ**: `dist`
-4. 環境変数: `VITE_API_BASE_URL` = `https://（手順2のHerokuアプリURL）`
+   - **デプロイコマンド**: `npx wrangler deploy`（`wrangler.jsonc` が出力先 `./dist` を担当）
+4. 環境変数（Build variables）: `VITE_API_BASE_URL` = `https://（手順2のHerokuアプリURL）`
    （アプリのルートURL。`/api` は付けない・末尾スラッシュも付けない）
-5. デプロイ実行 → 払い出された `https://xxx.pages.dev` を控える
-6. SPA ルーティングは `frontend/public/_redirects` で対応済み
+5. デプロイ実行 → 払い出された `https://rentalist.<アカウントサブドメイン>.workers.dev` を控える
+6. SPA ルーティングは `frontend/wrangler.jsonc` の `not_found_handling` で対応済み
+   （`public/_redirects` は Workers では無限ループ扱い(code 10021)になるため使わない）
 
 ### 4-1. CORS の最終調整
-手順2-3で仮置きした `CORS_ALLOWED_ORIGINS` を、確定した Pages の URL に更新:
+手順2-3で仮置きした `CORS_ALLOWED_ORIGINS` を、確定した Workers の URL に更新:
 ```bash
-heroku config:set CORS_ALLOWED_ORIGINS="https://xxx.pages.dev"
+heroku config:set CORS_ALLOWED_ORIGINS="https://rentalist.<アカウントサブドメイン>.workers.dev"
 ```
 
 ---
 
 ## 5. 家族アカウントの発行
 
-1. `https://xxx.pages.dev` を開き、手順2-5で作った管理者でログイン
+1. `https://rentalist.<アカウントサブドメイン>.workers.dev` を開き、手順2-5で作った管理者でログイン
 2. 設定画面 →「招待リンク」を発行
 3. 発行された `/signup?token=...` のリンクを家族に共有 → 各自サインアップ
 
@@ -145,12 +149,12 @@ heroku config:set CORS_ALLOWED_ORIGINS="https://xxx.pages.dev"
 | `RAKUTEN_APP_ID` | 楽天の applicationId |
 | `RAKUTEN_ACCESS_KEY` | 楽天の accessKey |
 | `RAKUTEN_PROXY_URL` | Fixie の `FIXIE_URL`（静的IP経由で楽天APIを呼ぶ場合） |
-| `CORS_ALLOWED_ORIGINS` | Pages の URL |
+| `CORS_ALLOWED_ORIGINS` | Workers の URL |
 | `DATABASE_URL` | Postgres アドオンが自動設定 |
 | `APP_BASE` | `backend` |
 | `USE_R2` ほか R2 系 | R2 を使う場合のみ |
 
-### Cloudflare Pages（フロントエンド）
+### Cloudflare Workers（フロントエンド / Build variables）
 | 変数 | 値 |
 |---|---|
 | `VITE_API_BASE_URL` | Heroku アプリの URL |

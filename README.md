@@ -11,7 +11,7 @@
 | | |
 |---|---|
 | `backend/` | Django + Django REST Framework（JWT 認証）。Heroku デプロイ |
-| `frontend/` | React (Vite) + Tailwind CSS。Cloudflare Pages デプロイ |
+| `frontend/` | React (Vite) + Tailwind CSS。Cloudflare Workers (Static Assets) デプロイ |
 
 ## ローカル開発
 
@@ -53,6 +53,7 @@ npm run build                   # 本番ビルド → dist/
 - **バックエンド (Heroku)**: Postgres アドオン、環境変数（`SECRET_KEY` / `DEBUG=False` /
   `RAKUTEN_APP_ID` / `CORS_ALLOWED_ORIGINS` / R2 関連 / `DATABASE_URL`）を設定。
   `Procfile` の `release` フェーズで自動マイグレーション。
-- **フロントエンド (Cloudflare Pages)**: ビルドコマンド `npm run build`、出力 `dist/`。
-  `public/_redirects` で SPA ルーティングに対応。`VITE_API_BASE_URL` に Heroku の URL を設定。
+- **フロントエンド (Cloudflare Workers, Static Assets)**: ビルドコマンド `npm run build`、出力 `dist/`。
+  SPA ルーティングは `frontend/wrangler.jsonc` の `assets.not_found_handling: "single-page-application"` で対応。
+  `VITE_API_BASE_URL` に Heroku の URL を設定。
 - **画像 (Cloudflare R2)**: バケットを作成し `USE_R2=True` と R2 認証情報を設定。
