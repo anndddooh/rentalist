@@ -181,7 +181,7 @@ def test_shop_availability_unknown_deletes_record(api, user):
     assert listed[0]["availability_status"] == "unknown"
 
 
-@override_settings(RAKUTEN_APP_ID="", RAKUTEN_ACCESS_KEY="")
+@override_settings(RAKUTEN_APP_ID="")
 def test_series_search_returns_candidates(api):
     """認証情報が無いときはモック候補が返る（実APIを叩かない）。"""
     resp = api.get("/api/series/search/?q=NARUTO")

@@ -2,9 +2,14 @@
 
 RAKUTEN_APP_ID が未設定の場合はモックデータを返すため、
 APIキー取得前でもフロント／バックエンドの開発・テストが進められる。
+
+applicationId 単独で呼び出すためIP制限はかからないが、楽天の推奨レートが
+「1秒1リクエスト程度」なので、モジュール内の簡易スロットリングで間隔を確保する。
 """
 import logging
 import re
+import threading
+import time
 
 import requests
 from django.conf import settings
@@ -17,23 +22,32 @@ RAKUTEN_ENDPOINT = (
 BOOKS_COMIC_GENRE = "001001"  # 本 > コミック
 REQUEST_TIMEOUT = 6
 
+# 楽天APIの推奨レート（1秒1リクエスト程度）を超えないための最小間隔
+_MIN_INTERVAL_SEC = 1.0
+_throttle_lock = threading.Lock()
+_last_call_at = 0.0
 
-def _proxies():
-    """静的IPプロキシが設定されていれば proxies 辞書を返す（楽天のIP制限対策）。"""
-    url = settings.RAKUTEN_PROXY_URL
-    return {"http": url, "https": url} if url else None
+
+def _throttle():
+    """直前の呼び出しから _MIN_INTERVAL_SEC 経つまでブロックする。
+
+    プロセス内の threading.Lock なので gunicorn の複数ワーカ間では協調しないが、
+    家族数人の利用規模なら実用上問題にならない想定。
+    """
+    global _last_call_at
+    with _throttle_lock:
+        wait = _MIN_INTERVAL_SEC - (time.monotonic() - _last_call_at)
+        if wait > 0:
+            time.sleep(wait)
+        _last_call_at = time.monotonic()
 
 
 def _is_configured():
-    """新方式の楽天API認証（applicationId + accessKey）が揃っているか。"""
-    return bool(settings.RAKUTEN_APP_ID and settings.RAKUTEN_ACCESS_KEY)
+    return bool(settings.RAKUTEN_APP_ID)
 
 
 def _auth_params():
-    return {
-        "applicationId": settings.RAKUTEN_APP_ID,
-        "accessKey": settings.RAKUTEN_ACCESS_KEY,
-    }
+    return {"applicationId": settings.RAKUTEN_APP_ID}
 
 
 def _normalize_item(item):
@@ -85,13 +99,9 @@ def search_series(query):
         "format": "json",
         "sort": "sales",
     }
+    _throttle()
     try:
-        resp = requests.get(
-            RAKUTEN_ENDPOINT,
-            params=params,
-            timeout=REQUEST_TIMEOUT,
-            proxies=_proxies(),
-        )
+        resp = requests.get(RAKUTEN_ENDPOINT, params=params, timeout=REQUEST_TIMEOUT)
         resp.raise_for_status()
         data = resp.json()
     except (requests.RequestException, ValueError) as exc:
@@ -133,13 +143,9 @@ def find_volume_cover(title, volume_number):
         "format": "json",
         "sort": "sales",
     }
+    _throttle()
     try:
-        resp = requests.get(
-            RAKUTEN_ENDPOINT,
-            params=params,
-            timeout=REQUEST_TIMEOUT,
-            proxies=_proxies(),
-        )
+        resp = requests.get(RAKUTEN_ENDPOINT, params=params, timeout=REQUEST_TIMEOUT)
         resp.raise_for_status()
         data = resp.json()
     except (requests.RequestException, ValueError) as exc:

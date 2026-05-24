@@ -14,15 +14,14 @@
 1. <https://webservice.rakuten.co.jp/> にアクセスし、楽天会員でログイン
 2. 「アプリID発行」からアプリを新規登録。フォーム記入内容:
    - アプリ名: 任意 / アプリURL: 仮で可
-   - **アプリケーションタイプ**: バックエンドサービス（Django がサーバー間で呼ぶため）
-   - **許可されたIPアドレス**: ローカル開発機のグローバルIP。本番（Heroku）用に
-     静的IPアドオンのIPも追加する（手順2-2参照）。IPは後からいつでも追加・即時反映可
+   - **アプリケーションタイプ**: ウェブアプリ（applicationId のみで利用するためIP制限なし）
    - **データ利用目的**: 例「家族向けの漫画レンタル進捗管理アプリで、漫画の検索と
      書影表示に利用。非営利・個人利用」
    - **予想QPS**: `1`（表紙はキャッシュするため実リクエストは少ない）
-3. 発行画面で **applicationId** と **accessKey** の両方を控える
-   → それぞれ `RAKUTEN_APP_ID`・`RAKUTEN_ACCESS_KEY`。
-   両方そろわないと実APIを呼ばずモック動作になる
+3. 発行画面で **applicationId** を控える → `RAKUTEN_APP_ID`。
+   未設定なら実APIを呼ばずモック動作になる
+   - accessKey は本アプリでは使用しない（IP登録不要の applicationId 単独で運用）
+   - 楽天の推奨レート「1秒1リクエスト程度」はバックエンドのスロットリングで担保
 
 ---
 
@@ -46,13 +45,7 @@ heroku config:set APP_BASE=backend
 
 # Postgres
 heroku addons:create heroku-postgresql:essential-0
-
-# 静的IP（楽天APIのIP制限対策。Heroku の dyno はIPが固定されないため）
-# Fixie の無料プラン例。発行されたプロキシURLとIPを控える
-heroku addons:create fixie:tricycle
 ```
-- `fixie` の管理画面で割り当てられた**送信元IP**を、楽天アプリの「許可されたIPアドレス」に追加登録する
-- `FIXIE_URL` が config に自動で入るので、それを `RAKUTEN_PROXY_URL` にも設定する（手順2-3）
 
 ### 2-3. 環境変数
 ```bash
@@ -60,12 +53,10 @@ heroku config:set \
   SECRET_KEY="$(python3 -c 'import secrets;print(secrets.token_urlsafe(50))')" \
   DEBUG=False \
   RAKUTEN_APP_ID="（手順1のapplicationId）" \
-  RAKUTEN_ACCESS_KEY="（手順1のaccessKey）" \
-  RAKUTEN_PROXY_URL="$(heroku config:get FIXIE_URL)" \
   CORS_ALLOWED_ORIGINS="https://（手順4のPagesのURL）" \
   USE_R2=False
 ```
-- `RAKUTEN_PROXY_URL` を設定すると、楽天APIへの通信が固定IP経由になる
+- 楽天APIは applicationId 単独で呼ぶためIP制限なし。静的IPアドオン（Fixie 等）は不要
 - `DATABASE_URL` は Postgres アドオンが自動設定する
 - `ALLOWED_HOSTS` は未設定でOK（`.herokuapp.com` を自動許可）
 - フロントの URL が未確定なら、手順4のあとで `CORS_ALLOWED_ORIGINS` を設定し直す
@@ -143,8 +134,6 @@ heroku config:set CORS_ALLOWED_ORIGINS="https://xxx.pages.dev"
 | `SECRET_KEY` | ランダム文字列 |
 | `DEBUG` | `False` |
 | `RAKUTEN_APP_ID` | 楽天の applicationId |
-| `RAKUTEN_ACCESS_KEY` | 楽天の accessKey |
-| `RAKUTEN_PROXY_URL` | Fixie の `FIXIE_URL`（静的IP経由で楽天APIを呼ぶ場合） |
 | `CORS_ALLOWED_ORIGINS` | Pages の URL |
 | `DATABASE_URL` | Postgres アドオンが自動設定 |
 | `APP_BASE` | `backend` |
