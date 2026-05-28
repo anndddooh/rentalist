@@ -160,16 +160,23 @@ class CartItemViewSet(viewsets.ModelViewSet):
                 {"detail": "カートが空です。"}, status=status.HTTP_400_BAD_REQUEST
             )
         with transaction.atomic():
-            affected = {}
             now = timezone.now()
-            for item in items:
-                RentalHistory.objects.get_or_create(
-                    user=request.user,
-                    series=item.series,
-                    volume_number=item.volume_number,
-                    defaults={"rented_at": now},
-                )
-                affected[item.series_id] = item.series
+            # bulk_create で N+1 を回避。unique_together に違反する重複は無視する
+            # （DB と VPS のレイテンシ次第では、get_or_create を回すと 100件で
+            #  gunicorn の worker timeout を超えるため）
+            RentalHistory.objects.bulk_create(
+                [
+                    RentalHistory(
+                        user=request.user,
+                        series=item.series,
+                        volume_number=item.volume_number,
+                        rented_at=now,
+                    )
+                    for item in items
+                ],
+                ignore_conflicts=True,
+            )
+            affected = {item.series_id: item.series for item in items}
             CartItem.objects.filter(user=request.user).delete()
             newly_completed = []
             for series in affected.values():
