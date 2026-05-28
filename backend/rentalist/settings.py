@@ -150,8 +150,10 @@ SIMPLE_JWT = {
 
 CORS_ALLOWED_ORIGINS = env_list("CORS_ALLOWED_ORIGINS", "http://localhost:5173")
 
-# 楽天ブックスAPI（applicationId 未設定ならモック動作）
+# 楽天ブックスAPI（新方式は applicationId と accessKey が両方必須、
+# どちらか欠ければモック動作）
 RAKUTEN_APP_ID = os.environ.get("RAKUTEN_APP_ID", "")
+RAKUTEN_ACCESS_KEY = os.environ.get("RAKUTEN_ACCESS_KEY", "")
 
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")

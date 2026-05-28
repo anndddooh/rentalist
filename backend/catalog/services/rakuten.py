@@ -1,10 +1,14 @@
 """楽天ブックス書籍検索APIとの連携。
 
-RAKUTEN_APP_ID が未設定の場合はモックデータを返すため、
-APIキー取得前でもフロント／バックエンドの開発・テストが進められる。
+新方式の applicationId（UUID形式）は accessKey 必須で、楽天デベロッパー
+ポータルに送信元IPを登録する必要がある。本番は静的IPを持つ VPS から
+直接呼ぶ前提（プロキシ経由は不要）。
 
-applicationId 単独で呼び出すためIP制限はかからないが、楽天の推奨レートが
-「1秒1リクエスト程度」なので、モジュール内の簡易スロットリングで間隔を確保する。
+RAKUTEN_APP_ID と RAKUTEN_ACCESS_KEY の片方でも未設定ならモックデータを
+返すため、APIキー取得前でも開発・テストが進められる。
+
+楽天の推奨レートが「1秒1リクエスト程度」なので、モジュール内の簡易
+スロットリングで呼び出し間隔を確保する。
 """
 import logging
 import re
@@ -43,11 +47,14 @@ def _throttle():
 
 
 def _is_configured():
-    return bool(settings.RAKUTEN_APP_ID)
+    return bool(settings.RAKUTEN_APP_ID and settings.RAKUTEN_ACCESS_KEY)
 
 
 def _auth_params():
-    return {"applicationId": settings.RAKUTEN_APP_ID}
+    return {
+        "applicationId": settings.RAKUTEN_APP_ID,
+        "accessKey": settings.RAKUTEN_ACCESS_KEY,
+    }
 
 
 def _normalize_item(item):
