@@ -67,6 +67,8 @@ export default function SeriesDetail() {
     load();
     listShops().then(setShops).catch(() => {});
     listHistory(id).then(setHistory).catch(() => {});
+    // load は id に依存しており、id の変化のみを契機に再取得すれば十分
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   if (!series || !form) {
