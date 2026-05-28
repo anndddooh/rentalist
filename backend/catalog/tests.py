@@ -311,6 +311,42 @@ def test_rental_shop_create_and_list_scoped_to_user(api, user, other_user):
     assert RentalShop.objects.filter(name="他人の店").count() == 1
 
 
+def test_series_cover_get_with_non_numeric_volume_returns_400(api, user):
+    """非数値の volume パラメータは 500 ではなく 400 を返す。"""
+    series = make_series(user)
+    resp = api.get(f"/api/series/{series.id}/cover/?volume=abc")
+    assert resp.status_code == 400
+
+
+def test_series_cover_get_with_negative_volume_returns_400(api, user):
+    """0 や負数の volume も 400。"""
+    series = make_series(user)
+    assert api.get(f"/api/series/{series.id}/cover/?volume=0").status_code == 400
+    assert api.get(f"/api/series/{series.id}/cover/?volume=-3").status_code == 400
+
+
+def test_series_cover_put_with_non_numeric_volume_returns_400(api, user):
+    """PUT の volume_number に非数値が渡されたら 400。"""
+    series = make_series(user)
+    resp = api.put(
+        f"/api/series/{series.id}/cover/",
+        {"volume_number": "abc", "image_url": "https://example.com/x.jpg"},
+        format="json",
+    )
+    assert resp.status_code == 400
+
+
+def test_series_cover_put_with_negative_volume_returns_400(api, user):
+    """PUT の volume_number が 1 未満なら 400。"""
+    series = make_series(user)
+    resp = api.put(
+        f"/api/series/{series.id}/cover/",
+        {"volume_number": 0, "image_url": "https://example.com/x.jpg"},
+        format="json",
+    )
+    assert resp.status_code == 400
+
+
 def test_rental_shop_update_and_delete(api, user):
     """PATCH と DELETE が動作する。"""
     shop = api.post("/api/shops/", {"name": "店A"}, format="json").data

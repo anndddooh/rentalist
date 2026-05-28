@@ -27,6 +27,23 @@ from .serializers import (
 from .services import rakuten
 
 
+def _parse_volume(raw, *, default):
+    """巻数入力を 1 以上の整数に正規化する。不正値は None を返す。
+
+    空文字や None は default を採用。それ以外は int 変換を試み、失敗または
+    1 未満の値の場合は None を返してビュー側で 400 にする。
+    """
+    if raw is None or raw == "":
+        return default
+    try:
+        value = int(raw)
+    except (TypeError, ValueError):
+        return None
+    if value < 1:
+        return None
+    return value
+
+
 class SeriesViewSet(viewsets.ModelViewSet):
     """シリーズの CRUD ＋ 検索・表紙・貸出状況。"""
 
@@ -63,7 +80,14 @@ class SeriesViewSet(viewsets.ModelViewSet):
         """巻の表紙を取得（GET・未取得なら楽天遅延取得）／設定（PUT）。"""
         series = self.get_object()
         if request.method == "GET":
-            volume = int(request.query_params.get("volume", series.next_volume))
+            volume = _parse_volume(
+                request.query_params.get("volume"), default=series.next_volume
+            )
+            if volume is None:
+                return Response(
+                    {"detail": "volume は 1 以上の整数で指定してください。"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             cover = series.covers.filter(volume_number=volume).first()
             if cover is None:
                 url = rakuten.find_volume_cover(series.title, volume)
@@ -79,7 +103,14 @@ class SeriesViewSet(viewsets.ModelViewSet):
             return Response(VolumeCoverSerializer(cover).data)
 
         # PUT: 手動URL設定 または 画像アップロード
-        volume = int(request.data.get("volume_number") or series.next_volume)
+        volume = _parse_volume(
+            request.data.get("volume_number"), default=series.next_volume
+        )
+        if volume is None:
+            return Response(
+                {"detail": "volume_number は 1 以上の整数で指定してください。"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         image_file = request.FILES.get("image_file")
         if image_file:
             defaults = {
