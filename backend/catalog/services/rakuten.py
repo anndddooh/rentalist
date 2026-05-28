@@ -7,8 +7,8 @@
 RAKUTEN_APP_ID と RAKUTEN_ACCESS_KEY の片方でも未設定ならモックデータを
 返すため、APIキー取得前でも開発・テストが進められる。
 
-楽天の推奨レートが「1秒1リクエスト程度」なので、モジュール内の簡易
-スロットリングで呼び出し間隔を確保する。
+バースト時の意図せぬブロックを防ぐため、モジュール内の簡易スロットリングで
+呼び出し間隔を最低限確保する。
 """
 import logging
 import re
@@ -26,8 +26,10 @@ RAKUTEN_ENDPOINT = (
 BOOKS_COMIC_GENRE = "001001"  # 本 > コミック
 REQUEST_TIMEOUT = 6
 
-# 楽天APIの推奨レート（1秒1リクエスト程度）を超えないための最小間隔
-_MIN_INTERVAL_SEC = 1.0
+# 楽天API呼び出しの最小間隔。accessKey + IP登録方式なので 1秒/req までは
+# 締めず、バースト時のブロックリスクを抑えつつ未取得巻多数のホーム表示
+# 速度を確保する妥協点として 0.2 秒（最大 5 req/sec）に設定。
+_MIN_INTERVAL_SEC = 0.2
 _throttle_lock = threading.Lock()
 _last_call_at = 0.0
 
