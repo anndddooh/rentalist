@@ -86,9 +86,10 @@ export default function AddSeries() {
         try {
           await bulkAddHistory(created.id, readUpTo);
         } catch (bulkErr) {
-          // シリーズは作れたが履歴投入で失敗。詳細に遷移して再試行できるようにする。
-          setError(
-            "シリーズは作成されましたが、履歴の一括追加に失敗しました。シリーズ詳細から再試行できます。"
+          // シリーズは作れたが履歴投入で失敗。alert で確実にユーザに伝えてから
+          // 詳細に遷移して再試行可能にする（setError では navigate で消えるため）。
+          window.alert(
+            "シリーズは作成されましたが、履歴の一括追加に失敗しました。シリーズ詳細から再試行してください。"
           );
           navigate(`/series/${created.id}`);
           return;
