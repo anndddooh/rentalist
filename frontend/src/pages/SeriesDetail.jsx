@@ -75,6 +75,12 @@ export default function SeriesDetail() {
     listHistory(id).then(setHistory).catch(() => {});
   }, [id]);
 
+  useEffect(() => {
+    if (!bulkMessage) return;
+    const timer = setTimeout(() => setBulkMessage(""), 5000);
+    return () => clearTimeout(timer);
+  }, [bulkMessage]);
+
   if (!series || !form) {
     return <p className="p-6 text-center text-sm text-slate-400">読み込み中…</p>;
   }
@@ -348,7 +354,8 @@ export default function SeriesDetail() {
                   setBulkOpen(false);
                   setBulkToVolume("");
                 }}
-                className="flex-1 rounded bg-slate-200 py-2 text-sm font-semibold text-slate-600"
+                disabled={bulkBusy}
+                className="flex-1 rounded bg-slate-200 py-2 text-sm font-semibold text-slate-600 disabled:opacity-50"
               >
                 キャンセル
               </button>
