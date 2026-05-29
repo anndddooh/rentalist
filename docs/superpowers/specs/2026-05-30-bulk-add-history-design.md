@@ -33,8 +33,8 @@
 ```
 
 挙動:
-1. `series.user == request.user` でなければ 403。
-2. `to_volume < 1` なら 400 (`detail: "to_volume must be >= 1"`).
+1. 他ユーザーの series_id を指定された場合は 404（既存パターン: `SeriesViewSet.get_queryset` がユーザでフィルタしているため `get_object()` が自然に Http404 を返す）。
+2. `to_volume < 1` または整数でなければ 400 (`detail: "to_volume must be >= 1"`).
 3. `RentalHistory.objects.bulk_create([RentalHistory(user, series, volume_number=v, rented_at=now) for v in 1..to_volume], ignore_conflicts=True)` で投入。
    `unique_together=(user, series, volume_number)` により既存巻は自動スキップ。
 4. `series.recalculate_current_volume()` を呼ぶ
@@ -115,7 +115,7 @@ export async function bulkAddHistory(seriesId, toVolume) {
 | `to_volume` 巨大値（例 9999） | 制約しない。bulk_create は十分速い |
 | 全件既に存在 | 200・`created: 0` |
 | status=wishlist で bulk_add | `recalculate_current_volume` が active or completed に自動遷移 |
-| 他ユーザーの series_id 指定 | 403（既存パターン踏襲） |
+| 他ユーザーの series_id 指定 | 404（SeriesViewSet.get_queryset がユーザでフィルタしているため） |
 | 楽天 API 表紙取得 | bulk_add_history 自体は楽天を呼ばない（個別 GET /cover/ で従来通り） |
 
 ## テスト
@@ -129,7 +129,7 @@ export async function bulkAddHistory(seriesId, toVolume) {
 3. `test_bulk_add_history_updates_current_volume` — `series.current_volume == to_volume`
 4. `test_bulk_add_history_auto_completes_when_reaches_total_volumes` — `total_volumes=5` で `to_volume=5` → status=completed
 5. `test_bulk_add_history_rejects_zero` — `to_volume=0` で 400
-6. `test_bulk_add_history_rejects_other_users_series` — other_user の series に対する 403
+6. `test_bulk_add_history_rejects_other_users_series` — other_user の series に対する 404
 
 ### フロントエンド
 
