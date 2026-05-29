@@ -26,6 +26,7 @@ class SeriesSerializer(serializers.ModelSerializer):
     next_volume = serializers.ReadOnlyField()
     cart_count = serializers.ReadOnlyField()
     next_cover_url = serializers.SerializerMethodField()
+    first_volume_cover_url = serializers.SerializerMethodField()
     availability_status = serializers.SerializerMethodField()
     availability_map = serializers.SerializerMethodField()
 
@@ -34,8 +35,8 @@ class SeriesSerializer(serializers.ModelSerializer):
         fields = (
             "id", "title", "author", "author_kana", "publisher", "magazine_label",
             "status", "current_volume", "total_volumes", "favorite_score",
-            "next_volume", "cart_count", "next_cover_url", "availability_status",
-            "availability_map", "created_at", "updated_at",
+            "next_volume", "cart_count", "next_cover_url", "first_volume_cover_url",
+            "availability_status", "availability_map", "created_at", "updated_at",
         )
         read_only_fields = ("id", "current_volume", "created_at", "updated_at")
 
@@ -43,6 +44,13 @@ class SeriesSerializer(serializers.ModelSerializer):
         """次の巻のキャッシュ済み表紙URL（無ければ null。遅延取得はしない）。"""
         cover = next(
             (c for c in obj.covers.all() if c.volume_number == obj.next_volume), None
+        )
+        return cover.resolved_url if cover else None
+
+    def get_first_volume_cover_url(self, obj):
+        """1巻のキャッシュ済み表紙URL（読破ページ等で初期表示に使う）。"""
+        cover = next(
+            (c for c in obj.covers.all() if c.volume_number == 1), None
         )
         return cover.resolved_url if cover else None
 

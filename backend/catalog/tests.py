@@ -237,6 +237,28 @@ def test_series_delete_cascades(api, user):
     assert api.get("/api/cart/").data == []
 
 
+def test_series_list_includes_first_volume_cover_url(api, user):
+    """シリーズ一覧に1巻表紙のキャッシュ済みURLが含まれる（読破ページのN+1回避用）。"""
+    series = make_series(user)
+    VolumeCover.objects.create(
+        series=series,
+        volume_number=1,
+        image_url="https://example.com/vol1.jpg",
+        source=VolumeCover.SOURCE_RAKUTEN,
+    )
+    resp = api.get("/api/series/")
+    assert resp.status_code == 200
+    assert resp.data["results"][0]["first_volume_cover_url"] == "https://example.com/vol1.jpg"
+
+
+def test_series_list_first_volume_cover_url_is_null_when_uncached(api, user):
+    """1巻表紙が未キャッシュなら first_volume_cover_url は null（楽天は呼ばない）。"""
+    make_series(user)
+    resp = api.get("/api/series/")
+    assert resp.status_code == 200
+    assert resp.data["results"][0]["first_volume_cover_url"] is None
+
+
 def test_series_cover_get_returns_cached(api, user):
     """既にキャッシュされた表紙レコードがあればそれを返す（楽天は呼ばれない）。"""
     series = make_series(user)
