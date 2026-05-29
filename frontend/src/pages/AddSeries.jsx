@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createSeries, searchSeries } from "../api/series.js";
+import { bulkAddHistory } from "../api/history.js";
 import CoverImage from "../components/CoverImage.jsx";
 import StarRating from "../components/StarRating.jsx";
 import { errorMessage } from "../lib/errors.js";
@@ -14,6 +15,7 @@ const EMPTY_FORM = {
   total_volumes: "",
   favorite_score: 3,
   status: "active",
+  read_up_to: "",
 };
 
 // 「ONE PIECE 114」のような末尾の巻数表記を取り除いてシリーズ名にする
@@ -71,11 +73,27 @@ export default function AddSeries() {
     setError("");
     setBusy(true);
     try {
+      // read_up_to は別 API で処理するので payload からは外す
+      const { read_up_to, ...rest } = form;
       const payload = {
-        ...form,
+        ...rest,
         total_volumes: form.total_volumes ? Number(form.total_volumes) : null,
       };
-      await createSeries(payload);
+      const created = await createSeries(payload);
+
+      const readUpTo = Number(read_up_to);
+      if (Number.isInteger(readUpTo) && readUpTo >= 1) {
+        try {
+          await bulkAddHistory(created.id, readUpTo);
+        } catch (bulkErr) {
+          // シリーズは作れたが履歴投入で失敗。詳細に遷移して再試行できるようにする。
+          setError(
+            "シリーズは作成されましたが、履歴の一括追加に失敗しました。シリーズ詳細から再試行できます。"
+          );
+          navigate(`/series/${created.id}`);
+          return;
+        }
+      }
       navigate(form.status === "wishlist" ? "/wishlist" : "/");
     } catch (err) {
       setError(errorMessage(err));
@@ -213,6 +231,18 @@ export default function AddSeries() {
             className="input"
             {...field("total_volumes")}
           />
+        </Labeled>
+        <Labeled label="既に読んだ巻数（任意）">
+          <input
+            type="number"
+            min="1"
+            className="input"
+            {...field("read_up_to")}
+            placeholder="例: 10"
+          />
+          <p className="mt-1 text-xs text-slate-500">
+            「N巻まで読んだ既存シリーズ」を登録する時に使うと、1〜N 巻の読破記録を一気に作成します。
+          </p>
         </Labeled>
         <Labeled label="お気に入り度">
           <StarRating
