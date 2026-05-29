@@ -232,6 +232,44 @@ def test_flags_provisional_when_image_url_is_placeholder_gif():
     assert provisional is True
 
 
+@override_settings(RAKUTEN_APP_ID="SECRET_APP_ID_XYZ", RAKUTEN_ACCESS_KEY="SECRET_ACCESS_KEY_XYZ")
+def test_log_on_http_failure_does_not_leak_api_credentials(caplog):
+    """HTTPエラー時のログに applicationId/accessKey が出ないこと。
+
+    楽天は認証情報をクエリパラメータで渡すため、例外の __str__ にURLが
+    そのまま含まれるとログから API キーが漏れる。クエリ部分を伏字で扱う。
+    """
+    import logging
+    import requests
+
+    fake_url = (
+        "https://openapi.rakuten.co.jp/services/api/BooksBook/Search/20170404"
+        "?applicationId=SECRET_APP_ID_XYZ&accessKey=SECRET_ACCESS_KEY_XYZ&title=test"
+    )
+    fake_response = MagicMock()
+    fake_response.status_code = 429
+    fake_request = MagicMock()
+    fake_request.url = fake_url
+    http_error = requests.HTTPError(
+        f"429 Client Error: Too Many Requests for url: {fake_url}",
+        request=fake_request,
+        response=fake_response,
+    )
+
+    raising_response = MagicMock()
+    raising_response.raise_for_status = MagicMock(side_effect=http_error)
+
+    with caplog.at_level(logging.WARNING, logger="catalog.services.rakuten"):
+        with patch.object(rakuten.requests, "get", return_value=raising_response):
+            rakuten.find_volume_cover("テスト", 1)
+
+    log_text = "\n".join(rec.message for rec in caplog.records)
+    assert "SECRET_APP_ID_XYZ" not in log_text
+    assert "SECRET_ACCESS_KEY_XYZ" not in log_text
+    # 失敗自体は記録されているはず（status / 操作種別が分かる程度）
+    assert "失敗" in log_text
+
+
 @override_settings(RAKUTEN_APP_ID="x", RAKUTEN_ACCESS_KEY="y")
 def test_flags_real_cover_as_not_provisional():
     """通常の本表紙（availability=1 かつ URL に _1_XX サフィックス）は provisional=False。"""

@@ -52,6 +52,21 @@ def _is_configured():
     return bool(settings.RAKUTEN_APP_ID and settings.RAKUTEN_ACCESS_KEY)
 
 
+def _log_api_failure(operation, exc):
+    """楽天 API 例外をログ出力する。URL のクエリ部（applicationId/accessKey）は出さない。"""
+    request = getattr(exc, "request", None)
+    response = getattr(exc, "response", None)
+    raw_url = getattr(request, "url", "") if request is not None else ""
+    url = raw_url.split("?", 1)[0] if raw_url else ""
+    status = getattr(response, "status_code", None) if response is not None else None
+    parts = [f"楽天API{operation}に失敗しました", type(exc).__name__]
+    if status is not None:
+        parts.append(f"HTTP {status}")
+    if url:
+        parts.append(url)
+    logger.warning(" - ".join(parts))
+
+
 def _auth_params():
     return {
         "applicationId": settings.RAKUTEN_APP_ID,
@@ -114,7 +129,7 @@ def search_series(query):
         resp.raise_for_status()
         data = resp.json()
     except (requests.RequestException, ValueError) as exc:
-        logger.warning("楽天API検索に失敗しました: %s", exc)
+        _log_api_failure("検索", exc)
         return []
 
     return [_normalize_item(entry["Item"]) for entry in data.get("Items", [])]
@@ -227,7 +242,7 @@ def _fetch_and_match(query, target_title, target_volume):
         resp.raise_for_status()
         data = resp.json()
     except (requests.RequestException, ValueError) as exc:
-        logger.warning("楽天API表紙取得に失敗しました: %s", exc)
+        _log_api_failure("表紙取得", exc)
         return None, False
 
     for entry in data.get("Items", []):
