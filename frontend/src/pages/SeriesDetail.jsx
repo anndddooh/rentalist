@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { listHistory, bulkAddHistory } from "../api/history.js";
+import {
+  bulkAddHistory,
+  listHistory,
+  listHistoryNextPage,
+} from "../api/history.js";
 import {
   deleteSeries,
   getCover,
@@ -28,6 +32,9 @@ export default function SeriesDetail() {
   const [series, setSeries] = useState(null);
   const [shops, setShops] = useState([]);
   const [history, setHistory] = useState([]);
+  const [historyNextUrl, setHistoryNextUrl] = useState(null);
+  const [historyTotalCount, setHistoryTotalCount] = useState(0);
+  const [historyLoadingMore, setHistoryLoadingMore] = useState(false);
   const [coverUrl, setCoverUrl] = useState(null);
   const [form, setForm] = useState(null);
   const [error, setError] = useState("");
@@ -69,10 +76,33 @@ export default function SeriesDetail() {
       .catch(() => {});
   }
 
+  async function loadHistory() {
+    try {
+      const data = await listHistory(id);
+      setHistory(data.results);
+      setHistoryNextUrl(data.next);
+      setHistoryTotalCount(data.count);
+    } catch {
+      /* 履歴取得失敗は致命的ではないので silent */
+    }
+  }
+
+  async function loadMoreHistory() {
+    if (!historyNextUrl) return;
+    setHistoryLoadingMore(true);
+    try {
+      const data = await listHistoryNextPage(historyNextUrl);
+      setHistory((prev) => [...prev, ...data.results]);
+      setHistoryNextUrl(data.next);
+    } finally {
+      setHistoryLoadingMore(false);
+    }
+  }
+
   useEffect(() => {
     load();
     listShops().then(setShops).catch(() => {});
-    listHistory(id).then(setHistory).catch(() => {});
+    loadHistory();
   }, [id]);
 
   useEffect(() => {
@@ -133,12 +163,8 @@ export default function SeriesDetail() {
       setBulkMessage(`${result.created}件の読破記録を追加しました。`);
       setBulkToVolume("");
       setBulkOpen(false);
-      // 履歴とシリーズを再取得
-      const [newHistory] = await Promise.all([
-        listHistory(id),
-        load(),
-      ]);
-      setHistory(newHistory);
+      // 履歴とシリーズを再取得（履歴は先頭ページから読み直し）
+      await Promise.all([loadHistory(), load()]);
     } catch (err) {
       setError(errorMessage(err));
     } finally {
@@ -366,16 +392,35 @@ export default function SeriesDetail() {
         {history.length === 0 ? (
           <p className="text-xs text-slate-400">記録はありません。</p>
         ) : (
-          <ul className="text-sm">
-            {history.map((h) => (
-              <li key={h.id} className="flex justify-between py-0.5">
-                <span>{h.volume_number}巻</span>
-                <span className="text-xs text-slate-400">
-                  {new Date(h.rented_at).toLocaleDateString("ja-JP")}
-                </span>
-              </li>
-            ))}
-          </ul>
+          <>
+            <p className="text-xs text-slate-500">
+              全 {historyTotalCount}件
+              {history.length < historyTotalCount
+                ? `（${history.length}件表示中）`
+                : ""}
+            </p>
+            <ul className="text-sm">
+              {history.map((h) => (
+                <li key={h.id} className="flex justify-between py-0.5">
+                  <span>{h.volume_number}巻</span>
+                  <span className="text-xs text-slate-400">
+                    {new Date(h.rented_at).toLocaleDateString("ja-JP")}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            {historyNextUrl && (
+              <button
+                onClick={loadMoreHistory}
+                disabled={historyLoadingMore}
+                className="w-full rounded bg-slate-100 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-200 disabled:opacity-50"
+              >
+                {historyLoadingMore
+                  ? "読み込み中…"
+                  : `もっと読み込む（残り ${historyTotalCount - history.length}件）`}
+              </button>
+            )}
+          </>
         )}
       </div>
 

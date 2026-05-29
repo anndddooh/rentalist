@@ -1,9 +1,23 @@
 import api from "./client.js";
 
+/**
+ * /history/ の初期ページを取得する。DRF のページネーション形を
+ * そのまま返す: { count, next, previous, results }。
+ * 後続ページは listHistoryNextPage(next) で取る。
+ */
 export async function listHistory(seriesId) {
   const params = seriesId ? { series_id: seriesId } : {};
   const { data } = await api.get("/history/", { params });
-  return data.results ?? data;
+  return data;
+}
+
+/**
+ * DRF が返す絶対 URL の next を辿って次ページを取得する。
+ * axios は absolute URL を渡すと baseURL を無視するためそのまま使える。
+ */
+export async function listHistoryNextPage(nextUrl) {
+  const { data } = await api.get(nextUrl);
+  return data;
 }
 
 export async function addHistory({ seriesId, volumeNumber, rentedAt }) {

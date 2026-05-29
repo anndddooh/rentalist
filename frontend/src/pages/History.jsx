@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import { addHistory, deleteHistory, listHistory } from "../api/history.js";
+import {
+  addHistory,
+  deleteHistory,
+  listHistory,
+  listHistoryNextPage,
+} from "../api/history.js";
 import { listSeries } from "../api/series.js";
 import ReadingStats from "../components/ReadingStats.jsx";
 import { errorMessage } from "../lib/errors.js";
@@ -10,9 +15,12 @@ function todayISODate() {
 
 export default function History() {
   const [entries, setEntries] = useState([]);
+  const [nextUrl, setNextUrl] = useState(null);
+  const [totalCount, setTotalCount] = useState(0);
   const [allSeries, setAllSeries] = useState([]);
   const [filterSeries, setFilterSeries] = useState("");
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
     seriesId: "",
@@ -26,9 +34,24 @@ export default function History() {
   async function load() {
     setLoading(true);
     try {
-      setEntries(await listHistory(filterSeries || undefined));
+      const data = await listHistory(filterSeries || undefined);
+      setEntries(data.results);
+      setNextUrl(data.next);
+      setTotalCount(data.count);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function loadMore() {
+    if (!nextUrl) return;
+    setLoadingMore(true);
+    try {
+      const data = await listHistoryNextPage(nextUrl);
+      setEntries((prev) => [...prev, ...data.results]);
+      setNextUrl(data.next);
+    } finally {
+      setLoadingMore(false);
     }
   }
 
@@ -52,6 +75,7 @@ export default function History() {
       setShowForm(false);
       setForm({ seriesId: "", volumeNumber: "", rentedAt: todayISODate() });
       setStatsToken((t) => t + 1);
+      // 追加された巻が rented_at 順のどこに入るか分からないので全件リロード
       load();
     } catch (err) {
       setError(errorMessage(err));
@@ -67,8 +91,10 @@ export default function History() {
       return;
     }
     await deleteHistory(id);
+    // ロード済みの items を保ったまま、削除分だけ取り除く（pagination 位置を維持）
+    setEntries((prev) => prev.filter((h) => h.id !== id));
+    setTotalCount((c) => Math.max(0, c - 1));
     setStatsToken((t) => t + 1);
-    load();
   }
 
   return (
@@ -153,28 +179,44 @@ export default function History() {
           履歴がありません。
         </p>
       ) : (
-        <ul className="space-y-2">
-          {entries.map((entry) => (
-            <li
-              key={entry.id}
-              className="flex items-center justify-between rounded-lg bg-white p-3 shadow-sm"
-            >
-              <div className="text-sm">
-                <span className="font-semibold">{entry.series_title}</span>{" "}
-                <span className="text-brand">{entry.volume_number}巻</span>
-                <div className="text-xs text-slate-400">
-                  {new Date(entry.rented_at).toLocaleDateString("ja-JP")}
-                </div>
-              </div>
-              <button
-                onClick={() => handleDelete(entry.id)}
-                className="text-xs text-rose-500 underline"
+        <>
+          <p className="text-xs text-slate-500">
+            全 {totalCount}件{entries.length < totalCount ? `（${entries.length}件表示中）` : ""}
+          </p>
+          <ul className="space-y-2">
+            {entries.map((entry) => (
+              <li
+                key={entry.id}
+                className="flex items-center justify-between rounded-lg bg-white p-3 shadow-sm"
               >
-                削除
-              </button>
-            </li>
-          ))}
-        </ul>
+                <div className="text-sm">
+                  <span className="font-semibold">{entry.series_title}</span>{" "}
+                  <span className="text-brand">{entry.volume_number}巻</span>
+                  <div className="text-xs text-slate-400">
+                    {new Date(entry.rented_at).toLocaleDateString("ja-JP")}
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleDelete(entry.id)}
+                  className="text-xs text-rose-500 underline"
+                >
+                  削除
+                </button>
+              </li>
+            ))}
+          </ul>
+          {nextUrl && (
+            <button
+              onClick={loadMore}
+              disabled={loadingMore}
+              className="w-full rounded-lg bg-slate-100 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-200 disabled:opacity-50"
+            >
+              {loadingMore
+                ? "読み込み中…"
+                : `もっと読み込む（残り ${totalCount - entries.length}件）`}
+            </button>
+          )}
+        </>
       )}
     </div>
   );
