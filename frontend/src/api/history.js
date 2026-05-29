@@ -23,3 +23,10 @@ export async function getReadingStats() {
   const { data } = await api.get("/history/stats/");
   return data;
 }
+
+export async function bulkAddHistory(seriesId, toVolume) {
+  const { data } = await api.post(`/series/${seriesId}/bulk_add_history/`, {
+    to_volume: toVolume,
+  });
+  return data;
+}

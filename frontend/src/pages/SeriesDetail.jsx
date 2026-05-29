@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { listHistory } from "../api/history.js";
+import { listHistory, bulkAddHistory } from "../api/history.js";
 import {
   deleteSeries,
   getCover,
@@ -41,6 +41,12 @@ export default function SeriesDetail() {
   // 削除確認
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [showDelete, setShowDelete] = useState(false);
+
+  // 一括履歴追加 UI 用
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [bulkToVolume, setBulkToVolume] = useState("");
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [bulkMessage, setBulkMessage] = useState("");
 
   async function load() {
     const data = await getSeries(id);
@@ -105,6 +111,32 @@ export default function SeriesDetail() {
       setCoverUrl(c.resolved_url);
     } catch (err) {
       setError(errorMessage(err));
+    }
+  }
+
+  async function handleBulkAdd() {
+    const n = Number(bulkToVolume);
+    if (!Number.isInteger(n) || n < 1) {
+      setError("巻数は 1 以上の整数を指定してください。");
+      return;
+    }
+    setBulkBusy(true);
+    setError("");
+    try {
+      const result = await bulkAddHistory(id, n);
+      setBulkMessage(`${result.created}件の読破記録を追加しました。`);
+      setBulkToVolume("");
+      setBulkOpen(false);
+      // 履歴とシリーズを再取得
+      const [newHistory] = await Promise.all([
+        listHistory(id),
+        load(),
+      ]);
+      setHistory(newHistory);
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setBulkBusy(false);
     }
   }
 
@@ -269,7 +301,61 @@ export default function SeriesDetail() {
 
       {/* 履歴 */}
       <div className="space-y-2 rounded-lg bg-white p-3 shadow-sm">
-        <p className="text-sm font-semibold text-slate-600">読破記録</p>
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-semibold text-slate-600">読破記録</p>
+          <button
+            onClick={() => {
+              setBulkOpen((v) => !v);
+              setBulkMessage("");
+            }}
+            className="text-xs font-semibold text-brand underline"
+          >
+            {bulkOpen ? "閉じる" : "+ N巻まで一括追加"}
+          </button>
+        </div>
+
+        {bulkMessage && (
+          <p className="rounded bg-brand-light px-2 py-1 text-xs text-brand-dark">
+            {bulkMessage}
+          </p>
+        )}
+
+        {bulkOpen && (
+          <div className="space-y-2 rounded border border-brand-light bg-brand-light/30 p-2">
+            <Field label="巻数（N）">
+              <input
+                type="number"
+                min="1"
+                className="input"
+                value={bulkToVolume}
+                onChange={(e) => setBulkToVolume(e.target.value)}
+                placeholder="例: 10"
+              />
+            </Field>
+            <p className="text-xs text-slate-600">
+              1〜N 巻の読破記録を追加します。既に登録済みの巻はそのまま残ります。
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={handleBulkAdd}
+                disabled={bulkBusy}
+                className="flex-1 rounded bg-brand py-2 text-sm font-semibold text-white disabled:opacity-50"
+              >
+                {bulkBusy ? "追加中…" : "追加"}
+              </button>
+              <button
+                onClick={() => {
+                  setBulkOpen(false);
+                  setBulkToVolume("");
+                }}
+                className="flex-1 rounded bg-slate-200 py-2 text-sm font-semibold text-slate-600"
+              >
+                キャンセル
+              </button>
+            </div>
+          </div>
+        )}
+
         {history.length === 0 ? (
           <p className="text-xs text-slate-400">記録はありません。</p>
         ) : (
