@@ -123,15 +123,44 @@ def search_series(query):
 # 巻タイトル末尾の巻数表記（例: 「（2）」「 79」「 第3巻」）から数字を取り出す
 _VOLUME_SUFFIX_RE = re.compile(r"[\s　]*[（(]?\s*第?\s*(\d+)\s*巻?\s*[）)]?\s*$")
 
+# 末尾に付くレーベル名・装丁などの括弧タグ（例: 「(ジャンプコミックスDIGITAL)」「【電子書籍版】」）。
+# タグ内に括弧が再ネストするケースは想定しない（実データではほぼ無い）。
+_TRAILING_TAG_RE = re.compile(r"\s*[（(\[【][^（()）\[\]【】]*[）)\]】]\s*$")
+
 
 def _split_volume(item_title):
-    """巻タイトルを (シリーズ名, 巻数) に分解する。巻数表記が無ければ巻数は None。"""
-    item_title = (item_title or "").strip()
-    match = _VOLUME_SUFFIX_RE.search(item_title)
-    if not match:
-        return item_title, None
-    stem = item_title[: match.start()].strip()
-    return stem, int(match.group(1))
+    """巻タイトルを (シリーズ名, 巻数) に分解する。巻数表記が無ければ巻数は None。
+
+    楽天は「鬼滅の刃 1 (ジャンプコミックスDIGITAL)」のように巻数の後ろに
+    レーベルタグが付くケースが多い。素の suffix regex が当たらない場合は
+    末尾のタグを 1 段階だけ剥がして再試行する（「進撃の巨人(34) (講談社コミックス)」
+    のように巻数自体が括弧で囲まれているケースを尊重するため、一気に剥がさない）。
+    """
+    s = (item_title or "").strip()
+    while True:
+        match = _VOLUME_SUFFIX_RE.search(s)
+        if match:
+            stem = s[: match.start()].strip()
+            return stem, int(match.group(1))
+        stripped = _TRAILING_TAG_RE.sub("", s).rstrip()
+        if stripped == s:
+            return s, None
+        s = stripped
+
+
+def _item_matches(item, target_title, target_volume):
+    """item が target_title の target_volume 巻に一致するか判定する。
+
+    優先キーは seriesName（楽天が提供する正規化されたシリーズ名）。
+    seriesName が無い・一致しない場合は title からパースした stem で比較する。
+    """
+    stem, volume = _split_volume(item.get("title", ""))
+    if volume != target_volume:
+        return False
+    series_name = (item.get("seriesName") or "").strip()
+    if series_name and series_name == target_title:
+        return True
+    return stem == target_title
 
 
 def find_volume_cover(title, volume_number):
@@ -163,9 +192,7 @@ def find_volume_cover(title, volume_number):
 
     for entry in data.get("Items", []):
         item = entry["Item"]
-        stem, volume = _split_volume(item.get("title", ""))
-        # シリーズ名が一致し、かつ目的の巻であるものだけ採用（別シリーズ除外）
-        if volume == volume_number and stem == title:
+        if _item_matches(item, title, volume_number):
             return (
                 item.get("largeImageUrl", "")
                 or item.get("mediumImageUrl", "")
