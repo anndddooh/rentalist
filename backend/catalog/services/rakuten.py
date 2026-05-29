@@ -180,8 +180,28 @@ def _item_matches(item, target_title, target_volume):
     return _series_stem_matches(stem, target_title)
 
 
+# 楽天が「発売前で本表紙未入稿」の巻に使うプレースホルダー画像のURL命名規則。
+# 本表紙は <isbn>_1_<バージョン番号>.jpg、仮表紙は <isbn>.gif でくる。
+_PROVISIONAL_URL_RE = re.compile(r"/\d+\.gif(\?|$)")
+
+
+def _is_provisional(item):
+    """item の表紙が「発売前の仮表紙」かを判定する。
+
+    一次シグナル: availability='5'（楽天の「発売日前」コード）。
+    補助シグナル: largeImageUrl が <isbn>.gif（_1_XX サフィックス無し）。
+    """
+    if str(item.get("availability") or "").strip() == "5":
+        return True
+    url = item.get("largeImageUrl") or item.get("mediumImageUrl") or ""
+    return bool(_PROVISIONAL_URL_RE.search(url))
+
+
 def _fetch_and_match(query, target_title, target_volume):
-    """query で楽天検索し、target_title の target_volume 巻に一致する画像URLを返す。"""
+    """query で楽天検索し、target_title の target_volume 巻に一致する (url, provisional) を返す。
+
+    見つからなければ (None, False)。
+    """
     params = {
         **_auth_params(),
         "title": query,
@@ -197,31 +217,35 @@ def _fetch_and_match(query, target_title, target_volume):
         data = resp.json()
     except (requests.RequestException, ValueError) as exc:
         logger.warning("楽天API表紙取得に失敗しました: %s", exc)
-        return None
+        return None, False
 
     for entry in data.get("Items", []):
         item = entry["Item"]
-        if _item_matches(item, target_title, target_volume):
-            return (
-                item.get("largeImageUrl", "")
-                or item.get("mediumImageUrl", "")
-                or None
-            )
-    return None
+        if not _item_matches(item, target_title, target_volume):
+            continue
+        url = item.get("largeImageUrl", "") or item.get("mediumImageUrl", "") or None
+        if url is None:
+            continue
+        return url, _is_provisional(item)
+    return None, False
 
 
 def find_volume_cover(title, volume_number):
-    """シリーズ名で検索し、該当巻の表紙画像URLを返す。見つからなければ None。
+    """シリーズ名で検索し、該当巻の (画像URL, 仮表紙フラグ) を返す。
 
-    1段目は title のみで検索する（大多数の巻はこれで足りる）。
+    見つからなければ (None, False)。仮表紙（発売前のプレースホルダー）の場合は
+    URL は返すが provisional=True を立て、呼び出し側が DB キャッシュを
+    スキップして次回再取得できるようにする。
+
+    1段目は title のみで検索（大多数の巻はこれで足りる）。
     2段目は「title 巻番号」で再検索する。楽天は sort=sales の上位30件しか
     返さないため、銀魂(77巻)のような高巻数シリーズでは中間巻が page 1 から
     漏れる。巻番号を含めて検索し直すと該当巻が直接ヒットしやすい。
     """
     title = (title or "").strip()
     if not title or not _is_configured():
-        return None
-    cover = _fetch_and_match(title, title, volume_number)
-    if cover is not None:
-        return cover
+        return None, False
+    url, provisional = _fetch_and_match(title, title, volume_number)
+    if url is not None:
+        return url, provisional
     return _fetch_and_match(f"{title} {volume_number}", title, volume_number)

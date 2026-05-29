@@ -285,6 +285,46 @@ def test_series_cover_get_without_cache_returns_null_in_mock(api, user):
     assert series.covers.filter(volume_number=2).count() == 0
 
 
+def test_series_cover_get_returns_provisional_url_without_caching(api, user, monkeypatch):
+    """楽天が仮表紙を返したら URL は返却するが VolumeCover を作らない。"""
+    series = make_series(user)
+    monkeypatch.setattr(
+        "catalog.views.rakuten.find_volume_cover",
+        lambda title, vol: ("https://example.com/provisional.gif", True),
+    )
+    resp = api.get(f"/api/series/{series.id}/cover/?volume=7")
+    assert resp.status_code == 200
+    assert resp.data["resolved_url"] == "https://example.com/provisional.gif"
+    assert resp.data.get("provisional") is True
+    # DB にキャッシュされていないこと（次回リクエストで再 fetch される）
+    assert series.covers.filter(volume_number=7).count() == 0
+
+
+def test_series_cover_get_caches_when_not_provisional(api, user, monkeypatch):
+    """楽天が本表紙を返したら従来通り VolumeCover に保存される。"""
+    series = make_series(user)
+    monkeypatch.setattr(
+        "catalog.views.rakuten.find_volume_cover",
+        lambda title, vol: ("https://example.com/real_1_5.jpg", False),
+    )
+    resp = api.get(f"/api/series/{series.id}/cover/?volume=2")
+    assert resp.status_code == 200
+    assert resp.data["resolved_url"] == "https://example.com/real_1_5.jpg"
+    assert series.covers.filter(volume_number=2).count() == 1
+
+
+def test_series_create_does_not_cache_provisional_first_volume_cover(api, user, monkeypatch):
+    """シリーズ作成時、1巻表紙が仮表紙なら VolumeCover を作らない。"""
+    monkeypatch.setattr(
+        "catalog.serializers.rakuten.find_volume_cover",
+        lambda title, vol: ("https://example.com/provisional.gif", True),
+    )
+    resp = api.post("/api/series/", {"title": "未発売作品"}, format="json")
+    assert resp.status_code == 201
+    series = Series.objects.get(id=resp.data["id"])
+    assert series.covers.count() == 0
+
+
 def test_series_cover_get_defaults_to_next_volume(api, user):
     """volume パラメータ未指定時は next_volume を使う。"""
     series = make_series(user)

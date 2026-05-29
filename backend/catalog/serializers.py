@@ -71,10 +71,11 @@ class SeriesSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data["user"] = self.context["request"].user
         series = super().create(validated_data)
-        # どの巻を検索候補から選んでも1巻の表紙を楽天から取得してキャッシュする
-        # （見つからない・手動入力・APIキー未設定なら None で何もしない）
-        cover_url = rakuten.find_volume_cover(series.title, 1)
-        if cover_url:
+        # 1巻の表紙を楽天から取得してキャッシュする（見つからない・手動入力・
+        # APIキー未設定なら None で何もしない）。発売前の仮表紙はキャッシュせず、
+        # 次回 cover GET 時に再取得させて本表紙差し替えを拾う。
+        cover_url, provisional = rakuten.find_volume_cover(series.title, 1)
+        if cover_url and not provisional:
             VolumeCover.objects.create(
                 series=series,
                 volume_number=1,

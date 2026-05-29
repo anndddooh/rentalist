@@ -65,17 +65,29 @@ class SeriesViewSet(viewsets.ModelViewSet):
         if request.method == "GET":
             volume = int(request.query_params.get("volume", series.next_volume))
             cover = series.covers.filter(volume_number=volume).first()
-            if cover is None:
-                url = rakuten.find_volume_cover(series.title, volume)
-                if url:
-                    cover = VolumeCover.objects.create(
-                        series=series,
-                        volume_number=volume,
-                        image_url=url,
-                        source=VolumeCover.SOURCE_RAKUTEN,
-                    )
-            if cover is None:
+            if cover is not None:
+                return Response(VolumeCoverSerializer(cover).data)
+            url, provisional = rakuten.find_volume_cover(series.title, volume)
+            if url is None:
                 return Response({"volume_number": volume, "resolved_url": None})
+            if provisional:
+                # 発売前の仮表紙: 表示用にURLは返すが DB には保存しない
+                # （次回リクエスト時に再 fetch して本表紙への差し替えを拾う）
+                return Response(
+                    {
+                        "volume_number": volume,
+                        "resolved_url": url,
+                        "image_url": url,
+                        "source": VolumeCover.SOURCE_RAKUTEN,
+                        "provisional": True,
+                    }
+                )
+            cover = VolumeCover.objects.create(
+                series=series,
+                volume_number=volume,
+                image_url=url,
+                source=VolumeCover.SOURCE_RAKUTEN,
+            )
             return Response(VolumeCoverSerializer(cover).data)
 
         # PUT: 手動URL設定 または 画像アップロード
