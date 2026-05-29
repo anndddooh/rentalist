@@ -47,12 +47,27 @@ def test_checkout_creates_history_and_advances_current_volume(api, user):
     series.refresh_from_db()
     assert series.current_volume == 2
     assert RentalHistory.objects.filter(series=series).count() == 2
-    assert api.get("/api/cart/").data["count"] == 0
+    assert api.get("/api/cart/").data == []
 
 
 def test_checkout_empty_cart_fails(api):
     resp = api.post("/api/cart/checkout/", {}, format="json")
     assert resp.status_code == 400
+
+
+def test_cart_list_returns_all_items_without_pagination(api, user):
+    """カートはページネーションせず全件返す（DRF の PAGE_SIZE=100 で切られないこと）。"""
+    from catalog.models import CartItem
+
+    series = make_series(user)
+    CartItem.objects.bulk_create(
+        [CartItem(user=user, series=series, volume_number=i) for i in range(1, 151)]
+    )
+    resp = api.get("/api/cart/")
+    assert resp.status_code == 200
+    # ページネーションされていない場合は list、されている場合は dict（results / count を含む）
+    assert isinstance(resp.data, list), f"カートはページネーション無しの list を返すべき: {type(resp.data)}"
+    assert len(resp.data) == 150
 
 
 def test_cart_clear_empties_without_advancing_volume(api, user):
@@ -63,7 +78,7 @@ def test_cart_clear_empties_without_advancing_volume(api, user):
     resp = api.post("/api/cart/clear/", {}, format="json")
     assert resp.status_code == 200
     assert resp.data["count"] == 2
-    assert api.get("/api/cart/").data["count"] == 0
+    assert api.get("/api/cart/").data == []
     series.refresh_from_db()
     assert series.current_volume == 0
     assert RentalHistory.objects.filter(series=series).count() == 0
@@ -219,7 +234,7 @@ def test_series_delete_cascades(api, user):
     api.post("/api/cart/", {"series_id": series.id}, format="json")
     api.delete(f"/api/series/{series.id}/")
     assert Series.objects.filter(id=series.id).count() == 0
-    assert api.get("/api/cart/").data["count"] == 0
+    assert api.get("/api/cart/").data == []
 
 
 def test_series_cover_get_returns_cached(api, user):

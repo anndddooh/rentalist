@@ -128,6 +128,9 @@ class CartItemViewSet(viewsets.ModelViewSet):
 
     serializer_class = CartItemSerializer
     http_method_names = ["get", "post", "delete"]
+    # カートは確定前の小さなリストで全件 1 画面に出す。DRF の PAGE_SIZE=100 で
+    # 切られないよう、この ViewSet ではページネーションを無効化する。
+    pagination_class = None
 
     def get_queryset(self):
         return CartItem.objects.filter(user=self.request.user).select_related("series")
