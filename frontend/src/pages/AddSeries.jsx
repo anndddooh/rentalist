@@ -237,6 +237,7 @@ export default function AddSeries() {
           <input
             type="number"
             min="1"
+            step="1"
             className="input"
             {...field("read_up_to")}
             placeholder="例: 10"

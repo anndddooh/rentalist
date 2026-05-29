@@ -114,7 +114,7 @@ export async function bulkAddHistory(seriesId, toVolume) {
 | `to_volume == 0` / 負数 | 400 |
 | `to_volume` 巨大値（例 9999） | 制約しない。bulk_create は十分速い |
 | 全件既に存在 | 200・`created: 0` |
-| status=wishlist で bulk_add | `recalculate_current_volume` が active or completed に自動遷移 |
+| status=wishlist で bulk_add | 履歴は作成されるが status は wishlist のまま（既存 `recalculate_current_volume` の仕様により wishlist からの自動遷移はしない）。「読みたい」リストに居続けるのを意図的に残したいケースもあるため、ステータスを変えたい場合は SeriesDetail で手動編集する |
 | 他ユーザーの series_id 指定 | 404（SeriesViewSet.get_queryset がユーザでフィルタしているため） |
 | 楽天 API 表紙取得 | bulk_add_history 自体は楽天を呼ばない（個別 GET /cover/ で従来通り） |
 
