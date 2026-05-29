@@ -110,6 +110,53 @@ class SeriesViewSet(viewsets.ModelViewSet):
         )
         return Response(VolumeCoverSerializer(cover).data)
 
+    @action(detail=True, methods=["post"], url_path="bulk_add_history")
+    def bulk_add_history(self, request, pk=None):
+        """1〜N 巻の読破記録を一括投入する（既読シリーズの登録向け）。
+
+        - 既存巻は unique_together 違反として ignore_conflicts でスキップ。
+        - 投入後 recalculate_current_volume で current_volume と完結遷移を更新。
+        """
+        series = self.get_object()  # 他ユーザー series は queryset でフィルタ→ 404
+        try:
+            to_volume = int(request.data.get("to_volume"))
+        except (TypeError, ValueError):
+            return Response(
+                {"detail": "to_volume must be an integer >= 1"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if to_volume < 1:
+            return Response(
+                {"detail": "to_volume must be >= 1"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        # ignore_conflicts は DB によって返却件数の意味が違うので、
+        # 作成前後の差分で正確な件数を出す。
+        before = series.histories.count()
+        now = timezone.now()
+        RentalHistory.objects.bulk_create(
+            [
+                RentalHistory(
+                    user=request.user,
+                    series=series,
+                    volume_number=v,
+                    rented_at=now,
+                )
+                for v in range(1, to_volume + 1)
+            ],
+            ignore_conflicts=True,
+        )
+        created = series.histories.count() - before
+        series.recalculate_current_volume()
+        return Response(
+            {
+                "detail": f"{created}件の読破記録を追加しました。",
+                "created": created,
+                "current_volume": series.current_volume,
+                "status": series.status,
+            }
+        )
+
     @action(detail=True, methods=["put"], url_path="availability")
     def availability(self, request, pk=None):
         """ショップ別の貸出状況を更新する。status=unknown はレコード削除。"""

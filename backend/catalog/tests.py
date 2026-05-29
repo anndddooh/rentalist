@@ -397,3 +397,85 @@ def test_rental_shop_update_and_delete(api, user):
     delete = api.delete(f"/api/shops/{shop['id']}/")
     assert delete.status_code == 204
     assert RentalShop.objects.filter(id=shop["id"]).count() == 0
+
+
+def test_bulk_add_history_creates_volumes_one_to_n(api, user):
+    series = make_series(user)
+    resp = api.post(
+        f"/api/series/{series.id}/bulk_add_history/",
+        {"to_volume": 5},
+        format="json",
+    )
+    assert resp.status_code == 200
+    assert resp.data["created"] == 5
+    assert resp.data["current_volume"] == 5
+    vols = sorted(
+        RentalHistory.objects.filter(series=series).values_list(
+            "volume_number", flat=True
+        )
+    )
+    assert vols == [1, 2, 3, 4, 5]
+
+
+def test_bulk_add_history_skips_existing_volumes(api, user):
+    """既存巻はスキップし、欠けている巻だけ新規作成する（unique_together + ignore_conflicts）。"""
+    from django.utils import timezone
+    series = make_series(user)
+    for v in [2, 3]:
+        RentalHistory.objects.create(
+            user=user, series=series, volume_number=v, rented_at=timezone.now()
+        )
+    resp = api.post(
+        f"/api/series/{series.id}/bulk_add_history/",
+        {"to_volume": 5},
+        format="json",
+    )
+    assert resp.status_code == 200
+    assert resp.data["created"] == 3  # 1, 4, 5 のみ新規
+    assert RentalHistory.objects.filter(series=series).count() == 5
+
+
+def test_bulk_add_history_auto_completes_when_reaches_total_volumes(api, user):
+    series = make_series(user, total_volumes=5)
+    resp = api.post(
+        f"/api/series/{series.id}/bulk_add_history/",
+        {"to_volume": 5},
+        format="json",
+    )
+    assert resp.status_code == 200
+    assert resp.data["status"] == "completed"
+    series.refresh_from_db()
+    assert series.status == Series.STATUS_COMPLETED
+    assert series.current_volume == 5
+
+
+def test_bulk_add_history_rejects_zero(api, user):
+    series = make_series(user)
+    resp = api.post(
+        f"/api/series/{series.id}/bulk_add_history/",
+        {"to_volume": 0},
+        format="json",
+    )
+    assert resp.status_code == 400
+
+
+def test_bulk_add_history_rejects_non_integer(api, user):
+    series = make_series(user)
+    resp = api.post(
+        f"/api/series/{series.id}/bulk_add_history/",
+        {"to_volume": "abc"},
+        format="json",
+    )
+    assert resp.status_code == 400
+
+
+def test_bulk_add_history_rejects_other_users_series(api, other_user):
+    """他ユーザーの series は SeriesViewSet.get_queryset でフィルタされ 404 になる。"""
+    series = make_series(other_user)
+    resp = api.post(
+        f"/api/series/{series.id}/bulk_add_history/",
+        {"to_volume": 3},
+        format="json",
+    )
+    assert resp.status_code == 404
+    assert RentalHistory.objects.filter(series=series).count() == 0
