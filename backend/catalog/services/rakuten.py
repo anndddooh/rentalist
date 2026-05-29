@@ -148,34 +148,43 @@ def _split_volume(item_title):
         s = stripped
 
 
+# シリーズ名と副題の間に来る区切り文字。例: 「銀魂ーぎんたまー」「ONE PIECE モノクロ版」
+_NAME_SEPARATORS = set("　 ー－-（(【[・／/")
+
+
+def _series_stem_matches(stem, target):
+    """stem が target と一致、または「target + 区切り + 副題」の形か判定する。
+
+    target がそのまま prefix で続く文字が区切り文字（長音符・空白・括弧等）
+    なら、副題違いの同シリーズ表記と見做して採用する。
+    例: target="銀魂", stem="銀魂ーぎんたまー" → True（次の文字 ー が区切り）
+    例: target="銀魂", stem="銀魂学園" → False（次の文字 学 は区切りでない）
+    """
+    if stem == target:
+        return True
+    if not stem.startswith(target) or len(stem) == len(target):
+        return False
+    return stem[len(target)] in _NAME_SEPARATORS
+
+
 def _item_matches(item, target_title, target_volume):
     """item が target_title の target_volume 巻に一致するか判定する。
 
-    優先キーは seriesName（楽天が提供する正規化されたシリーズ名）。
-    seriesName が無い・一致しない場合は title からパースした stem で比較する。
+    seriesName は楽天では「出版社のレーベル名」が入るケースが多く
+    （例: 銀魂の seriesName は「ジャンプコミックス」）シリーズ判定キーとして
+    信頼できないため使わない。title からパースした stem で比較する。
     """
     stem, volume = _split_volume(item.get("title", ""))
     if volume != target_volume:
         return False
-    series_name = (item.get("seriesName") or "").strip()
-    if series_name and series_name == target_title:
-        return True
-    return stem == target_title
+    return _series_stem_matches(stem, target_title)
 
 
-def find_volume_cover(title, volume_number):
-    """シリーズ名で検索し、該当巻の表紙画像URLを返す。見つからなければ None。
-
-    楽天の巻タイトルは作品ごとに「（N）」「 N」など表記がまちまちなので、
-    巻数を付けずに検索し、各候補のタイトルから巻数をパースして一致巻を選ぶ。
-    """
-    title = (title or "").strip()
-    if not title or not _is_configured():
-        return None
-
+def _fetch_and_match(query, target_title, target_volume):
+    """query で楽天検索し、target_title の target_volume 巻に一致する画像URLを返す。"""
     params = {
         **_auth_params(),
-        "title": title,
+        "title": query,
         "booksGenreId": BOOKS_COMIC_GENRE,
         "hits": 30,
         "format": "json",
@@ -192,10 +201,27 @@ def find_volume_cover(title, volume_number):
 
     for entry in data.get("Items", []):
         item = entry["Item"]
-        if _item_matches(item, title, volume_number):
+        if _item_matches(item, target_title, target_volume):
             return (
                 item.get("largeImageUrl", "")
                 or item.get("mediumImageUrl", "")
                 or None
             )
     return None
+
+
+def find_volume_cover(title, volume_number):
+    """シリーズ名で検索し、該当巻の表紙画像URLを返す。見つからなければ None。
+
+    1段目は title のみで検索する（大多数の巻はこれで足りる）。
+    2段目は「title 巻番号」で再検索する。楽天は sort=sales の上位30件しか
+    返さないため、銀魂(77巻)のような高巻数シリーズでは中間巻が page 1 から
+    漏れる。巻番号を含めて検索し直すと該当巻が直接ヒットしやすい。
+    """
+    title = (title or "").strip()
+    if not title or not _is_configured():
+        return None
+    cover = _fetch_and_match(title, title, volume_number)
+    if cover is not None:
+        return cover
+    return _fetch_and_match(f"{title} {volume_number}", title, volume_number)
