@@ -122,31 +122,39 @@ class SeriesViewSet(viewsets.ModelViewSet):
             to_volume = int(request.data.get("to_volume"))
         except (TypeError, ValueError):
             return Response(
-                {"detail": "to_volume must be an integer >= 1"},
+                {"detail": "to_volume は 1 以上の整数を指定してください。"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         if to_volume < 1:
             return Response(
-                {"detail": "to_volume must be >= 1"},
+                {"detail": "to_volume は 1 以上を指定してください。"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if to_volume > 10000:
+            return Response(
+                {"detail": "to_volume は 10000 以下を指定してください。"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         # ignore_conflicts は DB によって返却件数の意味が違うので、
         # 作成前後の差分で正確な件数を出す。
-        before = series.histories.count()
-        now = timezone.now()
-        RentalHistory.objects.bulk_create(
-            [
-                RentalHistory(
-                    user=request.user,
-                    series=series,
-                    volume_number=v,
-                    rented_at=now,
-                )
-                for v in range(1, to_volume + 1)
-            ],
-            ignore_conflicts=True,
-        )
-        created = series.histories.count() - before
+        # transaction.atomic で before/after カウントと bulk_create を囲み、
+        # 並行リクエストによる created 不正計上を防ぐ（checkout と同パターン）。
+        with transaction.atomic():
+            before = series.histories.count()
+            now = timezone.now()
+            RentalHistory.objects.bulk_create(
+                [
+                    RentalHistory(
+                        user=request.user,
+                        series=series,
+                        volume_number=v,
+                        rented_at=now,
+                    )
+                    for v in range(1, to_volume + 1)
+                ],
+                ignore_conflicts=True,
+            )
+            created = series.histories.count() - before
         series.recalculate_current_volume()
         return Response(
             {

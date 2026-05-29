@@ -1,6 +1,7 @@
 """catalog アプリのテスト。"""
 import pytest
 from django.test import override_settings
+from django.utils import timezone
 
 from catalog.models import RentalHistory, RentalShop, Series, VolumeCover
 
@@ -419,7 +420,6 @@ def test_bulk_add_history_creates_volumes_one_to_n(api, user):
 
 def test_bulk_add_history_skips_existing_volumes(api, user):
     """既存巻はスキップし、欠けている巻だけ新規作成する（unique_together + ignore_conflicts）。"""
-    from django.utils import timezone
     series = make_series(user)
     for v in [2, 3]:
         RentalHistory.objects.create(
@@ -464,6 +464,17 @@ def test_bulk_add_history_rejects_non_integer(api, user):
     resp = api.post(
         f"/api/series/{series.id}/bulk_add_history/",
         {"to_volume": "abc"},
+        format="json",
+    )
+    assert resp.status_code == 400
+
+
+def test_bulk_add_history_rejects_too_large(api, user):
+    """過大な to_volume は 400（メモリ/DB の暴発防止）。"""
+    series = make_series(user)
+    resp = api.post(
+        f"/api/series/{series.id}/bulk_add_history/",
+        {"to_volume": 10001},
         format="json",
     )
     assert resp.status_code == 400
