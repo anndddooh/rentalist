@@ -194,6 +194,17 @@ def _is_provisional(item):
     if str(item.get("availability") or "").strip() == "5":
         return True
     url = item.get("largeImageUrl") or item.get("mediumImageUrl") or ""
+    return is_provisional_url(url)
+
+
+def is_provisional_url(url):
+    """URL が楽天の仮表紙パターン（<isbn>.gif）か判定する。
+
+    既存 VolumeCover キャッシュのクリーンアップ等、DB 行に対しても
+    使えるように外部公開している。
+    """
+    if not url:
+        return False
     return bool(_PROVISIONAL_URL_RE.search(url))
 
 
