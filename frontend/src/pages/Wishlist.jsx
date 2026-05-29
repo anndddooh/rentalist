@@ -49,6 +49,7 @@ export default function Wishlist() {
                   <SeriesCover
                     seriesId={s.id}
                     volume={1}
+                    initialUrl={s.first_volume_cover_url}
                     alt={s.title}
                     className="h-28 w-20 md:h-auto md:w-full md:aspect-[2/3]"
                   />
