@@ -232,5 +232,8 @@ dokku letsencrypt:enable another-app
 ```
 
 ### バックアップ
-- DB: Neon が自動バックアップ（Free プランは7日保持）
+- DB: Neon の Point-in-Time Restore（リストアウィンドウ）。**Free プランは最大24時間**
+  （デフォルトは約6〜7時間程度）。7日保持にしたい場合は有料プラン（Launch 以上）が必要。
+  家族用途なら、心配な操作の前に Neon ダッシュボードで手動ブランチ／スナップショットを
+  取るか、`manage.py dumpdata` で JSON エクスポートしておくのが無料での代替策。
 - VPS: DigitalOcean の Snapshot 機能（$0.06/GB/月、月1スナップショット推奨）
