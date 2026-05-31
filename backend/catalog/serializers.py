@@ -41,11 +41,20 @@ class SeriesSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "current_volume", "created_at", "updated_at")
 
     def get_next_cover_url(self, obj):
-        """次の巻のキャッシュ済み表紙URL（無ければ null。遅延取得はしない）。"""
+        """次の巻のキャッシュ済み表紙URL。未キャッシュなら 1 巻表紙にフォールバック。
+
+        ホーム画面で表紙未取得のシリーズが N 件並列で /cover/ を叩く嵐を防ぐ目的。
+        フォールバックでも遅延取得はしない（楽天 API は呼ばない）。
+        """
         cover = next(
             (c for c in obj.covers.all() if c.volume_number == obj.next_volume), None
         )
-        return cover.resolved_url if cover else None
+        if cover:
+            return cover.resolved_url
+        first = next(
+            (c for c in obj.covers.all() if c.volume_number == 1), None
+        )
+        return first.resolved_url if first else None
 
     def get_first_volume_cover_url(self, obj):
         """1巻のキャッシュ済み表紙URL（読破ページ等で初期表示に使う）。"""

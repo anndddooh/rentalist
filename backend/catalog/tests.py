@@ -260,6 +260,42 @@ def test_series_list_first_volume_cover_url_is_null_when_uncached(api, user):
     assert resp.data["results"][0]["first_volume_cover_url"] is None
 
 
+def test_series_list_next_cover_url_returns_next_volume_when_cached(api, user):
+    """next_volume の表紙がキャッシュされていればそれを返す。"""
+    series = make_series(user, current_volume=5)
+    VolumeCover.objects.create(
+        series=series, volume_number=1,
+        image_url="https://example.com/vol1.jpg", source=VolumeCover.SOURCE_RAKUTEN,
+    )
+    VolumeCover.objects.create(
+        series=series, volume_number=6,
+        image_url="https://example.com/vol6.jpg", source=VolumeCover.SOURCE_RAKUTEN,
+    )
+    resp = api.get("/api/series/")
+    assert resp.status_code == 200
+    assert resp.data["results"][0]["next_cover_url"] == "https://example.com/vol6.jpg"
+
+
+def test_series_list_next_cover_url_falls_back_to_first_volume(api, user):
+    """next_volume が未キャッシュなら 1 巻表紙にフォールバック。"""
+    series = make_series(user, current_volume=5)
+    VolumeCover.objects.create(
+        series=series, volume_number=1,
+        image_url="https://example.com/vol1.jpg", source=VolumeCover.SOURCE_RAKUTEN,
+    )
+    resp = api.get("/api/series/")
+    assert resp.status_code == 200
+    assert resp.data["results"][0]["next_cover_url"] == "https://example.com/vol1.jpg"
+
+
+def test_series_list_next_cover_url_is_null_when_no_covers_cached(api, user):
+    """どの巻もキャッシュされていなければ null（楽天は呼ばない）。"""
+    make_series(user, current_volume=5)
+    resp = api.get("/api/series/")
+    assert resp.status_code == 200
+    assert resp.data["results"][0]["next_cover_url"] is None
+
+
 def test_series_cover_get_returns_cached(api, user):
     """既にキャッシュされた表紙レコードがあればそれを返す（楽天は呼ばれない）。"""
     series = make_series(user)
