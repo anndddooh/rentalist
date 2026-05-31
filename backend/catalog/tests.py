@@ -296,6 +296,42 @@ def test_series_list_next_cover_url_is_null_when_no_covers_cached(api, user):
     assert resp.data["results"][0]["next_cover_url"] is None
 
 
+def test_next_cover_is_fallback_true_when_next_volume_uncached(api, user):
+    """next_volume が未キャッシュ（1巻フォールバック表示中）なら is_fallback=True。"""
+    series = make_series(user, current_volume=5)
+    VolumeCover.objects.create(
+        series=series, volume_number=1,
+        image_url="https://example.com/vol1.jpg", source=VolumeCover.SOURCE_RAKUTEN,
+    )
+    resp = api.get("/api/series/")
+    assert resp.status_code == 200
+    row = resp.data["results"][0]
+    assert row["next_cover_url"] == "https://example.com/vol1.jpg"
+    assert row["next_cover_is_fallback"] is True
+
+
+def test_next_cover_is_fallback_false_when_next_volume_cached(api, user):
+    """next_volume の実表紙がキャッシュ済みなら is_fallback=False（再取得不要）。"""
+    series = make_series(user, current_volume=5)
+    VolumeCover.objects.create(
+        series=series, volume_number=6,
+        image_url="https://example.com/vol6.jpg", source=VolumeCover.SOURCE_RAKUTEN,
+    )
+    resp = api.get("/api/series/")
+    assert resp.status_code == 200
+    assert resp.data["results"][0]["next_cover_is_fallback"] is False
+
+
+def test_next_cover_is_fallback_true_when_no_covers_cached(api, user):
+    """1巻すら無くても next_volume が未キャッシュなら is_fallback=True。"""
+    make_series(user, current_volume=5)
+    resp = api.get("/api/series/")
+    assert resp.status_code == 200
+    row = resp.data["results"][0]
+    assert row["next_cover_url"] is None
+    assert row["next_cover_is_fallback"] is True
+
+
 def test_series_cover_get_returns_cached(api, user):
     """既にキャッシュされた表紙レコードがあればそれを返す（楽天は呼ばれない）。"""
     series = make_series(user)

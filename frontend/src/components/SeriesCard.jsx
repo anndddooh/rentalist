@@ -32,6 +32,9 @@ export default function SeriesCard({
           seriesId={series.id}
           volume={series.next_volume}
           initialUrl={series.next_cover_url}
+          refetchVolume={
+            series.next_cover_is_fallback ? series.next_volume : null
+          }
           alt={series.title}
           className="h-28 w-20 md:h-auto md:w-full md:aspect-[2/3]"
         />
