@@ -130,6 +130,18 @@ if USE_R2:
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+# DB バックアップ（backup_db 管理コマンド）の保存先 R2。
+# 認証情報は専用に設定でき、未設定なら画像用 R2_* にフォールバックする。
+# バケットだけは事故防止のため画像用と分けることを推奨（BACKUP_R2_BUCKET_NAME）。
+BACKUP_R2_ACCESS_KEY_ID = os.environ.get("BACKUP_R2_ACCESS_KEY_ID") or os.environ.get("R2_ACCESS_KEY_ID")
+BACKUP_R2_SECRET_ACCESS_KEY = os.environ.get("BACKUP_R2_SECRET_ACCESS_KEY") or os.environ.get("R2_SECRET_ACCESS_KEY")
+BACKUP_R2_ENDPOINT_URL = os.environ.get("BACKUP_R2_ENDPOINT_URL") or os.environ.get("R2_ENDPOINT_URL")
+BACKUP_R2_BUCKET_NAME = os.environ.get("BACKUP_R2_BUCKET_NAME")
+# 保持世代数（日次運用なら日数に相当）。これより古いダンプは自動削除。
+BACKUP_RETENTION = int(os.environ.get("BACKUP_RETENTION", "30"))
+# R2 上のキー接頭辞。
+BACKUP_PREFIX = os.environ.get("BACKUP_PREFIX", "db-backups/")
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {

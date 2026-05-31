@@ -185,6 +185,73 @@ dokku config:set rentalist-api CORS_ALLOWED_ORIGINS="https://xxx.pages.dev"
 
 ---
 
+## 7. DB バックアップ（Neon → R2 オフサイト退避）
+
+Neon の Point-in-Time Restore は無料プランだと数時間〜最大24時間しか遡れない。
+誤操作や Neon 側障害に備え、`backup_db` 管理コマンドで日次の論理バックアップを
+Cloudflare R2 に退避する。データが小さいので `pg_dump` ではなく Django の
+`dumpdata`（JSON + gzip、追加バイナリ不要）を使う。
+
+### 7-1. バックアップ用 R2 バケットの用意
+画像用バケットとは**分ける**（誤削除・取り違え防止）。手順4と同じ要領で
+`rentalist-backups` などのバケットを作成する。**公開は不要**（非公開のまま）。
+認証情報は画像用と同じトークンを使い回してよい（その場合 `BACKUP_R2_*` は
+省略でき、`R2_*` に自動フォールバックする）。
+
+```bash
+dokku config:set rentalist-api \
+  BACKUP_R2_BUCKET_NAME=rentalist-backups
+  # 画像用と別のトークンにする場合のみ以下も設定:
+  # BACKUP_R2_ACCESS_KEY_ID=... BACKUP_R2_SECRET_ACCESS_KEY=... \
+  # BACKUP_R2_ENDPOINT_URL=https://（アカウントID）.r2.cloudflarestorage.com
+  # 保持世代を変える場合（既定30）: BACKUP_RETENTION=30
+```
+
+USE_R2=False（画像はローカル運用）のままでも、上記のバックアップ用認証情報さえ
+あれば DB バックアップは動く。
+
+### 7-2. 手動実行で動作確認
+```bash
+dokku run rentalist-api python manage.py backup_db
+# → s3://rentalist-backups/db-backups/rentalist-YYYYMMDDThhmmssZ.json.gz が作られ、
+#    30世代を超えた古い分は自動削除される
+```
+ネット接続なしで中身だけ確認したい場合は `--local-only`（カレントに gz を出力）。
+
+### 7-3. cron で日次自動実行
+Dokku ホストの crontab に登録する（毎日 03:15 JST に実行する例）:
+```bash
+ssh root@<VPS_IP>
+crontab -e
+# 以下を追記（dokku はフル パスで呼ぶと cron 環境でも確実）
+15 18 * * * /usr/bin/dokku run rentalist-api python manage.py backup_db >> /var/log/rentalist-backup.log 2>&1
+```
+- cron の時刻は UTC。`15 18` = 翌 03:15 JST。
+- 実行ログは `/var/log/rentalist-backup.log` に残る。失敗時はここを確認。
+
+### 7-4. リストア手順（復旧時）
+新しい空 DB（Neon の新ブランチ／新プロジェクト等）に流し込む。`dokku run` は
+都度クリーンなコンテナを作りホストのファイルが見えないため、**手元の作業マシンで
+`DATABASE_URL` を復旧先に向けて実行する**のが確実。
+
+```bash
+cd backend
+# 1. R2 から最新ダンプを取得（Cloudflare ダッシュボード or rclone/aws s3 cp）
+#    例: aws s3 cp s3://rentalist-backups/db-backups/rentalist-XXXX.json.gz . \
+#          --endpoint-url https://（アカウントID）.r2.cloudflarestorage.com
+gunzip rentalist-XXXX.json.gz          # → rentalist-XXXX.json（loaddata は .json 拡張子が必要）
+
+# 2. 復旧先 DB を指定してスキーマを作成 → データ投入
+export DATABASE_URL="postgresql://...（復旧先 Neon）...?sslmode=require"
+./venv/bin/python manage.py migrate --noinput
+./venv/bin/python manage.py loaddata rentalist-XXXX.json
+```
+マイグレーションはリポジトリにあるので `migrate` → `loaddata` だけで戻る。
+（contenttypes / permission / session は除外済みで `migrate` が再生成する。）
+復旧確認後、Dokku の `DATABASE_URL` をこの新 DB に差し替える。
+
+---
+
 ## 環境変数まとめ
 
 ### Dokku（バックエンド）
@@ -198,6 +265,8 @@ dokku config:set rentalist-api CORS_ALLOWED_ORIGINS="https://xxx.pages.dev"
 | `CORS_ALLOWED_ORIGINS` | Pages の URL |
 | `APP_BASE` | `backend` |
 | `USE_R2` ほか R2 系 | R2 を使う場合のみ |
+| `BACKUP_R2_BUCKET_NAME` | DB バックアップ退避先バケット（手順7。画像用と分ける） |
+| `BACKUP_R2_*` / `BACKUP_RETENTION` | バックアップ用の認証・保持世代（手順7。未設定の認証は `R2_*` を流用） |
 
 ### Cloudflare Pages（フロントエンド）
 | 変数 | 値 |
@@ -232,5 +301,8 @@ dokku letsencrypt:enable another-app
 ```
 
 ### バックアップ
-- DB: Neon が自動バックアップ（Free プランは7日保持）
+- DB: Neon の Point-in-Time Restore（リストアウィンドウ）。**Free プランは最大24時間**
+  （デフォルトは約6〜7時間程度）。7日保持にしたい場合は有料プラン（Launch 以上）が必要。
+  これを補うため日次の論理バックアップを R2 に退避する仕組みを用意済み
+  → **手順7（`backup_db` + cron）** を参照。
 - VPS: DigitalOcean の Snapshot 機能（$0.06/GB/月、月1スナップショット推奨）
