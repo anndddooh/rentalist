@@ -28,6 +28,9 @@ export default function Home() {
     unknown: true,
     unavailable: false,
   });
+  // 直前に貸出状況を切替えたカードはフィルタを無視して残す。
+  // 「貸出なし」フィルタ OFF のまま「あり→なし」にサイクルしてもカードが消えない。
+  const [stickyIds, setStickyIds] = useState(() => new Set());
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState("");
   const { refreshCart } = useCart();
@@ -72,17 +75,49 @@ export default function Home() {
 
   async function handleCycleAvailability(target) {
     const current = target.availability_status || "unknown";
+    const next = STATUS_CYCLE[current];
+    // 楽観更新: 先にローカル state を書き換えてバッジ色を即時反映。
+    // sticky に積んで、フィルタ外のステータスへ切替えてもカードが消えないようにする。
+    setSeries((prev) =>
+      prev.map((s) =>
+        s.id === target.id ? { ...s, availability_status: next } : s
+      )
+    );
+    setStickyIds((prev) => {
+      const nextSet = new Set(prev);
+      nextSet.add(target.id);
+      return nextSet;
+    });
     try {
-      await setAvailability(target.id, Number(shopId), STATUS_CYCLE[current]);
-      load();
+      await setAvailability(target.id, Number(shopId), next);
     } catch (err) {
+      // 失敗時はロールバック
+      setSeries((prev) =>
+        prev.map((s) =>
+          s.id === target.id ? { ...s, availability_status: current } : s
+        )
+      );
       flash(errorMessage(err));
     }
   }
 
+  function toggleFilter(key) {
+    // ユーザーが明示的にフィルタを操作したら sticky をリセット
+    setStickyIds(new Set());
+    setFilters((prev) => ({ ...prev, [key]: !prev[key] }));
+  }
+
+  function handleShopChange(value) {
+    setStickyIds(new Set());
+    setShopId(value);
+  }
+
   const shopMode = Boolean(shopId);
   const visibleSeries = shopMode
-    ? series.filter((s) => filters[s.availability_status || "unknown"])
+    ? series.filter(
+        (s) =>
+          filters[s.availability_status || "unknown"] || stickyIds.has(s.id)
+      )
     : series;
 
   return (
@@ -93,7 +128,7 @@ export default function Home() {
         </label>
         <select
           value={shopId}
-          onChange={(e) => setShopId(e.target.value)}
+          onChange={(e) => handleShopChange(e.target.value)}
           className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
         >
           <option value="">絞り込みなし（全シリーズ）</option>
@@ -109,9 +144,7 @@ export default function Home() {
             {STATUS_FILTERS.map((f) => (
               <button
                 key={f.key}
-                onClick={() =>
-                  setFilters((prev) => ({ ...prev, [f.key]: !prev[f.key] }))
-                }
+                onClick={() => toggleFilter(f.key)}
                 className={`rounded-full px-3 py-1 text-xs font-semibold ${
                   filters[f.key]
                     ? "bg-brand text-white"
