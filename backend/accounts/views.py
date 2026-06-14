@@ -1,4 +1,5 @@
 """アカウント関連のビュー。"""
+from django.core.exceptions import ValidationError
 from rest_framework import permissions, status
 from rest_framework.generics import CreateAPIView
 from rest_framework.response import Response
@@ -40,7 +41,7 @@ class InviteCheckView(APIView):
     def get(self, request, token):
         try:
             invite = InviteToken.objects.get(token=token)
-        except (InviteToken.DoesNotExist, ValueError):
+        except (InviteToken.DoesNotExist, ValueError, ValidationError):
             return Response({"valid": False}, status=status.HTTP_404_NOT_FOUND)
         return Response({"valid": invite.is_valid})
 

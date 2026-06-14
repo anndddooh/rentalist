@@ -92,3 +92,23 @@ def test_me_requires_authentication():
     anon = APIClient()
     resp = anon.get("/api/auth/me/")
     assert resp.status_code == 401
+
+
+def test_invite_check_malformed_token_returns_404(db):
+    """UUID 形式でないトークンは 500 にせず 404 + valid:false を返す。"""
+    from rest_framework.test import APIClient
+
+    anon = APIClient()
+    resp = anon.get("/api/auth/invite/check/not-a-uuid/")
+    assert resp.status_code == 404
+    assert resp.data == {"valid": False}
+
+
+def test_invite_check_unknown_uuid_returns_404(db):
+    """形式は正しいが存在しない UUID も 404 + valid:false。"""
+    from rest_framework.test import APIClient
+
+    anon = APIClient()
+    resp = anon.get("/api/auth/invite/check/00000000-0000-0000-0000-000000000000/")
+    assert resp.status_code == 404
+    assert resp.data == {"valid": False}
