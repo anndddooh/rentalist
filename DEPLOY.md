@@ -279,9 +279,11 @@ git push dokku-staging <検証ブランチ>:main   # ← 検証ブランチを�
 ssh dokku@167.172.65.18 letsencrypt:enable rentalist-api-staging
 ```
 
-### 8-2. ステージング用 DB（Neon）
-`DATABASE_URL` 未設定の間はコンテナ内 SQLite で動く（**再デプロイでデータが消える**）。
-恒久的なステージング DB にするには Neon で staging 用ブランチ（または DB）を作る:
+### 8-2. ステージング用 DB（Neon）— 必須
+`DATABASE_URL` 未設定の間は SQLite フォールバックになるが、Dokku では
+release フェーズ（migrate）と web コンテナのファイルシステムが別のため、
+**DB を使う操作はすべて 500 になる（実質未設定では使えない）**。
+Neon で staging 用ブランチ（または DB）を作って設定すること:
 
 1. <https://console.neon.tech/> → 本番プロジェクト → **Branches → Create branch**
    （名前: `staging`。本番データのコピー付きで作られるので即テストデータになる）
@@ -295,7 +297,8 @@ Neon Free プランの compute 時間はブランチ合算だが、アイドル�
 ```bash
 ssh dokku@167.172.65.18 run rentalist-api-staging python manage.py createsuperuser
 ```
-（SQLite 運用の間は再デプロイごとに消えるので、都度作り直すか 8-2 を先に済ませる）
+（8-2 の DATABASE_URL 設定後に実行する。Neon ブランチを本番からコピー付きで
+作った場合は本番ユーザーがそのまま使えるためスキップ可）
 
 ### 8-4. 使い分け
 - **iOS アプリ**: `mobile/` の staging 環境（`APP_ENV=staging` / Expo Go では
