@@ -252,6 +252,60 @@ export DATABASE_URL="postgresql://...（復旧先 Neon）...?sslmode=require"
 
 ---
 
+## 8. ステージング環境（rentalist-api-staging）
+
+iOS アプリ（`mobile/`）や検証ブランチを本番データを汚さず試すための、
+同一 VPS 上の別 Dokku アプリ。**構築済み**（2026-07）。
+
+| | 本番 | ステージング |
+|---|---|---|
+| アプリ名 | `rentalist-api` | `rentalist-api-staging` |
+| URL | `https://rentalist-api.167.172.65.18.nip.io` | `https://rentalist-api-staging.167.172.65.18.nip.io` |
+| git remote | `dokku` | `dokku-staging` |
+| DB | Neon（本番ブランチ） | Neon の **staging 用 DB**（下記 8-2） |
+
+### 8-1. 構築コマンド（実施済みの記録）
+```bash
+ssh dokku@167.172.65.18 apps:create rentalist-api-staging
+ssh dokku@167.172.65.18 buildpacks:add rentalist-api-staging https://github.com/lstoll/heroku-buildpack-monorepo
+ssh dokku@167.172.65.18 buildpacks:add rentalist-api-staging https://github.com/heroku/heroku-buildpack-python
+ssh dokku@167.172.65.18 config:set rentalist-api-staging \
+  APP_BASE=backend DEBUG=False SECRET_KEY=（新規生成） \
+  ALLOWED_HOSTS=rentalist-api-staging.167.172.65.18.nip.io \
+  RAKUTEN_APP_ID=（本番から複製） RAKUTEN_ACCESS_KEY=（本番から複製) \
+  USE_R2=False
+git remote add dokku-staging dokku@167.172.65.18:rentalist-api-staging
+git push dokku-staging <検証ブランチ>:main   # ← 検証ブランチをそのままデプロイできる
+ssh dokku@167.172.65.18 letsencrypt:enable rentalist-api-staging
+```
+
+### 8-2. ステージング用 DB（Neon）
+`DATABASE_URL` 未設定の間はコンテナ内 SQLite で動く（**再デプロイでデータが消える**）。
+恒久的なステージング DB にするには Neon で staging 用ブランチ（または DB）を作る:
+
+1. <https://console.neon.tech/> → 本番プロジェクト → **Branches → Create branch**
+   （名前: `staging`。本番データのコピー付きで作られるので即テストデータになる）
+2. その branch の **Pooled connection** URL を控える
+3. `ssh dokku@167.172.65.18 config:set rentalist-api-staging DATABASE_URL="postgresql://...?sslmode=require"`
+
+Neon Free プランの compute 時間はブランチ合算だが、アイドル自動停止するので
+家族用途では実質問題ない（初回アクセスのコールドスタート数秒は許容）。
+
+### 8-3. テストアカウント
+```bash
+ssh dokku@167.172.65.18 run rentalist-api-staging python manage.py createsuperuser
+```
+（SQLite 運用の間は再デプロイごとに消えるので、都度作り直すか 8-2 を先に済ませる）
+
+### 8-4. 使い分け
+- **iOS アプリ**: `mobile/` の staging 環境（`APP_ENV=staging` / Expo Go では
+  `EXPO_PUBLIC_API_URL=https://rentalist-api-staging.167.172.65.18.nip.io npx expo start`）が
+  このステージングを向く。詳細は `mobile/README.md`。
+- **Web/バックエンドの検証**: 検証ブランチを `git push dokku-staging <branch>:main` で
+  デプロイして本番相当で確認 → OK なら main にマージして本番へ。
+
+---
+
 ## 環境変数まとめ
 
 ### Dokku（バックエンド）

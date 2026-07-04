@@ -10,8 +10,9 @@
 
 | | |
 |---|---|
-| `backend/` | Django + Django REST Framework（JWT 認証）。Heroku デプロイ |
-| `frontend/` | React (Vite) + Tailwind CSS。Cloudflare Pages デプロイ |
+| `backend/` | Django + Django REST Framework（JWT 認証）。VPS (Dokku) デプロイ |
+| `frontend/` | React (Vite) + Tailwind CSS。Cloudflare Workers デプロイ |
+| `mobile/` | iOS アプリ（Expo / React Native）。Expo Go 開発 + EAS Build → TestFlight（[mobile/README.md](./mobile/README.md)） |
 
 ## ローカル開発
 

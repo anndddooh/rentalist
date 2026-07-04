@@ -1,56 +1,68 @@
-# Welcome to your Expo app 👋
+# Rentalist iOS アプリ（Expo / React Native）
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Web 版（`frontend/`）の機能・デザインを踏襲した iOS アプリ。
+同じ Django API（`backend/`）のクライアントとして動く。
 
-## Get started
+- Expo managed workflow（expo-router / NativeWind v4 / TanStack Query v5）
+- ダークモード対応（OS 追従。トークンは `src/global.css` + `src/theme/colors.ts`）
+- オフラインは表示のみキャッシュ（クエリ永続化 + expo-image ディスクキャッシュ）
 
-1. Install dependencies
+## 開発（Expo Go）
 
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+この Mac は Xcode 15.2 のためローカル iOS ビルド不可。日常開発は **Expo Go** で行う。
 
 ```bash
-npm run reset-project
+cd mobile
+npm install
+npx expo start        # 実機の Expo Go アプリで QR を読む（Mac と同一 Wi-Fi）
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+接続先 API は環境で切替（`app.config.ts` / `src/lib/env.ts`）:
 
-### Other setup steps
+| 環境 | 接続先 | 使い方 |
+|---|---|---|
+| development（既定） | `http://<MacのLAN IP>:8000`（Metro の hostUri から自動導出） | ローカル Django: `cd backend && ./venv/bin/python manage.py runserver 0.0.0.0:8000` |
+| development + 上書き | `EXPO_PUBLIC_API_URL` の値 | `EXPO_PUBLIC_API_URL=https://rentalist-api-staging.167.172.65.18.nip.io npx expo start` |
+| staging（EAS preview ビルド） | `https://rentalist-api-staging.167.172.65.18.nip.io` | TestFlight 前の検証配布 |
+| production（EAS production ビルド） | `https://rentalist-api.167.172.65.18.nip.io` | TestFlight / 本番 |
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+ローカル Django に実機から繋ぐ場合は `backend/.env` の `ALLOWED_HOSTS` に Mac の LAN IP を足すこと。
 
-## Learn more
+## 検証
 
-To learn more about developing your project with Expo, look at the following resources:
+```bash
+npm run typecheck   # tsc --noEmit
+npm test            # jest（API クライアントの refresh フロー等）
+npm run lint        # expo lint
+npx expo export --platform ios   # バンドル成立確認（ローカル iOS ビルド不可の代替）
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## 配布（EAS Build → TestFlight）
 
-## Join the community
+日常開発では EAS ビルドは不要。配布時のみ（無料枠温存のため回数は最小限に）:
 
-Join our community of developers creating universal apps.
+```bash
+npm install -g eas-cli
+eas login                          # Expo アカウント（無料）
+eas build --platform ios --profile preview     # ステージング向け internal 配布（UDID 登録制）
+eas build --platform ios --profile production  # 本番向け
+eas submit --platform ios                      # TestFlight へアップロード
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- バンドル ID: `com.ando.Rentalist`（staging は `.staging` サフィックス + 表示名「Rentalist (Staging)」）
+- 証明書・プロビジョニングは EAS 管理に委任（この Mac に Xcode 不要）
+- preview の internal 配布は `eas device:create` で実機 UDID を登録してから
+
+## 構成
+
+```
+src/
+├── app/            # expo-router（(auth)/ログイン・サインアップ、(tabs)/5タブ、cart・add-series モーダル、series/[id]）
+├── api/            # frontend/src/api と同じ分割の axios クライアント（単一飛行 refresh）
+├── components/     # SeriesCard / CoverImage / StarRating / Celebration / ReadingStatsChart ほか
+├── hooks/          # useAuth（SecureStore 復元 + 認証ゲート連動）、useSeries / useCart / useShops
+├── lib/            # env（環境切替）、tokens（Keychain）、queryClient（オフライン persister）、errors、coverUrl
+└── theme/          # className 外で使う色の単一ソース
+```
+
+仕様の正本はリポジトリルートの `SPEC.md`、デプロイ・ステージングは `DEPLOY.md` を参照。
