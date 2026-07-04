@@ -5,9 +5,10 @@ import { AddSeriesButton, CartButton } from "@/components/HeaderButtons";
 import { useThemeColors } from "@/theme/colors";
 
 function tabIcon(name: SymbolViewProps["name"]) {
-  return ({ color }: { color: ColorValue }) => (
-    <SymbolView name={name} tintColor={color as string} size={26} />
-  );
+  function TabIcon({ color }: { color: ColorValue }) {
+    return <SymbolView name={name} tintColor={color as string} size={26} />;
+  }
+  return TabIcon;
 }
 
 /** web 版モバイルの下部 5 タブ（Layout.jsx）と同じ構成 */

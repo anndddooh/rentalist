@@ -21,6 +21,17 @@ interface Piece {
   size: number;
 }
 
+function makePieces(): Piece[] {
+  return Array.from({ length: 50 }, (_, i) => ({
+    id: i,
+    left: Math.random() * 100,
+    delay: Math.random() * 0.9,
+    duration: 2.2 + Math.random() * 1.8,
+    color: COLORS[i % COLORS.length],
+    size: 6 + Math.random() * 9,
+  }));
+}
+
 /** 紙吹雪 1 片。上から画面外まで落下しながら回転（web の confetti-fall keyframes 移植） */
 function ConfettiPiece({ piece, screenHeight }: { piece: Piece; screenHeight: number }) {
   const progress = useSharedValue(0);
@@ -78,18 +89,7 @@ export default function Celebration({
   onClose: () => void;
 }) {
   const { height } = useWindowDimensions();
-  const pieces = useMemo<Piece[]>(
-    () =>
-      Array.from({ length: 50 }, (_, i) => ({
-        id: i,
-        left: Math.random() * 100,
-        delay: Math.random() * 0.9,
-        duration: 2.2 + Math.random() * 1.8,
-        color: COLORS[i % COLORS.length],
-        size: 6 + Math.random() * 9,
-      })),
-    []
-  );
+  const pieces = useMemo<Piece[]>(() => makePieces(), []);
 
   // カードのポップイン（web の pop-in keyframes 移植）
   const scale = useSharedValue(0.6);

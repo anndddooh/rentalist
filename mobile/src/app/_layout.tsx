@@ -7,6 +7,7 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Toast from "react-native-toast-message";
+import OfflineBanner from "@/components/OfflineBanner";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import {
   PERSIST_MAX_AGE,
@@ -27,6 +28,7 @@ export default function RootLayout() {
         <AuthProvider>
           <RootStack />
         </AuthProvider>
+        <OfflineBanner />
         <Toast />
       </PersistQueryClientProvider>
     </GestureHandlerRootView>

@@ -6,7 +6,7 @@ import {
 } from "@tanstack/react-query";
 import * as ImagePicker from "expo-image-picker";
 import { Stack, router, useLocalSearchParams } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ActionSheetIOS,
   KeyboardAvoidingView,
@@ -26,7 +26,7 @@ import {
   updateSeries,
   type UploadFile,
 } from "@/api/series";
-import type { SeriesStatus } from "@/api/types";
+import type { Series, SeriesStatus } from "@/api/types";
 import CoverImage from "@/components/CoverImage";
 import { BrandButton, ErrorNotice, Field } from "@/components/form";
 import ShopStatusEditor from "@/components/ShopStatusEditor";
@@ -56,16 +56,43 @@ interface EditForm {
 export default function SeriesDetail() {
   const params = useLocalSearchParams<{ id: string }>();
   const id = Number(params.id);
-  const queryClient = useQueryClient();
-
   const { data: series } = useSeriesDetail(id);
+
+  if (!series) {
+    return (
+      <View className="flex-1 items-center justify-center bg-surface">
+        <Text className="text-sm text-ink-faint">読み込み中…</Text>
+      </View>
+    );
+  }
+
+  // key=series.id で、別シリーズへ遷移したときに編集フォーム等の state を確実にリセットする
+  return <SeriesDetailLoaded key={series.id} series={series} />;
+}
+
+function SeriesDetailLoaded({ series }: { series: Series }) {
+  const id = series.id;
+  const queryClient = useQueryClient();
   const { data: shops = [] } = useShopsQuery();
 
-  const [form, setForm] = useState<EditForm | null>(null);
+  // 読破済みは「次の巻」が存在しないため1巻の表紙を表示する
+  const displayVolume =
+    series.status === "completed" ? 1 : series.next_volume;
+
+  const [form, setForm] = useState<EditForm>(() => ({
+    title: series.title,
+    author: series.author,
+    author_kana: series.author_kana,
+    publisher: series.publisher,
+    magazine_label: series.magazine_label,
+    total_volumes: series.total_volumes ? String(series.total_volumes) : "",
+    favorite_score: series.favorite_score,
+    status: series.status,
+  }));
   const [error, setError] = useState("");
 
   // 表紙設定
-  const [coverVolume, setCoverVolume] = useState("");
+  const [coverVolume, setCoverVolume] = useState(() => String(displayVolume));
   const [coverInputUrl, setCoverInputUrl] = useState("");
   const [coverFile, setCoverFile] = useState<UploadFile | null>(null);
 
@@ -77,31 +104,9 @@ export default function SeriesDetail() {
   const [showDelete, setShowDelete] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState("");
 
-  // シリーズ読込時にフォームと表紙対象巻を初期化
-  useEffect(() => {
-    if (!series) return;
-    setForm({
-      title: series.title,
-      author: series.author,
-      author_kana: series.author_kana,
-      publisher: series.publisher,
-      magazine_label: series.magazine_label,
-      total_volumes: series.total_volumes ? String(series.total_volumes) : "",
-      favorite_score: series.favorite_score,
-      status: series.status,
-    });
-    setCoverVolume(String(displayVolume));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [series?.id, series?.updated_at]);
-
-  // 読破済みは「次の巻」が存在しないため1巻の表紙を表示する
-  const displayVolume =
-    series?.status === "completed" ? 1 : series?.next_volume ?? 1;
-
   const coverQuery = useQuery({
     queryKey: ["cover", id, displayVolume],
     queryFn: () => getCover(id, displayVolume),
-    enabled: Boolean(series),
     staleTime: 0,
   });
 
@@ -111,7 +116,6 @@ export default function SeriesDetail() {
       pageParam ? listHistoryNextPage(pageParam) : listHistory(id),
     initialPageParam: null as string | null,
     getNextPageParam: (last) => last.next,
-    enabled: Number.isFinite(id),
   });
   const history = useMemo(
     () => historyQuery.data?.pages.flatMap((p) => p.results) ?? [],
@@ -127,8 +131,8 @@ export default function SeriesDetail() {
   const saveMutation = useMutation({
     mutationFn: () =>
       updateSeries(id, {
-        ...form!,
-        total_volumes: form!.total_volumes ? Number(form!.total_volumes) : null,
+        ...form,
+        total_volumes: form.total_volumes ? Number(form.total_volumes) : null,
       }),
     onSuccess: () => {
       setError("");
@@ -212,16 +216,8 @@ export default function SeriesDetail() {
       { title: "ステータス", options, cancelButtonIndex: options.length - 1 },
       (index) => {
         if (index === options.length - 1) return;
-        setForm((prev) => prev && { ...prev, status: statuses[index] });
+        setForm((prev) => ({ ...prev, status: statuses[index] }));
       }
-    );
-  }
-
-  if (!series || !form) {
-    return (
-      <View className="flex-1 items-center justify-center bg-surface">
-        <Text className="text-sm text-ink-faint">読み込み中…</Text>
-      </View>
     );
   }
 
