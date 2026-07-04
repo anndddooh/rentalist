@@ -78,8 +78,8 @@ export interface Invite {
   created_at: string;
   expires_at: string;
   used_at: string | null;
-  used_by: string | null;
-  signup_url?: string;
+  is_valid: boolean;
+  signup_path: string;
 }
 
 export interface RakutenCandidate {
@@ -88,12 +88,19 @@ export interface RakutenCandidate {
   author_kana: string;
   publisher: string;
   cover_url: string | null;
+  isbn?: string;
+  series_name?: string;
+}
+
+export interface StatsPeriod {
+  period: string; // "2025-03"（monthly）/ "2025"（yearly）
+  count: number;
 }
 
 export interface ReadingStats {
   total: number;
-  monthly: { label: string; count: number }[];
-  yearly: { label: string; count: number }[];
+  monthly: StatsPeriod[];
+  yearly: StatsPeriod[];
 }
 
 export interface CheckoutResult {

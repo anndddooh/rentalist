@@ -13,6 +13,14 @@ export function useSeriesList(status: SeriesStatus, shop?: number | null) {
   });
 }
 
+/** 全ステータスのシリーズ一覧（履歴フィルタ・手動追加のシリーズ選択用） */
+export function useSeriesListAll() {
+  return useQuery({
+    queryKey: ["series", "all"],
+    queryFn: () => listSeries(),
+  });
+}
+
 export function useSeriesDetail(id: number) {
   return useQuery({
     queryKey: ["series", "detail", id],
