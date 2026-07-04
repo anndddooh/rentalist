@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* セマンティックカラートークン（値は RGB 三つ組。tailwind.config.js が参照）
+   ライト: web 版の意匠（slate-100 背景 / 白カード / brand #5b21b6）をそのまま踏襲。
+   ダーク: slate-900 系 + brand は彩度を上げてコントラスト確保。 */
+:root {
+  --color-brand: 91 33 182; /* #5b21b6 violet-800 */
+  --color-brand-strong: 76 29 149; /* #4c1d95 violet-900 (押下色) */
+  --color-brand-soft: 237 233 254; /* #ede9fe violet-100 */
+  --color-brand-text: 91 33 182;
+  --color-surface: 241 245 249; /* slate-100 */
+  --color-card: 255 255 255;
+  --color-inset: 226 232 240; /* slate-200 (プレースホルダ等の沈み込み面) */
+  --color-ink: 30 41 59; /* slate-800 */
+  --color-ink-muted: 100 116 139; /* slate-500 */
+  --color-ink-faint: 148 163 184; /* slate-400 */
+  --color-line: 203 213 225; /* slate-300 */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-brand: 124 58 237; /* violet-600 */
+    --color-brand-strong: 109 40 217; /* violet-700 */
+    --color-brand-soft: 46 16 101; /* violet-950 */
+    --color-brand-text: 167 139 250; /* violet-400 */
+    --color-surface: 15 23 42; /* slate-900 */
+    --color-card: 30 41 59; /* slate-800 */
+    --color-inset: 51 65 85; /* slate-700 */
+    --color-ink: 241 245 249; /* slate-100 */
+    --color-ink-muted: 148 163 184; /* slate-400 */
+    --color-ink-faint: 100 116 139; /* slate-500 */
+    --color-line: 71 85 105; /* slate-600 */
+  }
+}
