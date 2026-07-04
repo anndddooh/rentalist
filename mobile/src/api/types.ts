@@ -97,6 +97,7 @@ export interface ReadingStats {
 }
 
 export interface CheckoutResult {
-  created: number;
+  detail: string;
+  count: number;
   completed_series: { id: number; title: string }[];
 }
