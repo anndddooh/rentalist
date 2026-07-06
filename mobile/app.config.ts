@@ -33,6 +33,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: env.name,
   slug: "rentalist",
+  owner: "anndddoooo",
   version: "1.0.0",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
@@ -64,5 +65,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   extra: {
     appEnv: APP_ENV,
     apiBaseUrl: env.apiBaseUrl,
+    eas: {
+      projectId: "41835654-c431-4872-9c87-53a5141116f5",
+    },
   },
 });
