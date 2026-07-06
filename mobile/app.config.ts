@@ -42,6 +42,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     bundleIdentifier: env.bundleId,
     supportsTablet: false,
+    // 暗号化は HTTPS(TLS) と Keychain のみ = 適用除外。輸出コンプライアンス申告を免除
+    config: {
+      usesNonExemptEncryption: false,
+    },
   },
   web: {
     output: "static",
