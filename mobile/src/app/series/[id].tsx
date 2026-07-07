@@ -29,6 +29,7 @@ import {
 import type { Series, SeriesStatus } from "@/api/types";
 import CoverImage from "@/components/CoverImage";
 import { BrandButton, ErrorNotice, Field } from "@/components/form";
+import ScreenHeader from "@/components/ScreenHeader";
 import ShopStatusEditor from "@/components/ShopStatusEditor";
 import StarRating from "@/components/StarRating";
 import { useSeriesDetail } from "@/hooks/useSeries";
@@ -227,43 +228,72 @@ function SeriesDetailLoaded({ series }: { series: Series }) {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <Stack.Screen options={{ title: series.title }} />
+      <ScreenHeader onBack={() => router.back()} />
       <ScrollView
-        contentContainerClassName="gap-4 p-3 pb-10"
+        contentContainerClassName="gap-4 px-4 pb-10 pt-1"
         keyboardShouldPersistTaps="handled"
       >
-        {/* 概要 */}
-        <View className="flex-row gap-3 rounded-lg bg-card p-3 shadow-sm">
+        {/* ヒーロー */}
+        <View className="flex-row gap-4">
           <CoverImage
             url={coverQuery.data?.resolved_url}
-            className="h-32 w-24"
+            className="h-40 w-28 rounded-[12px] shadow-sm"
           />
-          <View className="flex-1">
-            <Text className="text-base font-bold text-ink">{series.title}</Text>
-            <Text className="mt-1 text-sm text-ink-muted">
-              {STATUS_LABELS[series.status]}
+          <View className="flex-1 justify-center gap-1.5">
+            <Text className="text-[22px] font-extrabold leading-tight text-ink">
+              {series.title}
             </Text>
-            <Text className="text-sm text-ink-muted">
-              読了 {series.current_volume}巻
-              {series.total_volumes ? ` / 全${series.total_volumes}巻` : ""}
-            </Text>
-            {series.status === "completed" ? (
-              <Text className="text-sm font-semibold text-brand-text">
-                🎉 全巻読破
+            {!!series.author && (
+              <Text className="text-xs text-ink-muted">
+                {series.author}
+                {series.author_kana ? (
+                  <Text className="text-ink-faint">
+                    （{series.author_kana}）
+                  </Text>
+                ) : null}
               </Text>
-            ) : (
-              <Text className="text-sm text-ink-muted">
-                次の巻: {series.next_volume}巻
+            )}
+            {(!!series.publisher || !!series.magazine_label) && (
+              <Text className="text-xs text-ink-faint">
+                {[series.publisher, series.magazine_label]
+                  .filter(Boolean)
+                  .join(" ・ ")}
               </Text>
             )}
             <StarRating value={series.favorite_score} />
+            <View className="flex-row flex-wrap items-center gap-1.5">
+              <View className="rounded-full bg-brand-soft px-2.5 py-1">
+                <Text className="text-[11px] font-bold text-brand-text">
+                  {STATUS_LABELS[series.status]}
+                </Text>
+              </View>
+              <View className="rounded-full bg-card px-2.5 py-1 shadow-sm">
+                <Text className="text-[11px] font-bold text-ink-muted">
+                  読了 {series.current_volume}巻
+                  {series.total_volumes ? ` / 全${series.total_volumes}巻` : ""}
+                </Text>
+              </View>
+            </View>
           </View>
+        </View>
+
+        {/* 次に借りる巻 */}
+        <View className="rounded-[20px] bg-brand p-4 shadow-sm">
+          <Text className="text-[11px] font-bold tracking-wide text-white/70">
+            {series.status === "completed" ? "読破ステータス" : "次に借りる巻"}
+          </Text>
+          <Text className="text-2xl font-extrabold text-white">
+            {series.status === "completed"
+              ? "🎉 全巻読破"
+              : `${series.next_volume}巻`}
+          </Text>
         </View>
 
         <ErrorNotice message={error} />
 
         {/* 編集フォーム */}
-        <View className="gap-3 rounded-lg bg-card p-3 shadow-sm">
-          <Text className="text-sm font-semibold text-ink-muted">
+        <View className="gap-3 rounded-[20px] bg-card p-4 shadow-sm">
+          <Text className="text-[13px] font-extrabold text-ink">
             基本情報の編集
           </Text>
           <Labeled label="タイトル">
@@ -330,8 +360,8 @@ function SeriesDetailLoaded({ series }: { series: Series }) {
         </View>
 
         {/* 表紙設定 */}
-        <View className="gap-3 rounded-lg bg-card p-3 shadow-sm">
-          <Text className="text-sm font-semibold text-ink-muted">
+        <View className="gap-3 rounded-[20px] bg-card p-4 shadow-sm">
+          <Text className="text-[13px] font-extrabold text-ink">
             表紙画像の設定
           </Text>
           <Labeled label="対象の巻">
@@ -382,8 +412,8 @@ function SeriesDetailLoaded({ series }: { series: Series }) {
         </View>
 
         {/* ショップ別貸出状況 */}
-        <View className="gap-2 rounded-lg bg-card p-3 shadow-sm">
-          <Text className="text-sm font-semibold text-ink-muted">
+        <View className="gap-2 rounded-[20px] bg-card p-4 shadow-sm">
+          <Text className="text-[13px] font-extrabold text-ink">
             ショップ別の貸出状況
           </Text>
           <ShopStatusEditor
@@ -394,9 +424,9 @@ function SeriesDetailLoaded({ series }: { series: Series }) {
         </View>
 
         {/* 読破記録 */}
-        <View className="gap-2 rounded-lg bg-card p-3 shadow-sm">
+        <View className="gap-2 rounded-[20px] bg-card p-4 shadow-sm">
           <View className="flex-row items-center justify-between">
-            <Text className="text-sm font-semibold text-ink-muted">
+            <Text className="text-[13px] font-extrabold text-ink">
               読破記録
             </Text>
             <Pressable onPress={() => setBulkOpen((v) => !v)} hitSlop={6}>
@@ -491,7 +521,7 @@ function SeriesDetailLoaded({ series }: { series: Series }) {
         </View>
 
         {/* 削除（シリーズ名の入力を要求する強確認。web と同じ GitHub 方式） */}
-        <View className="gap-2 rounded-lg border border-rose-300 bg-card p-3 shadow-sm dark:border-rose-800">
+        <View className="gap-2 rounded-[20px] border border-rose-300 bg-card p-4 shadow-sm dark:border-rose-800">
           {!showDelete ? (
             <Pressable onPress={() => setShowDelete(true)} hitSlop={6}>
               <Text className="text-sm font-semibold text-rose-600 dark:text-rose-400">

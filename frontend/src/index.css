@@ -2,6 +2,40 @@
 @tailwind components;
 @tailwind utilities;
 
+/* デザイン言語 1a「Refined」のセマンティックカラートークン（RGB 三つ組）。
+   tailwind.config.js が bg-surface / text-ink 等として参照する。
+   ライト: 地色 #f6f5f9 / カード #fff / インク #1e1b2e / ブランド紫 #5b21b6。
+   ダーク: 地色 #161226 / カード #221c38 / インク #f1eefb / ブランド #8b5cf6。 */
+:root {
+  --color-brand: 91 33 182; /* #5b21b6 */
+  --color-brand-strong: 76 29 149; /* #4c1d95 押下色 */
+  --color-brand-soft: 237 233 254; /* #ede9fe チップ地 */
+  --color-brand-text: 91 33 182; /* #5b21b6 */
+  --color-surface: 246 245 249; /* #f6f5f9 地色 */
+  --color-card: 255 255 255; /* #ffffff */
+  --color-inset: 246 245 249; /* #f6f5f9 フォーム欄の沈み込み面 */
+  --color-ink: 30 27 46; /* #1e1b2e */
+  --color-ink-muted: 124 111 155; /* #7c6f9b サブ */
+  --color-ink-faint: 164 155 192; /* #a49bc0 淡 */
+  --color-line: 236 234 242; /* #eceaf2 罫線 */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-brand: 139 92 246; /* #8b5cf6 */
+    --color-brand-strong: 109 40 217; /* #6d28d9 */
+    --color-brand-soft: 55 48 90; /* #37305a チップ地 */
+    --color-brand-text: 196 181 253; /* #c4b5fd アクセント */
+    --color-surface: 22 18 38; /* #161226 */
+    --color-card: 34 28 56; /* #221c38 */
+    --color-inset: 42 35 68; /* #2a2344 */
+    --color-ink: 241 238 251; /* #f1eefb */
+    --color-ink-muted: 157 146 194; /* #9d92c2 */
+    --color-ink-faint: 125 113 159; /* #7d719f */
+    --color-line: 46 39 73; /* #2e2749 */
+  }
+}
+
 html,
 body,
 #root {
@@ -9,13 +43,27 @@ body,
 }
 
 body {
-  @apply bg-slate-100 text-slate-800 antialiased;
+  @apply bg-surface text-ink antialiased;
 }
 
 @layer components {
+  /* フォーム入力欄（沈み込み面 + やわらかい角丸） */
   .input {
-    @apply w-full rounded border border-slate-300 px-2 py-1.5 text-sm
-      focus:border-brand focus:outline-none;
+    @apply w-full rounded-xl border border-line bg-inset px-3.5 py-2.5 text-sm
+      text-ink placeholder:text-ink-faint focus:border-brand focus:outline-none;
+  }
+  /* 白カード（r20 + やわらかい影） */
+  .card {
+    @apply rounded-card bg-card shadow-card;
+  }
+  /* ピル型ボタン（主） */
+  .btn-pill {
+    @apply rounded-full bg-brand px-5 py-2.5 text-sm font-bold text-white
+      active:bg-brand-strong;
+  }
+  /* チップ（ショップ切替・フィルタ） */
+  .chip {
+    @apply whitespace-nowrap rounded-full px-3.5 py-2 text-sm font-semibold;
   }
   .confetti {
     position: absolute;

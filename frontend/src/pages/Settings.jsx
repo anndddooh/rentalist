@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { createInvite, listInvites } from "../api/auth.js";
 import {
   createShop,
@@ -6,11 +7,14 @@ import {
   listShops,
   updateShop,
 } from "../api/shops.js";
+import Icon from "../components/Icon.jsx";
+import PageHeader from "../components/PageHeader.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { errorMessage } from "../lib/errors.js";
 
 export default function Settings() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [shops, setShops] = useState([]);
   const [editing, setEditing] = useState(null); // shop id or "new"
   const [draft, setDraft] = useState({ name: "", memo: "" });
@@ -78,34 +82,42 @@ export default function Settings() {
     return `${window.location.origin}${path}`;
   }
 
+  function handleLogout() {
+    logout();
+    navigate("/login");
+  }
+
   return (
-    <div className="space-y-5 p-3 md:mx-auto md:max-w-2xl">
-      <h1 className="text-lg font-bold text-slate-700">設定</h1>
+    <div className="space-y-4 p-4 md:mx-auto md:max-w-2xl md:p-8">
+      <PageHeader
+        eyebrow={`${user?.username ?? ""}${user?.is_staff ? "（管理者）" : ""}`}
+        title="設定"
+      />
 
       {/* ショップ管理 */}
-      <section className="space-y-2 rounded-lg bg-white p-3 shadow-sm">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-slate-600">
+      <section className="overflow-hidden rounded-card bg-card shadow-card">
+        <div className="flex items-center justify-between border-b border-line px-4 py-3.5">
+          <h2 className="text-[13px] font-extrabold tracking-wide text-ink">
             レンタルショップ
           </h2>
           {editing === null && (
             <button
               onClick={() => startEdit(null)}
-              className="rounded bg-brand px-3 py-1 text-xs font-semibold text-white"
+              className="text-xs font-bold text-brand"
             >
-              + 追加
+              ＋ 追加
             </button>
           )}
         </div>
 
         {error && (
-          <p className="rounded bg-rose-50 px-2 py-1 text-xs text-rose-600">
+          <p className="mx-4 mt-3 rounded-lg bg-rose-50 px-2 py-1 text-xs text-rose-600">
             {error}
           </p>
         )}
 
         {editing !== null && (
-          <form onSubmit={saveShop} className="space-y-2 border-b pb-2">
+          <form onSubmit={saveShop} className="space-y-2 border-b border-line p-4">
             <input
               required
               className="input"
@@ -123,14 +135,14 @@ export default function Settings() {
             <div className="flex gap-2">
               <button
                 type="submit"
-                className="flex-1 rounded bg-brand py-1.5 text-sm font-semibold text-white"
+                className="flex-1 rounded-full bg-brand py-2 text-sm font-bold text-white active:bg-brand-strong"
               >
                 保存
               </button>
               <button
                 type="button"
                 onClick={() => setEditing(null)}
-                className="flex-1 rounded bg-slate-200 py-1.5 text-sm font-semibold text-slate-600"
+                className="flex-1 rounded-full bg-inset py-2 text-sm font-bold text-ink-muted"
               >
                 キャンセル
               </button>
@@ -139,32 +151,35 @@ export default function Settings() {
         )}
 
         {shops.length === 0 ? (
-          <p className="text-xs text-slate-400">
-            ショップが未登録です。「+ 追加」から登録してください。
+          <p className="px-4 py-3 text-xs text-ink-faint">
+            ショップが未登録です。「＋ 追加」から登録してください。
           </p>
         ) : (
-          <ul className="space-y-1">
+          <ul>
             {shops.map((shop) => (
               <li
                 key={shop.id}
-                className="flex items-center justify-between py-1"
+                className="flex items-center gap-3 border-b border-line px-4 py-3 last:border-b-0"
               >
-                <div className="text-sm">
-                  <div className="font-semibold">{shop.name}</div>
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand">
+                  <Icon name="store" className="h-5 w-5" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-bold text-ink">{shop.name}</div>
                   {shop.memo && (
-                    <div className="text-xs text-slate-400">{shop.memo}</div>
+                    <div className="text-[11px] text-ink-faint">{shop.memo}</div>
                   )}
                 </div>
-                <div className="flex gap-2 text-xs">
+                <div className="flex gap-2.5 text-xs font-semibold">
                   <button
                     onClick={() => startEdit(shop)}
-                    className="text-brand underline"
+                    className="text-brand"
                   >
                     編集
                   </button>
                   <button
                     onClick={() => removeShop(shop)}
-                    className="text-rose-500 underline"
+                    className="text-rose-500"
                   >
                     削除
                   </button>
@@ -177,37 +192,44 @@ export default function Settings() {
 
       {/* 招待リンク（管理者のみ） */}
       {user?.is_staff && (
-        <section className="space-y-2 rounded-lg bg-white p-3 shadow-sm">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-slate-600">
-              招待リンク（管理者）
+        <section className="overflow-hidden rounded-card bg-card shadow-card">
+          <div className="flex items-center justify-between border-b border-line px-4 py-3.5">
+            <h2 className="text-[13px] font-extrabold tracking-wide text-ink">
+              家族を招待
             </h2>
             <button
               onClick={handleCreateInvite}
-              className="rounded bg-brand px-3 py-1 text-xs font-semibold text-white"
+              className="text-xs font-bold text-brand"
             >
-              + 発行
+              ＋ リンクを発行
             </button>
           </div>
           {inviteError && (
-            <p className="rounded bg-rose-50 px-2 py-1 text-xs text-rose-600">
+            <p className="mx-4 mt-3 rounded-lg bg-rose-50 px-2 py-1 text-xs text-rose-600">
               {inviteError}
             </p>
           )}
-          <p className="text-xs text-slate-400">
+          <p className="px-4 py-3 text-[11px] text-ink-faint">
             発行したリンクを家族に送るとアカウントを作成できます（7日間有効・1回のみ）。
           </p>
           {invites.length === 0 ? (
-            <p className="text-xs text-slate-400">発行済みの招待はありません。</p>
+            <p className="px-4 pb-3 text-xs text-ink-faint">
+              発行済みの招待はありません。
+            </p>
           ) : (
-            <ul className="space-y-1">
+            <ul>
               {invites.map((inv) => (
-                <li key={inv.token} className="text-xs">
+                <li
+                  key={inv.token}
+                  className="border-t border-line px-4 py-3 text-xs"
+                >
                   <div className="flex items-center justify-between">
                     <span
-                      className={
-                        inv.is_valid ? "text-emerald-600" : "text-slate-400"
-                      }
+                      className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${
+                        inv.is_valid
+                          ? "bg-emerald-100 text-emerald-700"
+                          : "bg-inset text-ink-faint"
+                      }`}
                     >
                       {inv.is_valid ? "有効" : "使用済み/期限切れ"}
                     </span>
@@ -218,14 +240,14 @@ export default function Settings() {
                             inviteUrl(inv.signup_path)
                           )
                         }
-                        className="text-brand underline"
+                        className="font-bold text-brand"
                       >
                         リンクをコピー
                       </button>
                     )}
                   </div>
                   {inv.is_valid && (
-                    <div className="break-all text-slate-400">
+                    <div className="mt-1.5 break-all text-ink-faint">
                       {inviteUrl(inv.signup_path)}
                     </div>
                   )}
@@ -235,6 +257,15 @@ export default function Settings() {
           )}
         </section>
       )}
+
+      {/* ログアウト */}
+      <button
+        onClick={handleLogout}
+        className="flex w-full items-center justify-between rounded-card bg-card px-4 py-3.5 shadow-card"
+      >
+        <span className="text-sm font-bold text-rose-500">ログアウト</span>
+        <Icon name="logout" className="h-[18px] w-[18px] text-rose-500" strokeWidth={2} />
+      </button>
     </div>
   );
 }

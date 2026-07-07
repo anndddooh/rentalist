@@ -6,6 +6,7 @@ import {
   listHistoryNextPage,
 } from "../api/history.js";
 import { listSeries } from "../api/series.js";
+import PageHeader from "../components/PageHeader.jsx";
 import ReadingStats from "../components/ReadingStats.jsx";
 import { errorMessage } from "../lib/errors.js";
 
@@ -98,26 +99,29 @@ export default function History() {
   }
 
   return (
-    <div className="space-y-3 p-3 md:mx-auto md:max-w-2xl">
-      <div className="flex items-center justify-between">
-        <h1 className="text-lg font-bold text-slate-700">レンタル履歴</h1>
-        <button
-          onClick={() => setShowForm((v) => !v)}
-          className="rounded bg-brand px-3 py-1 text-sm font-semibold text-white"
-        >
-          {showForm ? "閉じる" : "+ 追加"}
-        </button>
-      </div>
+    <div className="space-y-4 p-4 md:mx-auto md:max-w-2xl md:p-8">
+      <PageHeader
+        eyebrow={`これまでに ${totalCount}巻`}
+        title="履歴"
+        actions={
+          <button
+            onClick={() => setShowForm((v) => !v)}
+            className="rounded-full bg-brand px-4 py-2 text-sm font-bold text-white active:bg-brand-strong"
+          >
+            {showForm ? "閉じる" : "＋ 追加"}
+          </button>
+        }
+      />
 
       <ReadingStats reloadToken={statsToken} />
 
       {showForm && (
         <form
           onSubmit={handleAdd}
-          className="space-y-2 rounded-lg bg-white p-3 shadow-sm"
+          className="space-y-2 rounded-card bg-card p-4 shadow-card"
         >
           {error && (
-            <p className="rounded bg-rose-50 px-2 py-1 text-xs text-rose-600">
+            <p className="rounded-lg bg-rose-50 px-2 py-1 text-xs text-rose-600">
               {error}
             </p>
           )}
@@ -125,7 +129,7 @@ export default function History() {
             required
             value={form.seriesId}
             onChange={(e) => setForm({ ...form, seriesId: e.target.value })}
-            className="w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+            className="input"
           >
             <option value="">シリーズを選択</option>
             {allSeries.map((s) => (
@@ -141,75 +145,89 @@ export default function History() {
             placeholder="巻数"
             value={form.volumeNumber}
             onChange={(e) => setForm({ ...form, volumeNumber: e.target.value })}
-            className="w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+            className="input"
           />
           <input
             type="date"
             required
             value={form.rentedAt}
             onChange={(e) => setForm({ ...form, rentedAt: e.target.value })}
-            className="w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+            className="input"
           />
           <button
             type="submit"
-            className="w-full rounded bg-brand py-2 text-sm font-semibold text-white"
+            className="w-full rounded-full bg-brand py-2.5 text-sm font-bold text-white active:bg-brand-strong"
           >
             履歴に追加
           </button>
         </form>
       )}
 
-      <select
-        value={filterSeries}
-        onChange={(e) => setFilterSeries(e.target.value)}
-        className="w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
-      >
-        <option value="">すべてのシリーズ</option>
-        {allSeries.map((s) => (
-          <option key={s.id} value={s.id}>
-            {s.title}
-          </option>
-        ))}
-      </select>
+      {/* フィルタ */}
+      <div className="flex items-center gap-2">
+        <span
+          className={`chip ${
+            filterSeries ? "bg-card text-ink-muted shadow-sm" : "bg-ink text-white"
+          }`}
+        >
+          すべて
+        </span>
+        <div className="relative">
+          <select
+            value={filterSeries}
+            onChange={(e) => setFilterSeries(e.target.value)}
+            className="chip appearance-none bg-card pr-8 text-ink-muted shadow-sm"
+          >
+            <option value="">シリーズで絞る</option>
+            {allSeries.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.title}
+              </option>
+            ))}
+          </select>
+          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-ink-faint">
+            ▾
+          </span>
+        </div>
+      </div>
 
       {loading ? (
-        <p className="py-10 text-center text-sm text-slate-400">読み込み中…</p>
+        <p className="py-10 text-center text-sm text-ink-faint">読み込み中…</p>
       ) : entries.length === 0 ? (
-        <p className="py-10 text-center text-sm text-slate-400">
+        <p className="py-10 text-center text-sm text-ink-faint">
           履歴がありません。
         </p>
       ) : (
         <>
-          <p className="text-xs text-slate-500">
-            全 {totalCount}件{entries.length < totalCount ? `（${entries.length}件表示中）` : ""}
-          </p>
-          <ul className="space-y-2">
+          <div className="overflow-hidden rounded-card bg-card shadow-card">
             {entries.map((entry) => (
-              <li
+              <div
                 key={entry.id}
-                className="flex items-center justify-between rounded-lg bg-white p-3 shadow-sm"
+                className="flex items-center gap-3 border-b border-line px-4 py-3 last:border-b-0"
               >
-                <div className="text-sm">
-                  <span className="font-semibold">{entry.series_title}</span>{" "}
-                  <span className="text-brand">{entry.volume_number}巻</span>
-                  <div className="text-xs text-slate-400">
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-bold text-ink">
+                    {entry.series_title}{" "}
+                    <span className="text-brand">{entry.volume_number}巻</span>
+                  </div>
+                  <div className="text-[11px] text-ink-faint">
                     {new Date(entry.rented_at).toLocaleDateString("ja-JP")}
                   </div>
                 </div>
                 <button
                   onClick={() => handleDelete(entry.id)}
-                  className="text-xs text-rose-500 underline"
+                  className="text-xs font-semibold text-rose-500"
                 >
                   削除
                 </button>
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
           {nextUrl && (
             <button
               onClick={loadMore}
               disabled={loadingMore}
-              className="w-full rounded-lg bg-slate-100 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-200 disabled:opacity-50"
+              className="block w-full py-1 text-center text-sm font-bold text-brand disabled:opacity-50"
             >
               {loadingMore
                 ? "読み込み中…"

@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="design_doc_mode" content="canvas">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; background: #e7e9ee; }
+  </style>
+</helmet>
+
+<section style="padding:48px; font-family:-apple-system,'Hiragino Sans','Noto Sans JP',sans-serif; display:flex; flex-direction:column; gap:56px;">
+  <div>
+    <div style="display:inline-block; background:#5b21b6; color:#fff; font-size:13px; font-weight:700; padding:4px 12px; border-radius:999px;">リデザイン 5案 — ホーム画面（ライト / ダーク）</div>
+    <div style="margin-top:8px; font-size:13px; color:#64748b; max-width:720px;">既存フローは維持し、ビジュアルとナビゲーション構造を探索。気に入った案の番号（<a href="#1a" style="color:#5b21b6;">1a</a>〜<a href="#1e" style="color:#5b21b6;">1e</a>）を教えてください。選ばれた方向性を iOS / Web の全画面に展開します。</div>
+  </div>
+
+  <!-- ================================================== 1a ================================================== -->
+  <div id="1a" style="display:flex; flex-direction:column; gap:16px;">
+    <div style="display:flex; align-items:baseline; gap:12px;">
+      <span style="background:#1e293b; color:#fff; font-size:14px; font-weight:800; padding:4px 12px; border-radius:8px;">1a</span>
+      <span style="font-size:20px; font-weight:800; color:#1e293b;">Refined — 現ブランドの磨き込み</span>
+      <span style="font-size:13px; color:#64748b;">紫はそのまま、余白・角丸・階層を整理。ナビは現行5タブ維持。</span>
+    </div>
+    <div style="display:flex; gap:32px; flex-wrap:wrap;">
+
+      <!-- 1a light -->
+      <div style="width:390px; height:800px; background:#f6f5f9; border-radius:44px; box-shadow:0 24px 48px rgba(15,10,40,0.16), 0 0 0 1px rgba(0,0,0,0.07); overflow:hidden; display:flex; flex-direction:column;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 28px 4px; font-size:15px; font-weight:600; color:#1e1b2e;">
+          <span>9:41</span>
+          <span style="display:flex; gap:5px;"><span style="width:18px; height:11px; background:#1e1b2e; border-radius:2px; opacity:0.85;"></span><span style="width:16px; height:11px; background:#1e1b2e; border-radius:2px; opacity:0.5;"></span><span style="width:24px; height:11px; background:#1e1b2e; border-radius:3px;"></span></span>
+        </div>
+        <!-- 大見出しヘッダー -->
+        <div style="padding:12px 20px 0; display:flex; align-items:flex-end; justify-content:space-between;">
+          <div>
+            <div style="font-size:13px; font-weight:600; color:#7c6f9b;">こんにちは、harukaさん</div>
+            <div style="font-size:28px; font-weight:800; color:#1e1b2e; letter-spacing:-0.01em;">つづきを借りる</div>
+          </div>
+          <div style="position:relative; width:44px; height:44px; border-radius:999px; background:#fff; box-shadow:0 1px 3px rgba(30,27,46,0.1); display:flex; align-items:center; justify-content:center;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#5b21b6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:22px; height:22px;"><circle cx="9" cy="20" r="1.4"></circle><circle cx="18" cy="20" r="1.4"></circle><path d="M2.5 3.5H5l2.4 11.3a1.8 1.8 0 0 0 1.8 1.4h8.3a1.8 1.8 0 0 0 1.76-1.4L22 7H6"></path></svg>
+            <span style="position:absolute; right:-2px; top:-2px; min-width:18px; text-align:center; background:#5b21b6; color:#fff; border-radius:999px; padding:1px 4px; font-size:11px; font-weight:700;">3</span>
+          </div>
+        </div>
+        <!-- ショップチップ列 -->
+        <div style="padding:14px 20px 4px; display:flex; gap:8px; overflow:hidden;">
+          <span style="border-radius:999px; padding:8px 14px; font-size:13px; font-weight:700; background:#1e1b2e; color:#fff; white-space:nowrap;">すべて</span>
+          <span style="border-radius:999px; padding:8px 14px; font-size:13px; font-weight:600; background:#fff; color:#4b4462; box-shadow:0 1px 2px rgba(30,27,46,0.08); white-space:nowrap;">TSUTAYA 駅前店</span>
+          <span style="border-radius:999px; padding:8px 14px; font-size:13px; font-weight:600; background:#fff; color:#4b4462; box-shadow:0 1px 2px rgba(30,27,46,0.08); white-space:nowrap;">ゲオ 南口店</span>
+        </div>
+        <!-- カード -->
+        <div style="flex:1; overflow:hidden; padding:12px 20px; display:flex; flex-direction:column; gap:12px;">
+          <div style="display:flex; gap:14px; background:#fff; border-radius:20px; padding:14px; box-shadow:0 2px 8px rgba(30,27,46,0.06);">
+            <div style="position:relative; flex-shrink:0;">
+              <div style="height:116px; width:82px; border-radius:10px; background:repeating-linear-gradient(45deg,#e9e6f0 0 8px,#f2f0f7 8px 16px); display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:10px; color:#a49bc0; text-align:center; line-height:1.5;">表紙<br>109巻</div>
+            </div>
+            <div style="flex:1; display:flex; flex-direction:column; min-width:0;">
+              <div style="font-weight:700; font-size:16px; line-height:1.3; color:#1e1b2e;">ONE PIECE</div>
+              <div style="margin-top:2px; font-size:12px; color:#7c6f9b;">読了 108巻 ・ ★5</div>
+              <div style="margin-top:6px; display:flex; align-items:center; gap:6px;">
+                <span style="font-size:12px; font-weight:700; color:#5b21b6; background:#ede9fe; border-radius:6px; padding:3px 8px;">次は 109巻</span>
+              </div>
+              <div style="margin-top:auto; display:flex; align-items:center; gap:8px;">
+                <span style="flex:1; text-align:center; background:#5b21b6; color:#fff; border-radius:999px; padding:9px 0; font-size:14px; font-weight:700;">レンタル</span>
+                <span style="font-size:12px; font-weight:600; color:#7c6f9b;">カート×2</span>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex; gap:14px; background:#fff; border-radius:20px; padding:14px; box-shadow:0 2px 8px rgba(30,27,46,0.06);">
+            <div style="height:116px; width:82px; flex-shrink:0; border-radius:10px; background:repeating-linear-gradient(45deg,#e9e6f0 0 8px,#f2f0f7 8px 16px); display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:10px; color:#a49bc0; text-align:center; line-height:1.5;">表紙<br>72巻</div>
+            <div style="flex:1; display:flex; flex-direction:column; min-width:0;">
+              <div style="font-weight:700; font-size:16px; line-height:1.3; color:#1e1b2e;">キングダム</div>
+              <div style="margin-top:2px; font-size:12px; color:#7c6f9b;">読了 71巻 ・ ★5</div>
+              <div style="margin-top:6px;"><span style="font-size:12px; font-weight:700; color:#5b21b6; background:#ede9fe; border-radius:6px; padding:3px 8px;">次は 72巻</span></div>
+              <div style="margin-top:auto;"><span style="display:block; text-align:center; background:#5b21b6; color:#fff; border-radius:999px; padding:9px 0; font-size:14px; font-weight:700;">レンタル</span></div>
+            </div>
+          </div>
+          <div style="display:flex; gap:14px; background:#fff; border-radius:20px; padding:14px; box-shadow:0 2px 8px rgba(30,27,46,0.06);">
+            <div style="height:116px; width:82px; flex-shrink:0; border-radius:10px; background:repeating-linear-gradient(45deg,#e9e6f0 0 8px,#f2f0f7 8px 16px); display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:10px; color:#a49bc0; text-align:center; line-height:1.5;">表紙<br>12巻</div>
+            <div style="flex:1; display:flex; flex-direction:column; min-width:0;">
+              <div style="font-weight:700; font-size:16px; line-height:1.3; color:#1e1b2e;">葬送のフリーレン</div>
+              <div style="margin-top:2px; font-size:12px; color:#7c6f9b;">読了 11巻 ・ ★4</div>
+              <div style="margin-top:6px;"><span style="font-size:12px; font-weight:700; color:#5b21b6; background:#ede9fe; border-radius:6px; padding:3px 8px;">次は 12巻</span></div>
+              <div style="margin-top:auto;"><span style="display:block; text-align:center; background:#5b21b6; color:#fff; border-radius:999px; padding:9px 0; font-size:14px; font-weight:700;">レンタル</span></div>
+            </div>
+          </div>
+        </div>
+        <!-- タブバー -->
+        <div style="background:rgba(255,255,255,0.92); border-top:1px solid #eceaf2; display:flex; padding:10px 8px 6px;">
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:700; color:#5b21b6;">
+            <span style="background:#ede9fe; border-radius:999px; padding:4px 16px; display:flex;"><svg viewBox="0 0 24 24" fill="currentColor" style="width:22px; height:22px;"><path d="M12 3 3 10.5V20a1 1 0 0 0 1 1h5.5v-6h5v6H20a1 1 0 0 0 1-1v-9.5L12 3z"></path></svg></span>
+            ホーム
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:600; color:#a49bc0;">
+            <span style="padding:4px 16px; display:flex;"><svg viewBox="0 0 24 24" fill="currentColor" style="width:22px; height:22px;"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4.5L5 21V4a1 1 0 0 1 1-1z"></path></svg></span>
+            読みたい
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:600; color:#a49bc0;">
+            <span style="padding:4px 16px; display:flex;"><svg viewBox="0 0 24 24" fill="currentColor" style="width:22px; height:22px;"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm4 11h-5V6h1.8v5.2H16z"></path></svg></span>
+            履歴
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:600; color:#a49bc0;">
+            <span style="padding:4px 16px; display:flex;"><svg viewBox="0 0 24 24" fill="currentColor" style="width:22px; height:22px;"><path d="M18 2H6v7a6 6 0 0 0 4.6 5.84c-.1 1.3-.8 2.4-2.6 3.16-.6.25-1 .8-1 1.5V21h10v-1.5c0-.7-.4-1.25-1-1.5-1.8-.76-2.5-1.86-2.6-3.16A6 6 0 0 0 18 9V2z"></path></svg></span>
+            読破
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:600; color:#a49bc0;">
+            <span style="padding:4px 16px; display:flex;"><svg viewBox="0 0 24 24" fill="currentColor" style="width:22px; height:22px;"><path d="M12 8.5A3.5 3.5 0 1 0 15.5 12 3.5 3.5 0 0 0 12 8.5zm9.2 5-1.9 1.5c.05-.33.2-.65.2-1s-.15-.67-.2-1l1.9-1.5a.6.6 0 0 0 .15-.75l-1.8-3.1a.6.6 0 0 0-.73-.26l-2.24.9a7.3 7.3 0 0 0-1.73-1l-.34-2.38A.6.6 0 0 0 13.9 4h-3.8a.6.6 0 0 0-.6.5l-.34 2.39a7.3 7.3 0 0 0-1.73 1l-2.24-.9a.6.6 0 0 0-.73.26l-1.8 3.1a.6.6 0 0 0 .15.75L4.7 12.5c-.05.33-.2.65-.2 1s.15.67.2 1l-1.9 1.5a.6.6 0 0 0-.15.75l1.8 3.1a.6.6 0 0 0 .73.26l2.24-.9a7.3 7.3 0 0 0 1.73 1l.34 2.38a.6.6 0 0 0 .6.51h3.8a.6.6 0 0 0 .6-.5l.34-2.39a7.3 7.3 0 0 0 1.73-1l2.24.9a.6.6 0 0 0 .73-.26l1.8-3.1a.6.6 0 0 0-.15-.75z"></path></svg></span>
+            設定
+          </div>
+        </div>
+        <div style="display:flex; justify-content:center; padding:4px 0 8px; background:rgba(255,255,255,0.92);"><span style="width:134px; height:5px; border-radius:999px; background:#1e1b2e;"></span></div>
+      </div>
+
+      <!-- 1a dark -->
+      <div style="width:390px; height:800px; background:#161226; border-radius:44px; box-shadow:0 24px 48px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.06); overflow:hidden; display:flex; flex-direction:column;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 28px 4px; font-size:15px; font-weight:600; color:#f1eefb;">
+          <span>9:41</span>
+          <span style="display:flex; gap:5px;"><span style="width:18px; height:11px; background:#f1eefb; border-radius:2px; opacity:0.85;"></span><span style="width:16px; height:11px; background:#f1eefb; border-radius:2px; opacity:0.5;"></span><span style="width:24px; height:11px; background:#f1eefb; border-radius:3px;"></span></span>
+        </div>
+        <div style="padding:12px 20px 0; display:flex; align-items:flex-end; justify-content:space-between;">
+          <div>
+            <div style="font-size:13px; font-weight:600; color:#9d92c2;">こんにちは、harukaさん</div>
+            <div style="font-size:28px; font-weight:800; color:#f1eefb; letter-spacing:-0.01em;">つづきを借りる</div>
+          </div>
+          <div style="position:relative; width:44px; height:44px; border-radius:999px; background:#221c38; display:flex; align-items:center; justify-content:center;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:22px; height:22px;"><circle cx="9" cy="20" r="1.4"></circle><circle cx="18" cy="20" r="1.4"></circle><path d="M2.5 3.5H5l2.4 11.3a1.8 1.8 0 0 0 1.8 1.4h8.3a1.8 1.8 0 0 0 1.76-1.4L22 7H6"></path></svg>
+            <span style="position:absolute; right:-2px; top:-2px; min-width:18px; text-align:center; background:#8b5cf6; color:#fff; border-radius:999px; padding:1px 4px; font-size:11px; font-weight:700;">3</span>
+          </div>
+        </div>
+        <div style="padding:14px 20px 4px; display:flex; gap:8px; overflow:hidden;">
+          <span style="border-radius:999px; padding:8px 14px; font-size:13px; font-weight:700; background:#f1eefb; color:#161226; white-space:nowrap;">すべて</span>
+          <span style="border-radius:999px; padding:8px 14px; font-size:13px; font-weight:600; background:#221c38; color:#c9c0e4; white-space:nowrap;">TSUTAYA 駅前店</span>
+          <span style="border-radius:999px; padding:8px 14px; font-size:13px; font-weight:600; background:#221c38; color:#c9c0e4; white-space:nowrap;">ゲオ 南口店</span>
+        </div>
+        <div style="flex:1; overflow:hidden; padding:12px 20px; display:flex; flex-direction:column; gap:12px;">
+          <div style="display:flex; gap:14px; background:#221c38; border-radius:20px; padding:14px;">
+            <div style="height:116px; width:82px; flex-shrink:0; border-radius:10px; background:repeating-linear-gradient(45deg,#2e2749 0 8px,#37305a 8px 16px); display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:10px; color:#7d719f; text-align:center; line-height:1.5;">表紙<br>109巻</div>
+            <div style="flex:1; display:flex; flex-direction:column; min-width:0;">
+              <div style="font-weight:700; font-size:16px; line-height:1.3; color:#f1eefb;">ONE PIECE</div>
+              <div style="margin-top:2px; font-size:12px; color:#9d92c2;">読了 108巻 ・ ★5</div>
+              <div style="margin-top:6px;"><span style="font-size:12px; font-weight:700; color:#c4b5fd; background:rgba(139,92,246,0.18); border-radius:6px; padding:3px 8px;">次は 109巻</span></div>
+              <div style="margin-top:auto; display:flex; align-items:center; gap:8px;">
+                <span style="flex:1; text-align:center; background:#8b5cf6; color:#fff; border-radius:999px; padding:9px 0; font-size:14px; font-weight:700;">レンタル</span>
+                <span style="font-size:12px; font-weight:600; color:#9d92c2;">カート×2</span>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex; gap:14px; background:#221c38; border-radius:20px; padding:14px;">
+            <div style="height:116px; width:82px; flex-shrink:0; border-radius:10px; background:repeating-linear-gradient(45deg,#2e2749 0 8px,#37305a 8px 16px); display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:10px; color:#7d719f; text-align:center; line-height:1.5;">表紙<br>72巻</div>
+            <div style="flex:1; display:flex; flex-direction:column; min-width:0;">
+              <div style="font-weight:700; font-size:16px; line-height:1.3; color:#f1eefb;">キングダム</div>
+              <div style="margin-top:2px; font-size:12px; color:#9d92c2;">読了 71巻 ・ ★5</div>
+              <div style="margin-top:6px;"><span style="font-size:12px; font-weight:700; color:#c4b5fd; background:rgba(139,92,246,0.18); border-radius:6px; padding:3px 8px;">次は 72巻</span></div>
+              <div style="margin-top:auto;"><span style="display:block; text-align:center; background:#8b5cf6; color:#fff; border-radius:999px; padding:9px 0; font-size:14px; font-weight:700;">レンタル</span></div>
+            </div>
+          </div>
+          <div style="display:flex; gap:14px; background:#221c38; border-radius:20px; padding:14px;">
+            <div style="height:116px; width:82px; flex-shrink:0; border-radius:10px; background:repeating-linear-gradient(45deg,#2e2749 0 8px,#37305a 8px 16px); display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:10px; color:#7d719f; text-align:center; line-height:1.5;">表紙<br>12巻</div>
+            <div style="flex:1; display:flex; flex-direction:column; min-width:0;">
+              <div style="font-weight:700; font-size:16px; line-height:1.3; color:#f1eefb;">葬送のフリーレン</div>
+              <div style="margin-top:2px; font-size:12px; color:#9d92c2;">読了 11巻 ・ ★4</div>
+              <div style="margin-top:6px;"><span style="font-size:12px; font-weight:700; color:#c4b5fd; background:rgba(139,92,246,0.18); border-radius:6px; padding:3px 8px;">次は 12巻</span></div>
+              <div style="margin-top:auto;"><span style="display:block; text-align:center; background:#8b5cf6; color:#fff; border-radius:999px; padding:9px 0; font-size:14px; font-weight:700;">レンタル</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="background:rgba(22,18,38,0.95); border-top:1px solid #2e2749; display:flex; padding:10px 8px 6px;">
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:700; color:#c4b5fd;">
+            <span style="background:rgba(139,92,246,0.2); border-radius:999px; padding:4px 16px; display:flex;"><svg viewBox="0 0 24 24" fill="currentColor" style="width:22px; height:22px;"><path d="M12 3 3 10.5V20a1 1 0 0 0 1 1h5.5v-6h5v6H20a1 1 0 0 0 1-1v-9.5L12 3z"></path></svg></span>
+            ホーム
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:600; color:#6b6090;">
+            <span style="padding:4px 16px; display:flex;"><svg viewBox="0 0 24 24" fill="currentColor" style="width:22px; height:22px;"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4.5L5 21V4a1 1 0 0 1 1-1z"></path></svg></span>
+            読みたい
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:600; color:#6b6090;">
+            <span style="padding:4px 16px; display:flex;"><svg viewBox="0 0 24 24" fill="currentColor" style="width:22px; height:22px;"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm4 11h-5V6h1.8v5.2H16z"></path></svg></span>
+            履歴
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:600; color:#6b6090;">
+            <span style="padding:4px 16px; display:flex;"><svg viewBox="0 0 24 24" fill="currentColor" style="width:22px; height:22px;"><path d="M18 2H6v7a6 6 0 0 0 4.6 5.84c-.1 1.3-.8 2.4-2.6 3.16-.6.25-1 .8-1 1.5V21h10v-1.5c0-.7-.4-1.25-1-1.5-1.8-.76-2.5-1.86-2.6-3.16A6 6 0 0 0 18 9V2z"></path></svg></span>
+            読破
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:600; color:#6b6090;">
+            <span style="padding:4px 16px; display:flex;"><svg viewBox="0 0 24 24" fill="currentColor" style="width:22px; height:22px;"><path d="M12 8.5A3.5 3.5 0 1 0 15.5 12 3.5 3.5 0 0 0 12 8.5zm9.2 5-1.9 1.5c.05-.33.2-.65.2-1s-.15-.67-.2-1l1.9-1.5a.6.6 0 0 0 .15-.75l-1.8-3.1a.6.6 0 0 0-.73-.26l-2.24.9a7.3 7.3 0 0 0-1.73-1l-.34-2.38A.6.6 0 0 0 13.9 4h-3.8a.6.6 0 0 0-.6.5l-.34 2.39a7.3 7.3 0 0 0-1.73 1l-2.24-.9a.6.6 0 0 0-.73.26l-1.8 3.1a.6.6 0 0 0 .15.75L4.7 12.5c-.05.33-.2.65-.2 1s.15.67.2 1l-1.9 1.5a.6.6 0 0 0-.15.75l1.8 3.1a.6.6 0 0 0 .73.26l2.24-.9a7.3 7.3 0 0 0 1.73 1l.34 2.38a.6.6 0 0 0 .6.51h3.8a.6.6 0 0 0 .6-.5l.34-2.39a7.3 7.3 0 0 0 1.73-1l2.24.9a.6.6 0 0 0 .73-.26l1.8-3.1a.6.6 0 0 0-.15-.75z"></path></svg></span>
+            設定
+          </div>
+        </div>
+        <div style="display:flex; justify-content:center; padding:4px 0 8px; background:rgba(22,18,38,0.95);"><span style="width:134px; height:5px; border-radius:999px; background:#f1eefb;"></span></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================================================== 1b ================================================== -->
+  <div id="1b" style="display:flex; flex-direction:column; gap:16px;">
+    <div style="display:flex; align-items:baseline; gap:12px;">
+      <span style="background:#1e293b; color:#fff; font-size:14px; font-weight:800; padding:4px 12px; border-radius:8px;">1b</span>
+      <span style="font-size:20px; font-weight:800; color:#1e293b;">Shelf — 表紙が主役の本棚</span>
+      <span style="font-size:13px; color:#64748b;">紙のような温かい地色+明朝アクセント。2列ポスターグリッド、操作は表紙の上に。</span>
+    </div>
+    <div style="display:flex; gap:32px; flex-wrap:wrap;">
+
+      <!-- 1b light -->
+      <div style="width:390px; height:800px; background:#faf7f0; border-radius:44px; box-shadow:0 24px 48px rgba(60,45,20,0.15), 0 0 0 1px rgba(0,0,0,0.07); overflow:hidden; display:flex; flex-direction:column; font-family:'Zen Kaku Gothic New',-apple-system,'Hiragino Sans',sans-serif;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 28px 4px; font-size:15px; font-weight:600; color:#2b2115;">
+          <span>9:41</span>
+          <span style="display:flex; gap:5px;"><span style="width:18px; height:11px; background:#2b2115; border-radius:2px; opacity:0.85;"></span><span style="width:16px; height:11px; background:#2b2115; border-radius:2px; opacity:0.5;"></span><span style="width:24px; height:11px; background:#2b2115; border-radius:3px;"></span></span>
+        </div>
+        <div style="padding:12px 22px 0; display:flex; align-items:flex-end; justify-content:space-between;">
+          <div style="font-family:'Noto Serif JP',serif; font-size:26px; font-weight:600; color:#2b2115;">本棚</div>
+          <div style="display:flex; align-items:center; gap:14px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#5b21b6" stroke-width="2" stroke-linecap="round" style="width:22px; height:22px;"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+            <span style="position:relative; display:inline-flex;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#5b21b6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:23px; height:23px;"><circle cx="9" cy="20" r="1.4"></circle><circle cx="18" cy="20" r="1.4"></circle><path d="M2.5 3.5H5l2.4 11.3a1.8 1.8 0 0 0 1.8 1.4h8.3a1.8 1.8 0 0 0 1.76-1.4L22 7H6"></path></svg>
+              <span style="position:absolute; right:-7px; top:-6px; min-width:17px; text-align:center; background:#5b21b6; color:#fff; border-radius:999px; padding:1px 4px; font-size:10px; font-weight:700;">3</span>
+            </span>
+          </div>
+        </div>
+        <div style="padding:10px 22px 2px; display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-size:12px; color:#8a7a60;">進行中 4シリーズ</span>
+          <span style="font-size:12px; font-weight:600; color:#5b21b6; border:1px solid #e3d9c6; border-radius:999px; padding:5px 12px; background:#fff;">ショップ: すべて ▾</span>
+        </div>
+        <div style="flex:1; overflow:hidden; padding:12px 22px; display:grid; grid-template-columns:1fr 1fr; gap:18px 14px; align-content:start;">
+          <!-- poster 1 -->
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="position:relative; width:100%; aspect-ratio:2/3; border-radius:10px; overflow:hidden; box-shadow:0 6px 16px rgba(60,45,20,0.18); background:repeating-linear-gradient(45deg,#e9e2d2 0 8px,#f1ebdd 8px 16px); display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:11px; color:#a3947a; text-align:center; line-height:1.6;">表紙<br>109巻</div>
+            <div>
+              <div style="font-family:'Noto Serif JP',serif; font-size:15px; font-weight:600; color:#2b2115; line-height:1.35;">ONE PIECE</div>
+              <div style="margin-top:2px; font-size:11px; color:#8a7a60;">次は <span style="font-weight:700; color:#5b21b6;">109巻</span> ・ カート×2</div>
+            </div>
+            <span style="display:block; text-align:center; border:1.5px solid #5b21b6; color:#5b21b6; border-radius:999px; padding:7px 0; font-size:13px; font-weight:700; background:#fff;">＋ カートに入れる</span>
+          </div>
+          <!-- poster 2 -->
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="position:relative; width:100%; aspect-ratio:2/3; border-radius:10px; overflow:hidden; box-shadow:0 6px 16px rgba(60,45,20,0.18); background:repeating-linear-gradient(45deg,#e9e2d2 0 8px,#f1ebdd 8px 16px); display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:11px; color:#a3947a; text-align:center; line-height:1.6;">表紙<br>72巻</div>
+            <div>
+              <div style="font-family:'Noto Serif JP',serif; font-size:15px; font-weight:600; color:#2b2115; line-height:1.35;">キングダム</div>
+              <div style="margin-top:2px; font-size:11px; color:#8a7a60;">次は <span style="font-weight:700; color:#5b21b6;">72巻</span></div>
+            </div>
+            <span style="display:block; text-align:center; border:1.5px solid #5b21b6; color:#5b21b6; border-radius:999px; padding:7px 0; font-size:13px; font-weight:700; background:#fff;">＋ カートに入れる</span>
+          </div>
+          <!-- poster 3 -->
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="position:relative; width:100%; aspect-ratio:2/3; border-radius:10px; overflow:hidden; box-shadow:0 6px 16px rgba(60,45,20,0.18); background:repeating-linear-gradient(45deg,#e9e2d2 0 8px,#f1ebdd 8px 16px); display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:11px; color:#a3947a; text-align:center; line-height:1.6;">表紙<br>12巻</div>
+            <div>
+              <div style="font-family:'Noto Serif JP',serif; font-size:15px; font-weight:600; color:#2b2115; line-height:1.35;">葬送のフリーレン</div>
+              <div style="margin-top:2px; font-size:11px; color:#8a7a60;">次は <span style="font-weight:700; color:#5b21b6;">12巻</span></div>
+            </div>
+            <span style="display:block; text-align:center; border:1.5px solid #5b21b6; color:#5b21b6; border-radius:999px; padding:7px 0; font-size:13px; font-weight:700; background:#fff;">＋ カートに入れる</span>
+          </div>
+          <!-- poster 4 -->
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="position:relative; width:100%; aspect-ratio:2/3; border-radius:10px; overflow:hidden; box-shadow:0 6px 16px rgba(60,45,20,0.18); background:repeating-linear-gradient(45deg,#e9e2d2 0 8px,#f1ebdd 8px 16px); display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:11px; color:#a3947a; text-align:center; line-height:1.6;">表紙<br>33巻</div>
+            <div>
+              <div style="font-family:'Noto Serif JP',serif; font-size:15px; font-weight:600; color:#2b2115; line-height:1.35;">ハイキュー!!</div>
+              <div style="margin-top:2px; font-size:11px; color:#8a7a60;">次は <span style="font-weight:700; color:#5b21b6;">33巻</span> ・ カート×1</div>
+            </div>
+          </div>
+        </div>
+        <div style="background:rgba(250,247,240,0.95); border-top:1px solid #ece4d2; display:flex; padding:10px 8px 6px;">
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:700; color:#5b21b6;">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width:22px; height:22px;"><path d="M12 3 3 10.5V20a1 1 0 0 0 1 1h5.5v-6h5v6H20a1 1 0 0 0 1-1v-9.5L12 3z"></path></svg>
+            本棚
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:600; color:#b0a288;">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width:22px; height:22px;"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4.5L5 21V4a1 1 0 0 1 1-1z"></path></svg>
+            読みたい
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:600; color:#b0a288;">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width:22px; height:22px;"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm4 11h-5V6h1.8v5.2H16z"></path></svg>
+            履歴
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:600; color:#b0a288;">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width:22px; height:22px;"><path d="M18 2H6v7a6 6 0 0 0 4.6 5.84c-.1 1.3-.8 2.4-2.6 3.16-.6.25-1 .8-1 1.5V21h10v-1.5c0-.7-.4-1.25-1-1.5-1.8-.76-2.5-1.86-2.6-3.16A6 6 0 0 0 18 9V2z"></path></svg>
+            読破
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:600; color:#b0a288;">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width:22px; height:22px;"><path d="M12 8.5A3.5 3.5 0 1 0 15.5 12 3.5 3.5 0 0 0 12 8.5zm9.2 5-1.9 1.5c.05-.33.2-.65.2-1s-.15-.67-.2-1l1.9-1.5a.6.6 0 0 0 .15-.75l-1.8-3.1a.6.6 0 0 0-.73-.26l-2.24.9a7.3 7.3 0 0 0-1.73-1l-.34-2.38A.6.6 0 0 0 13.9 4h-3.8a.6.6 0 0 0-.6.5l-.34 2.39a7.3 7.3 0 0 0-1.73 1l-2.24-.9a.6.6 0 0 0-.73.26l-1.8 3.1a.6.6 0 0 0 .15.75L4.7 12.5c-.05.33-.2.65-.2 1s.15.67.2 1l-1.9 1.5a.6.6 0 0 0-.15.75l1.8 3.1a.6.6 0 0 0 .73.26l2.24-.9a7.3 7.3 0 0 0 1.73 1l.34 2.38a.6.6 0 0 0 .6.51h3.8a.6.6 0 0 0 .6-.5l.34-2.39a7.3 7.3 0 0 0 1.73-1l2.24.9a.6.6 0 0 0 .73-.26l1.8-3.1a.6.6 0 0 0-.15-.75z"></path></svg>
+            設定
+          </div>
+        </div>
+        <div style="display:flex; justify-content:center; padding:4px 0 8px; background:rgba(250,247,240,0.95);"><span style="width:134px; height:5px; border-radius:999px; background:#2b2115;"></span></div>
+      </div>
+
+      <!-- 1b dark -->
+      <div style="width:390px; height:800px; background:#1a1712; border-radius:44px; box-shadow:0 24px 48px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.06); overflow:hidden; display:flex; flex-direction:column; font-family:'Zen Kaku Gothic New',-apple-system,'Hiragino Sans',sans-serif;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 28px 4px; font-size:15px; font-weight:600; color:#f2ede2;">
+          <span>9:41</span>
+          <span style="display:flex; gap:5px;"><span style="width:18px; height:11px; background:#f2ede2; border-radius:2px; opacity:0.85;"></span><span style="width:16px; height:11px; background:#f2ede2; border-radius:2px; opacity:0.5;"></span><span style="width:24px; height:11px; background:#f2ede2; border-radius:3px;"></span></span>
+        </div>
+        <div style="padding:12px 22px 0; display:flex; align-items:flex-end; justify-content:space-between;">
+          <div style="font-family:'Noto Serif JP',serif; font-size:26px; font-weight:600; color:#f2ede2;">本棚</div>
+          <div style="display:flex; align-items:center; gap:14px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" stroke-width="2" stroke-linecap="round" style="width:22px; height:22px;"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+            <span style="position:relative; display:inline-flex;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:23px; height:23px;"><circle cx="9" cy="20" r="1.4"></circle><circle cx="18" cy="20" r="1.4"></circle><path d="M2.5 3.5H5l2.4 11.3a1.8 1.8 0 0 0 1.8 1.4h8.3a1.8 1.8 0 0 0 1.76-1.4L22 7H6"></path></svg>
+              <span style="position:absolute; right:-7px; top:-6px; min-width:17px; text-align:center; background:#8b5cf6; color:#fff; border-radius:999px; padding:1px 4px; font-size:10px; font-weight:700;">3</span>
+            </span>
+          </div>
+        </div>
+        <div style="padding:10px 22px 2px; display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-size:12px; color:#a89877;">進行中 4シリーズ</span>
+          <span style="font-size:12px; font-weight:600; color:#c4b5fd; border:1px solid #3a342a; border-radius:999px; padding:5px 12px; background:#242019;">ショップ: すべて ▾</span>
+        </div>
+        <div style="flex:1; overflow:hidden; padding:12px 22px; display:grid; grid-template-columns:1fr 1fr; gap:18px 14px; align-content:start;">
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="width:100%; aspect-ratio:2/3; border-radius:10px; box-shadow:0 8px 20px rgba(0,0,0,0.5); background:repeating-linear-gradient(45deg,#2e2a22 0 8px,#373228 8px 16px); display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:11px; color:#8b7d63; text-align:center; line-height:1.6;">表紙<br>109巻</div>
+            <div>
+              <div style="font-family:'Noto Serif JP',serif; font-size:15px; font-weight:600; color:#f2ede2; line-height:1.35;">ONE PIECE</div>
+              <div style="margin-top:2px; font-size:11px; color:#a89877;">次は <span style="font-weight:700; color:#c4b5fd;">109巻</span> ・ カート×2</div>
+            </div>
+            <span style="display:block; text-align:center; border:1.5px solid #8b5cf6; color:#c4b5fd; border-radius:999px; padding:7px 0; font-size:13px; font-weight:700;">＋ カートに入れる</span>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="width:100%; aspect-ratio:2/3; border-radius:10px; box-shadow:0 8px 20px rgba(0,0,0,0.5); background:repeating-linear-gradient(45deg,#2e2a22 0 8px,#373228 8px 16px); display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:11px; color:#8b7d63; text-align:center; line-height:1.6;">表紙<br>72巻</div>
+            <div>
+              <div style="font-family:'Noto Serif JP',serif; font-size:15px; font-weight:600; color:#f2ede2; line-height:1.35;">キングダム</div>
+              <div style="margin-top:2px; font-size:11px; color:#a89877;">次は <span style="font-weight:700; color:#c4b5fd;">72巻</span></div>
+            </div>
+            <span style="display:block; text-align:center; border:1.5px solid #8b5cf6; color:#c4b5fd; border-radius:999px; padding:7px 0; font-size:13px; font-weight:700;">＋ カートに入れる</span>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="width:100%; aspect-ratio:2/3; border-radius:10px; box-shadow:0 8px 20px rgba(0,0,0,0.5); background:repeating-linear-gradient(45deg,#2e2a22 0 8px,#373228 8px 16px); display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:11px; color:#8b7d63; text-align:center; line-height:1.6;">表紙<br>12巻</div>
+            <div>
+              <div style="font-family:'Noto Serif JP',serif; font-size:15px; font-weight:600; color:#f2ede2; line-height:1.35;">葬送のフリーレン</div>
+              <div style="margin-top:2px; font-size:11px; color:#a89877;">次は <span style="font-weight:700; color:#c4b5fd;">12巻</span></div>
+            </div>
+            <span style="display:block; text-align:center; border:1.5px solid #8b5cf6; color:#c4b5fd; border-radius:999px; padding:7px 0; font-size:13px; font-weight:700;">＋ カートに入れる</span>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="width:100%; aspect-ratio:2/3; border-radius:10px; box-shadow:0 8px 20px rgba(0,0,0,0.5); background:repeating-linear-gradient(45deg,#2e2a22 0 8px,#373228 8px 16px); display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:11px; color:#8b7d63; text-align:center; line-height:1.6;">表紙<br>33巻</div>
+            <div>
+              <div style="font-family:'Noto Serif JP',serif; font-size:15px; font-weight:600; color:#f2ede2; line-height:1.35;">ハイキュー!!</div>
+              <div style="margin-top:2px; font-size:11px; color:#a89877;">次は <span style="font-weight:700; color:#c4b5fd;">33巻</span> ・ カート×1</div>
+            </div>
+          </div>
+        </div>
+        <div style="background:rgba(26,23,18,0.95); border-top:1px solid #2e2a22; display:flex; padding:10px 8px 6px;">
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:700; color:#c4b5fd;">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width:22px; height:22px;"><path d="M12 3 3 10.5V20a1 1 0 0 0 1 1h5.5v-6h5v6H20a1 1 0 0 0 1-1v-9.5L12 3z"></path></svg>
+            本棚
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:600; color:#6f6450;">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width:22px; height:22px;"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4.5L5 21V4a1 1 0 0 1 1-1z"></path></svg>
+            読みたい
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:600; color:#6f6450;">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width:22px; height:22px;"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm4 11h-5V6h1.8v5.2H16z"></path></svg>
+            履歴
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:600; color:#6f6450;">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width:22px; height:22px;"><path d="M18 2H6v7a6 6 0 0 0 4.6 5.84c-.1 1.3-.8 2.4-2.6 3.16-.6.25-1 .8-1 1.5V21h10v-1.5c0-.7-.4-1.25-1-1.5-1.8-.76-2.5-1.86-2.6-3.16A6 6 0 0 0 18 9V2z"></path></svg>
+            読破
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:600; color:#6f6450;">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width:22px; height:22px;"><path d="M12 8.5A3.5 3.5 0 1 0 15.5 12 3.5 3.5 0 0 0 12 8.5zm9.2 5-1.9 1.5c.05-.33.2-.65.2-1s-.15-.67-.2-1l1.9-1.5a.6.6 0 0 0 .15-.75l-1.8-3.1a.6.6 0 0 0-.73-.26l-2.24.9a7.3 7.3 0 0 0-1.73-1l-.34-2.38A.6.6 0 0 0 13.9 4h-3.8a.6.6 0 0 0-.6.5l-.34 2.39a7.3 7.3 0 0 0-1.73 1l-2.24-.9a.6.6 0 0 0-.73.26l-1.8 3.1a.6.6 0 0 0 .15.75L4.7 12.5c-.05.33-.2.65-.2 1s.15.67.2 1l-1.9 1.5a.6.6 0 0 0-.15.75l1.8 3.1a.6.6 0 0 0 .73.26l2.24-.9a7.3 7.3 0 0 0 1.73 1l.34 2.38a.6.6 0 0 0 .6.51h3.8a.6.6 0 0 0 .6-.5l.34-2.39a7.3 7.3 0 0 0 1.73-1l2.24.9a.6.6 0 0 0 .73-.26l1.8-3.1a.6.6 0 0 0-.15-.75z"></path></svg>
+            設定
+          </div>
+        </div>
+        <div style="display:flex; justify-content:center; padding:4px 0 8px; background:rgba(26,23,18,0.95);"><span style="width:134px; height:5px; border-radius:999px; background:#f2ede2;"></span></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================================================== 1c ================================================== -->
+  <div id="1c" style="display:flex; flex-direction:column; gap:16px;">
+    <div style="display:flex; align-items:baseline; gap:12px;">
+      <span style="background:#1e293b; color:#fff; font-size:14px; font-weight:800; padding:4px 12px; border-radius:8px;">1c</span>
+      <span style="font-size:20px; font-weight:800; color:#1e293b;">Shop-first — 店頭ユーティリティ</span>
+      <span style="font-size:13px; color:#64748b;">店頭での「今どの店にいるか」を最上位に。巨大な次巻数字+在庫色で瞬時に判断。カートは下部スティッキーバー。</span>
+    </div>
+    <div style="display:flex; gap:32px; flex-wrap:wrap;">
+
+      <!-- 1c light -->
+      <div style="width:390px; height:800px; background:#f4f4f6; border-radius:44px; box-shadow:0 24px 48px rgba(15,10,40,0.16), 0 0 0 1px rgba(0,0,0,0.07); overflow:hidden; display:flex; flex-direction:column;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 28px 4px; font-size:15px; font-weight:600; color:#17141f;">
+          <span>9:41</span>
+          <span style="display:flex; gap:5px;"><span style="width:18px; height:11px; background:#17141f; border-radius:2px; opacity:0.85;"></span><span style="width:16px; height:11px; background:#17141f; border-radius:2px; opacity:0.5;"></span><span style="width:24px; height:11px; background:#17141f; border-radius:3px;"></span></span>
+        </div>
+        <!-- ショップスイッチャー(最上位) -->
+        <div style="padding:10px 20px 0;">
+          <div style="background:#5b21b6; border-radius:18px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 8px 20px rgba(91,33,182,0.3);">
+            <div>
+              <div style="font-size:11px; font-weight:700; color:#c4b5fd; letter-spacing:0.06em;">いまいる店</div>
+              <div style="font-size:18px; font-weight:800; color:#fff; display:flex; align-items:center; gap:6px;">TSUTAYA 駅前店 <span style="font-size:12px; opacity:0.7;">▾</span></div>
+            </div>
+            <div style="display:flex; gap:6px;">
+              <span style="border-radius:999px; padding:6px 12px; font-size:12px; font-weight:700; background:rgba(255,255,255,0.9); color:#5b21b6;">在庫あり 3</span>
+              <span style="border-radius:999px; padding:6px 12px; font-size:12px; font-weight:700; background:rgba(255,255,255,0.25); color:#fff;">未確認 1</span>
+            </div>
+          </div>
+        </div>
+        <!-- リスト -->
+        <div style="flex:1; overflow:hidden; padding:14px 20px; display:flex; flex-direction:column; gap:10px;">
+          <!-- row -->
+          <div style="display:flex; align-items:stretch; gap:0; background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 1px 4px rgba(23,20,31,0.07);">
+            <div style="width:6px; background:#10b981; flex-shrink:0;"></div>
+            <div style="flex:1; display:flex; align-items:center; gap:12px; padding:12px 14px 12px 10px;">
+              <div style="height:76px; width:54px; flex-shrink:0; border-radius:6px; background:repeating-linear-gradient(45deg,#e6e4ec 0 8px,#efedf4 8px 16px); display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:9px; color:#9b93b0;">表紙</div>
+              <div style="flex:1; min-width:0;">
+                <div style="font-weight:700; font-size:15px; color:#17141f; line-height:1.3;">ONE PIECE</div>
+                <div style="margin-top:2px; font-size:11px; font-weight:700; color:#059669;">この店に在庫あり</div>
+              </div>
+              <div style="text-align:center; flex-shrink:0;">
+                <div style="font-size:10px; font-weight:700; color:#9b93b0; letter-spacing:0.08em;">次</div>
+                <div style="font-size:30px; font-weight:800; color:#17141f; line-height:1; letter-spacing:-0.02em;">109</div>
+              </div>
+              <span style="flex-shrink:0; width:44px; height:44px; border-radius:14px; background:#5b21b6; color:#fff; display:flex; align-items:center; justify-content:center;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" style="width:20px; height:20px;"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+              </span>
+            </div>
+          </div>
+          <div style="display:flex; align-items:stretch; gap:0; background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 1px 4px rgba(23,20,31,0.07);">
+            <div style="width:6px; background:#10b981; flex-shrink:0;"></div>
+            <div style="flex:1; display:flex; align-items:center; gap:12px; padding:12px 14px 12px 10px;">
+              <div style="height:76px; width:54px; flex-shrink:0; border-radius:6px; background:repeating-linear-gradient(45deg,#e6e4ec 0 8px,#efedf4 8px 16px); display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:9px; color:#9b93b0;">表紙</div>
+              <div style="flex:1; min-width:0;">
+                <div style="font-weight:700; font-size:15px; color:#17141f; line-height:1.3;">キングダム</div>
+                <div style="margin-top:2px; font-size:11px; font-weight:700; color:#059669;">この店に在庫あり</div>
+              </div>
+              <div style="text-align:center; flex-shrink:0;">
+                <div style="font-size:10px; font-weight:700; color:#9b93b0; letter-spacing:0.08em;">次</div>
+                <div style="font-size:30px; font-weight:800; color:#17141f; line-height:1; letter-spacing:-0.02em;">72</div>
+              </div>
+              <span style="flex-shrink:0; width:44px; height:44px; border-radius:14px; background:#5b21b6; color:#fff; display:flex; align-items:center; justify-content:center;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" style="width:20px; height:20px;"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+              </span>
+            </div>
+          </div>
+          <div style="display:flex; align-items:stretch; gap:0; background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 1px 4px rgba(23,20,31,0.07);">
+            <div style="width:6px; background:#f59e0b; flex-shrink:0;"></div>
+            <div style="flex:1; display:flex; align-items:center; gap:12px; padding:12px 14px 12px 10px;">
+              <div style="height:76px; width:54px; flex-shrink:0; border-radius:6px; background:repeating-linear-gradient(45deg,#e6e4ec 0 8px,#efedf4 8px 16px); display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:9px; color:#9b93b0;">表紙</div>
+              <div style="flex:1; min-width:0;">
+                <div style="font-weight:700; font-size:15px; color:#17141f; line-height:1.3;">葬送のフリーレン</div>
+                <div style="margin-top:2px; font-size:11px; font-weight:700; color:#b45309;">在庫未確認 — タップで更新</div>
+              </div>
+              <div style="text-align:center; flex-shrink:0;">
+                <div style="font-size:10px; font-weight:700; color:#9b93b0; letter-spacing:0.08em;">次</div>
+                <div style="font-size:30px; font-weight:800; color:#17141f; line-height:1; letter-spacing:-0.02em;">12</div>
+              </div>
+              <span style="flex-shrink:0; width:44px; height:44px; border-radius:14px; background:#5b21b6; color:#fff; display:flex; align-items:center; justify-content:center;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" style="width:20px; height:20px;"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+              </span>
+            </div>
+          </div>
+          <div style="display:flex; align-items:stretch; gap:0; background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 1px 4px rgba(23,20,31,0.07); opacity:0.55;">
+            <div style="width:6px; background:#cbd5e1; flex-shrink:0;"></div>
+            <div style="flex:1; display:flex; align-items:center; gap:12px; padding:12px 14px 12px 10px;">
+              <div style="height:76px; width:54px; flex-shrink:0; border-radius:6px; background:repeating-linear-gradient(45deg,#e6e4ec 0 8px,#efedf4 8px 16px); display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:9px; color:#9b93b0;">表紙</div>
+              <div style="flex:1; min-width:0;">
+                <div style="font-weight:700; font-size:15px; color:#17141f; line-height:1.3;">ハイキュー!!</div>
+                <div style="margin-top:2px; font-size:11px; font-weight:700; color:#64748b;">この店には無い</div>
+              </div>
+              <div style="text-align:center; flex-shrink:0;">
+                <div style="font-size:10px; font-weight:700; color:#9b93b0; letter-spacing:0.08em;">次</div>
+                <div style="font-size:30px; font-weight:800; color:#17141f; line-height:1; letter-spacing:-0.02em;">33</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- カートスティッキーバー -->
+        <div style="margin:0 20px 10px; background:#17141f; border-radius:18px; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 10px 24px rgba(23,20,31,0.3);">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="width:28px; height:28px; border-radius:999px; background:#5b21b6; color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800;">3</span>
+            <span style="font-size:13px; font-weight:600; color:#fff;">カートに3冊</span>
+          </div>
+          <span style="background:#fff; color:#17141f; border-radius:999px; padding:8px 18px; font-size:13px; font-weight:800;">会計した →</span>
+        </div>
+        <!-- タブバー -->
+        <div style="background:rgba(255,255,255,0.92); border-top:1px solid #e8e6ee; display:flex; padding:10px 8px 6px;">
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:700; color:#5b21b6;">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width:22px; height:22px;"><path d="M12 3 3 10.5V20a1 1 0 0 0 1 1h5.5v-6h5v6H20a1 1 0 0 0 1-1v-9.5L12 3z"></path></svg>
+            ホーム
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:600; color:#a29aba;">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width:22px; height:22px;"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4.5L5 21V4a1 1 0 0 1 1-1z"></path></svg>
+            読みたい
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:600; color:#a29aba;">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width:22px; height:22px;"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm4 11h-5V6h1.8v5.2H16z"></path></svg>
+            履歴
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:600; color:#a29aba;">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width:22px; height:22px;"><path d="M18 2H6v7a6 6 0 0 0 4.6 5.84c-.1 1.3-.8 2.4-2.6 3.16-.6.25-1 .8-1 1.5V21h10v-1.5c0-.7-.4-1.25-1-1.5-1.8-.76-2.5-1.86-2.6-3.16A6 6 0 0 0 18 9V2z"></path></svg>
+            読破
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:600; color:#a29aba;">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width:22px; height:22px;"><path d="M12 8.5A3.5 3.5 0 1 0 15.5 12 3.5 3.5 0 0 0 12 8.5zm9.2 5-1.9 1.5c.05-.33.2-.65.2-1s-.15-.67-.2-1l1.9-1.5a.6.6 0 0 0 .15-.75l-1.8-3.1a.6.6 0 0 0-.73-.26l-2.24.9a7.3 7.3 0 0 0-1.73-1l-.34-2.38A.6.6 0 0 0 13.9 4h-3.8a.6.6 0 0 0-.6.5l-.34 2.39a7.3 7.3 0 0 0-1.73 1l-2.24-.9a.6.6 0 0 0-.73.26l-1.8 3.1a.6.6 0 0 0 .15.75L4.7 12.5c-.05.33-.2.65-.2 1s.15.67.2 1l-1.9 1.5a.6.6 0 0 0-.15.75l1.8 3.1a.6.6 0 0 0 .73.26l2.24-.9a7.3 7.3 0 0 0 1.73 1l.34 2.38a.6.6 0 0 0 .6.51h3.8a.6.6 0 0 0 .6-.5l.34-2.39a7.3 7.3 0 0 0 1.73-1l2.24.9a.6.6 0 0 0 .73-.26l1.8-3.1a.6.6 0 0 0-.15-.75z"></path></svg>
+            設定
+          </div>
+        </div>
+        <div style="display:flex; justify-content:center; padding:4px 0 8px; background:rgba(255,255,255,0.92);"><span style="width:134px; height:5px; border-radius:999px; background:#17141f;"></span></div>
+      </div>
+
+      <!-- 1c dark -->
+      <div style="width:390px; height:800px; background:#131018; border-radius:44px; box-shadow:0 24px 48px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.06); overflow:hidden; display:flex; flex-direction:column;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 28px 4px; font-size:15px; font-weight:600; color:#f0edf7;">
+          <span>9:41</span>
+          <span style="display:flex; gap:5px;"><span style="width:18px; height:11px; background:#f0edf7; border-radius:2px; opacity:0.85;"></span><span style="width:16px; height:11px; background:#f0edf7; border-radius:2px; opacity:0.5;"></span><span style="width:24px; height:11px; background:#f0edf7; border-radius:3px;"></span></span>
+        </div>
+        <div style="padding:10px 20px 0;">
+          <div style="background:#7c3aed; border-radius:18px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 8px 24px rgba(124,58,237,0.35);">
+            <div>
+              <div style="font-size:11px; font-weight:700; color:#ddd0fd; letter-spacing:0.06em;">いまいる店</div>
+              <div style="font-size:18px; font-weight:800; color:#fff; display:flex; align-items:center; gap:6px;">TSUTAYA 駅前店 <span style="font-size:12px; opacity:0.7;">▾</span></div>
+            </div>
+            <div style="display:flex; gap:6px;">
+              <span style="border-radius:999px; padding:6px 12px; font-size:12px; font-weight:700; background:rgba(255,255,255,0.92); color:#6d28d9;">在庫あり 3</span>
+              <span style="border-radius:999px; padding:6px 12px; font-size:12px; font-weight:700; background:rgba(255,255,255,0.22); color:#fff;">未確認 1</span>
+            </div>
+          </div>
+        </div>
+        <div style="flex:1; overflow:hidden; padding:14px 20px; display:flex; flex-direction:column; gap:10px;">
+          <div style="display:flex; align-items:stretch; background:#1e1a28; border-radius:16px; overflow:hidden;">
+            <div style="width:6px; background:#10b981; flex-shrink:0;"></div>
+            <div style="flex:1; display:flex; align-items:center; gap:12px; padding:12px 14px 12px 10px;">
+              <div style="height:76px; width:54px; flex-shrink:0; border-radius:6px; background:repeating-linear-gradient(45deg,#2b2638 0 8px,#342e44 8px 16px); display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:9px; color:#6f678a;">表紙</div>
+              <div style="flex:1; min-width:0;">
+                <div style="font-weight:700; font-size:15px; color:#f0edf7; line-height:1.3;">ONE PIECE</div>
+                <div style="margin-top:2px; font-size:11px; font-weight:700; color:#34d399;">この店に在庫あり</div>
+              </div>
+              <div style="text-align:center; flex-shrink:0;">
+                <div style="font-size:10px; font-weight:700; color:#6f678a; letter-spacing:0.08em;">次</div>
+                <div style="font-size:30px; font-weight:800; color:#f0edf7; line-height:1; letter-spacing:-0.02em;">109</div>
+              </div>
+              <span style="flex-shrink:0; width:44px; height:44px; border-radius:14px; background:#7c3aed; color:#fff; display:flex; align-items:center; justify-content:center;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" style="width:20px; height:20px;"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+              </span>
+            </div>
+          </div>
+          <div style="display:flex; align-items:stretch; background:#1e1a28; border-radius:16px; overflow:hidden;">
+            <div style="width:6px; background:#10b981; flex-shrink:0;"></div>
+            <div style="flex:1; display:flex; align-items:center; gap:12px; padding:12px 14px 12px 10px;">
+              <div style="height:76px; width:54px; flex-shrink:0; border-radius:6px; background:repeating-linear-gradient(45deg,#2b2638 0 8px,#342e44 8px 16px); display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:9px; color:#6f678a;">表紙</div>
+              <div style="flex:1; min-width:0;">
+                <div style="font-weight:700; font-size:15px; color:#f0edf7; line-height:1.3;">キングダム</div>
+                <div style="margin-top:2px; font-size:11px; font-weight:700; color:#34d399;">この店に在庫あり</div>
+              </div>
+              <div style="text-align:center; flex-shrink:0;">
+                <div style="font-size:10px; font-weight:700; color:#6f678a; letter-spacing:0.08em;">次</div>
+                <div style="font-size:30px; font-weight:800; color:#f0edf7; line-height:1; letter-spacing:-0.02em;">72</div>
+              </div>
+              <span style="flex-shrink:0; width:44px; height:44px; border-radius:14px; background:#7c3aed; color:#fff; display:flex; align-items:center; justify-content:center;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" style="width:20px; height:20px;"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+              </span>
+            </div>
+          </div>
+          <div style="display:flex; align-items:stretch; background:#1e1a28; border-radius:16px; overflow:hidden;">
+            <div style="width:6px; background:#f59e0b; flex-shrink:0;"></div>
+            <div style="flex:1; display:flex; align-items:center; gap:12px; padding:12px 14px 12px 10px;">
+              <div style="height:76px; width:54px; flex-shrink:0; border-radius:6px; background:repeating-linear-gradient(45deg,#2b2638 0 8px,#342e44 8px 16px); display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:9px; color:#6f678a;">表紙</div>
+              <div style="flex:1; min-width:0;">
+                <div style="font-weight:700; font-size:15px; color:#f0edf7; line-height:1.3;">葬送のフリーレン</div>
+                <div style="margin-top:2px; font-size:11px; font-weight:700; color:#fbbf24;">在庫未確認 — タップで更新</div>
+              </div>
+              <div style="text-align:center; flex-shrink:0;">
+                <div style="font-size:10px; font-weight:700; color:#6f678a; letter-spacing:0.08em;">次</div>
+                <div style="font-size:30px; font-weight:800; color:#f0edf7; line-height:1; letter-spacing:-0.02em;">12</div>
+              </div>
+              <span style="flex-shrink:0; width:44px; height:44px; border-radius:14px; background:#7c3aed; color:#fff; display:flex; align-items:center; justify-content:center;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" style="width:20px; height:20px;"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+              </span>
+            </div>
+          </div>
+          <div style="display:flex; align-items:stretch; background:#1e1a28; border-radius:16px; overflow:hidden; opacity:0.5;">
+            <div style="width:6px; background:#4a4460; flex-shrink:0;"></div>
+            <div style="flex:1; display:flex; align-items:center; gap:12px; padding:12px 14px 12px 10px;">
+              <div style="height:76px; width:54px; flex-shrink:0; border-radius:6px; background:repeating-linear-gradient(45deg,#2b2638 0 8px,#342e44 8px 16px); display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:9px; color:#6f678a;">表紙</div>
+              <div style="flex:1; min-width:0;">
+                <div style="font-weight:700; font-size:15px; color:#f0edf7; line-height:1.3;">ハイキュー!!</div>
+                <div style="margin-top:2px; font-size:11px; font-weight:700; color:#8d84a8;">この店には無い</div>
+              </div>
+              <div style="text-align:center; flex-shrink:0;">
+                <div style="font-size:10px; font-weight:700; color:#6f678a; letter-spacing:0.08em;">次</div>
+                <div style="font-size:30px; font-weight:800; color:#f0edf7; line-height:1; letter-spacing:-0.02em;">33</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="margin:0 20px 10px; background:#f0edf7; border-radius:18px; padding:12px 16px; display:flex; align-items:center; justify-content:space-between;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="width:28px; height:28px; border-radius:999px; background:#7c3aed; color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800;">3</span>
+            <span style="font-size:13px; font-weight:600; color:#131018;">カートに3冊</span>
+          </div>
+          <span style="background:#131018; color:#fff; border-radius:999px; padding:8px 18px; font-size:13px; font-weight:800;">会計した →</span>
+        </div>
+        <div style="background:rgba(19,16,24,0.95); border-top:1px solid #262130; display:flex; padding:10px 8px 6px;">
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:700; color:#c4b5fd;">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width:22px; height:22px;"><path d="M12 3 3 10.5V20a1 1 0 0 0 1 1h5.5v-6h5v6H20a1 1 0 0 0 1-1v-9.5L12 3z"></path></svg>
+            ホーム
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:600; color:#5d5578;">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width:22px; height:22px;"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4.5L5 21V4a1 1 0 0 1 1-1z"></path></svg>
+            読みたい
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:600; color:#5d5578;">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width:22px; height:22px;"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm4 11h-5V6h1.8v5.2H16z"></path></svg>
+            履歴
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:600; color:#5d5578;">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width:22px; height:22px;"><path d="M18 2H6v7a6 6 0 0 0 4.6 5.84c-.1 1.3-.8 2.4-2.6 3.16-.6.25-1 .8-1 1.5V21h10v-1.5c0-.7-.4-1.25-1-1.5-1.8-.76-2.5-1.86-2.6-3.16A6 6 0 0 0 18 9V2z"></path></svg>
+            読破
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:600; color:#5d5578;">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width:22px; height:22px;"><path d="M12 8.5A3.5 3.5 0 1 0 15.5 12 3.5 3.5 0 0 0 12 8.5zm9.2 5-1.9 1.5c.05-.33.2-.65.2-1s-.15-.67-.2-1l1.9-1.5a.6.6 0 0 0 .15-.75l-1.8-3.1a.6.6 0 0 0-.73-.26l-2.24.9a7.3 7.3 0 0 0-1.73-1l-.34-2.38A.6.6 0 0 0 13.9 4h-3.8a.6.6 0 0 0-.6.5l-.34 2.39a7.3 7.3 0 0 0-1.73 1l-2.24-.9a.6.6 0 0 0-.73.26l-1.8 3.1a.6.6 0 0 0 .15.75L4.7 12.5c-.05.33-.2.65-.2 1s.15.67.2 1l-1.9 1.5a.6.6 0 0 0-.15.75l1.8 3.1a.6.6 0 0 0 .73.26l2.24-.9a7.3 7.3 0 0 0 1.73 1l.34 2.38a.6.6 0 0 0 .6.51h3.8a.6.6 0 0 0 .6-.5l.34-2.39a7.3 7.3 0 0 0 1.73-1l2.24.9a.6.6 0 0 0 .73-.26l1.8-3.1a.6.6 0 0 0-.15-.75z"></path></svg>
+            設定
+          </div>
+        </div>
+        <div style="display:flex; justify-content:center; padding:4px 0 8px; background:rgba(19,16,24,0.95);"><span style="width:134px; height:5px; border-radius:999px; background:#f0edf7;"></span></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================================================== 1d ================================================== -->
+  <div id="1d" style="display:flex; flex-direction:column; gap:16px;">
+    <div style="display:flex; align-items:baseline; gap:12px;">
+      <span style="background:#1e293b; color:#fff; font-size:14px; font-weight:800; padding:4px 12px; border-radius:8px;">1d</span>
+      <span style="font-size:20px; font-weight:800; color:#1e293b;">Library — ナビ統合 3タブ</span>
+      <span style="font-size:13px; color:#64748b;">進行中/読みたい/読破を「ライブラリ」1画面のセグメントに統合し、タブは ライブラリ・履歴・設定 の3つに。深紫の没入感あるビジュアル。</span>
+    </div>
+    <div style="display:flex; gap:32px; flex-wrap:wrap;">
+
+      <!-- 1d dark (main) -->
+      <div style="width:390px; height:800px; background:linear-gradient(180deg,#2e1065 0%,#1a0b38 30%, #120826 100%); border-radius:44px; box-shadow:0 24px 48px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.07); overflow:hidden; display:flex; flex-direction:column;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 28px 4px; font-size:15px; font-weight:600; color:#f3effc;">
+          <span>9:41</span>
+          <span style="display:flex; gap:5px;"><span style="width:18px; height:11px; background:#f3effc; border-radius:2px; opacity:0.85;"></span><span style="width:16px; height:11px; background:#f3effc; border-radius:2px; opacity:0.5;"></span><span style="width:24px; height:11px; background:#f3effc; border-radius:3px;"></span></span>
+        </div>
+        <div style="padding:12px 22px 0; display:flex; align-items:center; justify-content:space-between;">
+          <div style="font-size:28px; font-weight:800; color:#f3effc; letter-spacing:-0.01em;">ライブラリ</div>
+          <div style="display:flex; align-items:center; gap:14px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" stroke-width="2" stroke-linecap="round" style="width:24px; height:24px;"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+            <span style="position:relative; display:inline-flex;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:24px; height:24px;"><circle cx="9" cy="20" r="1.4"></circle><circle cx="18" cy="20" r="1.4"></circle><path d="M2.5 3.5H5l2.4 11.3a1.8 1.8 0 0 0 1.8 1.4h8.3a1.8 1.8 0 0 0 1.76-1.4L22 7H6"></path></svg>
+              <span style="position:absolute; right:-7px; top:-6px; min-width:17px; text-align:center; background:#fbbf24; color:#1a0b38; border-radius:999px; padding:1px 4px; font-size:10px; font-weight:800;">3</span>
+            </span>
+          </div>
+        </div>
+        <!-- セグメント -->
+        <div style="margin:14px 22px 0; background:rgba(255,255,255,0.08); border-radius:999px; padding:4px; display:flex;">
+          <span style="flex:1; text-align:center; border-radius:999px; padding:8px 0; font-size:13px; font-weight:700; background:#f3effc; color:#2e1065;">進行中 4</span>
+          <span style="flex:1; text-align:center; border-radius:999px; padding:8px 0; font-size:13px; font-weight:600; color:#b3a5d9;">読みたい 2</span>
+          <span style="flex:1; text-align:center; border-radius:999px; padding:8px 0; font-size:13px; font-weight:600; color:#b3a5d9;">読破 12</span>
+        </div>
+        <!-- ショップフィルタ -->
+        <div style="padding:12px 22px 2px; display:flex; gap:8px;">
+          <span style="border-radius:999px; padding:7px 14px; font-size:12px; font-weight:700; background:rgba(196,181,253,0.25); color:#e5dcff; border:1px solid rgba(196,181,253,0.4);">すべての店</span>
+          <span style="border-radius:999px; padding:7px 14px; font-size:12px; font-weight:600; color:#9a8bc4; border:1px solid rgba(196,181,253,0.18);">TSUTAYA 駅前店</span>
+          <span style="border-radius:999px; padding:7px 14px; font-size:12px; font-weight:600; color:#9a8bc4; border:1px solid rgba(196,181,253,0.18);">ゲオ 南口店</span>
+        </div>
+        <!-- リスト -->
+        <div style="flex:1; overflow:hidden; padding:12px 22px; display:flex; flex-direction:column; gap:10px;">
+          <div style="display:flex; gap:14px; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.08); border-radius:18px; padding:12px; backdrop-filter:blur(8px);">
+            <div style="height:100px; width:70px; flex-shrink:0; border-radius:8px; background:repeating-linear-gradient(45deg,rgba(255,255,255,0.1) 0 8px,rgba(255,255,255,0.16) 8px 16px); display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:9px; color:#9a8bc4; text-align:center; line-height:1.5;">表紙<br>109巻</div>
+            <div style="flex:1; display:flex; flex-direction:column; min-width:0;">
+              <div style="font-weight:700; font-size:16px; color:#f3effc; line-height:1.3;">ONE PIECE</div>
+              <div style="margin-top:3px; font-size:12px; color:#9a8bc4;">読了 108巻 / ★★★★★</div>
+              <div style="margin-top:auto; display:flex; align-items:center; justify-content:space-between; gap:8px;">
+                <span style="font-size:13px; font-weight:800; color:#fbbf24;">次は 109巻</span>
+                <span style="background:#a78bfa; color:#1a0b38; border-radius:999px; padding:7px 16px; font-size:13px; font-weight:800;">＋ カート</span>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex; gap:14px; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.08); border-radius:18px; padding:12px;">
+            <div style="height:100px; width:70px; flex-shrink:0; border-radius:8px; background:repeating-linear-gradient(45deg,rgba(255,255,255,0.1) 0 8px,rgba(255,255,255,0.16) 8px 16px); display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:9px; color:#9a8bc4; text-align:center; line-height:1.5;">表紙<br>72巻</div>
+            <div style="flex:1; display:flex; flex-direction:column; min-width:0;">
+              <div style="font-weight:700; font-size:16px; color:#f3effc; line-height:1.3;">キングダム</div>
+              <div style="margin-top:3px; font-size:12px; color:#9a8bc4;">読了 71巻 / ★★★★★</div>
+              <div style="margin-top:auto; display:flex; align-items:center; justify-content:space-between; gap:8px;">
+                <span style="font-size:13px; font-weight:800; color:#fbbf24;">次は 72巻</span>
+                <span style="background:#a78bfa; color:#1a0b38; border-radius:999px; padding:7px 16px; font-size:13px; font-weight:800;">＋ カート</span>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex; gap:14px; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.08); border-radius:18px; padding:12px;">
+            <div style="height:100px; width:70px; flex-shrink:0; border-radius:8px; background:repeating-linear-gradient(45deg,rgba(255,255,255,0.1) 0 8px,rgba(255,255,255,0.16) 8px 16px); display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:9px; color:#9a8bc4; text-align:center; line-height:1.5;">表紙<br>12巻</div>
+            <div style="flex:1; display:flex; flex-direction:column; min-width:0;">
+              <div style="font-weight:700; font-size:16px; color:#f3effc; line-height:1.3;">葬送のフリーレン</div>
+              <div style="margin-top:3px; font-size:12px; color:#9a8bc4;">読了 11巻 / ★★★★</div>
+              <div style="margin-top:auto; display:flex; align-items:center; justify-content:space-between; gap:8px;">
+                <span style="font-size:13px; font-weight:800; color:#fbbf24;">次は 12巻</span>
+                <span style="background:#a78bfa; color:#1a0b38; border-radius:999px; padding:7px 16px; font-size:13px; font-weight:800;">＋ カート</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- 3タブ -->
+        <div style="background:rgba(18,8,38,0.9); border-top:1px solid rgba(255,255,255,0.08); display:flex; padding:10px 24px 6px;">
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:700; color:#e5dcff;">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width:23px; height:23px;"><path d="M4 4h5v16H4zM10.5 4h5v16h-5zM17.2 5.2l4.6 1.2-3.8 14.3-4.6-1.2z"></path></svg>
+            ライブラリ
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:600; color:#6c5f92;">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width:23px; height:23px;"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm4 11h-5V6h1.8v5.2H16z"></path></svg>
+            履歴
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:600; color:#6c5f92;">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width:23px; height:23px;"><path d="M12 8.5A3.5 3.5 0 1 0 15.5 12 3.5 3.5 0 0 0 12 8.5zm9.2 5-1.9 1.5c.05-.33.2-.65.2-1s-.15-.67-.2-1l1.9-1.5a.6.6 0 0 0 .15-.75l-1.8-3.1a.6.6 0 0 0-.73-.26l-2.24.9a7.3 7.3 0 0 0-1.73-1l-.34-2.38A.6.6 0 0 0 13.9 4h-3.8a.6.6 0 0 0-.6.5l-.34 2.39a7.3 7.3 0 0 0-1.73 1l-2.24-.9a.6.6 0 0 0-.73.26l-1.8 3.1a.6.6 0 0 0 .15.75L4.7 12.5c-.05.33-.2.65-.2 1s.15.67.2 1l-1.9 1.5a.6.6 0 0 0-.15.75l1.8 3.1a.6.6 0 0 0 .73.26l2.24-.9a7.3 7.3 0 0 0 1.73 1l.34 2.38a.6.6 0 0 0 .6.51h3.8a.6.6 0 0 0 .6-.5l.34-2.39a7.3 7.3 0 0 0 1.73-1l2.24.9a.6.6 0 0 0 .73-.26l1.8-3.1a.6.6 0 0 0-.15-.75z"></path></svg>
+            設定
+          </div>
+        </div>
+        <div style="display:flex; justify-content:center; padding:4px 0 8px; background:rgba(18,8,38,0.9);"><span style="width:134px; height:5px; border-radius:999px; background:#f3effc;"></span></div>
+      </div>
+
+      <!-- 1d light -->
+      <div style="width:390px; height:800px; background:#f3f1f8; border-radius:44px; box-shadow:0 24px 48px rgba(15,10,40,0.16), 0 0 0 1px rgba(0,0,0,0.07); overflow:hidden; display:flex; flex-direction:column;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 28px 4px; font-size:15px; font-weight:600; color:#221a3d;">
+          <span>9:41</span>
+          <span style="display:flex; gap:5px;"><span style="width:18px; height:11px; background:#221a3d; border-radius:2px; opacity:0.85;"></span><span style="width:16px; height:11px; background:#221a3d; border-radius:2px; opacity:0.5;"></span><span style="width:24px; height:11px; background:#221a3d; border-radius:3px;"></span></span>
+        </div>
+        <div style="padding:12px 22px 0; display:flex; align-items:center; justify-content:space-between;">
+          <div style="font-size:28px; font-weight:800; color:#221a3d; letter-spacing:-0.01em;">ライブラリ</div>
+          <div style="display:flex; align-items:center; gap:14px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#5b21b6" stroke-width="2" stroke-linecap="round" style="width:24px; height:24px;"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+            <span style="position:relative; display:inline-flex;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#5b21b6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:24px; height:24px;"><circle cx="9" cy="20" r="1.4"></circle><circle cx="18" cy="20" r="1.4"></circle><path d="M2.5 3.5H5l2.4 11.3a1.8 1.8 0 0 0 1.8 1.4h8.3a1.8 1.8 0 0 0 1.76-1.4L22 7H6"></path></svg>
+              <span style="position:absolute; right:-7px; top:-6px; min-width:17px; text-align:center; background:#5b21b6; color:#fff; border-radius:999px; padding:1px 4px; font-size:10px; font-weight:800;">3</span>
+            </span>
+          </div>
+        </div>
+        <div style="margin:14px 22px 0; background:#e5e0f0; border-radius:999px; padding:4px; display:flex;">
+          <span style="flex:1; text-align:center; border-radius:999px; padding:8px 0; font-size:13px; font-weight:700; background:#fff; color:#5b21b6; box-shadow:0 1px 3px rgba(34,26,61,0.12);">進行中 4</span>
+          <span style="flex:1; text-align:center; border-radius:999px; padding:8px 0; font-size:13px; font-weight:600; color:#6f6591;">読みたい 2</span>
+          <span style="flex:1; text-align:center; border-radius:999px; padding:8px 0; font-size:13px; font-weight:600; color:#6f6591;">読破 12</span>
+        </div>
+        <div style="padding:12px 22px 2px; display:flex; gap:8px;">
+          <span style="border-radius:999px; padding:7px 14px; font-size:12px; font-weight:700; background:#5b21b6; color:#fff;">すべての店</span>
+          <span style="border-radius:999px; padding:7px 14px; font-size:12px; font-weight:600; color:#6f6591; background:#fff; border:1px solid #e0dbec;">TSUTAYA 駅前店</span>
+          <span style="border-radius:999px; padding:7px 14px; font-size:12px; font-weight:600; color:#6f6591; background:#fff; border:1px solid #e0dbec;">ゲオ 南口店</span>
+        </div>
+        <div style="flex:1; overflow:hidden; padding:12px 22px; display:flex; flex-direction:column; gap:10px;">
+          <div style="display:flex; gap:14px; background:#fff; border-radius:18px; padding:12px; box-shadow:0 2px 8px rgba(34,26,61,0.07);">
+            <div style="height:100px; width:70px; flex-shrink:0; border-radius:8px; background:repeating-linear-gradient(45deg,#e7e3f1 0 8px,#efecf6 8px 16px); display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:9px; color:#a49bc0; text-align:center; line-height:1.5;">表紙<br>109巻</div>
+            <div style="flex:1; display:flex; flex-direction:column; min-width:0;">
+              <div style="font-weight:700; font-size:16px; color:#221a3d; line-height:1.3;">ONE PIECE</div>
+              <div style="margin-top:3px; font-size:12px; color:#6f6591;">読了 108巻 / ★★★★★</div>
+              <div style="margin-top:auto; display:flex; align-items:center; justify-content:space-between; gap:8px;">
+                <span style="font-size:13px; font-weight:800; color:#5b21b6;">次は 109巻</span>
+                <span style="background:#5b21b6; color:#fff; border-radius:999px; padding:7px 16px; font-size:13px; font-weight:800;">＋ カート</span>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex; gap:14px; background:#fff; border-radius:18px; padding:12px; box-shadow:0 2px 8px rgba(34,26,61,0.07);">
+            <div style="height:100px; width:70px; flex-shrink:0; border-radius:8px; background:repeating-linear-gradient(45deg,#e7e3f1 0 8px,#efecf6 8px 16px); display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:9px; color:#a49bc0; text-align:center; line-height:1.5;">表紙<br>72巻</div>
+            <div style="flex:1; display:flex; flex-direction:column; min-width:0;">
+              <div style="font-weight:700; font-size:16px; color:#221a3d; line-height:1.3;">キングダム</div>
+              <div style="margin-top:3px; font-size:12px; color:#6f6591;">読了 71巻 / ★★★★★</div>
+              <div style="margin-top:auto; display:flex; align-items:center; justify-content:space-between; gap:8px;">
+                <span style="font-size:13px; font-weight:800; color:#5b21b6;">次は 72巻</span>
+                <span style="background:#5b21b6; color:#fff; border-radius:999px; padding:7px 16px; font-size:13px; font-weight:800;">＋ カート</span>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex; gap:14px; background:#fff; border-radius:18px; padding:12px; box-shadow:0 2px 8px rgba(34,26,61,0.07);">
+            <div style="height:100px; width:70px; flex-shrink:0; border-radius:8px; background:repeating-linear-gradient(45deg,#e7e3f1 0 8px,#efecf6 8px 16px); display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:9px; color:#a49bc0; text-align:center; line-height:1.5;">表紙<br>12巻</div>
+            <div style="flex:1; display:flex; flex-direction:column; min-width:0;">
+              <div style="font-weight:700; font-size:16px; color:#221a3d; line-height:1.3;">葬送のフリーレン</div>
+              <div style="margin-top:3px; font-size:12px; color:#6f6591;">読了 11巻 / ★★★★</div>
+              <div style="margin-top:auto; display:flex; align-items:center; justify-content:space-between; gap:8px;">
+                <span style="font-size:13px; font-weight:800; color:#5b21b6;">次は 12巻</span>
+                <span style="background:#5b21b6; color:#fff; border-radius:999px; padding:7px 16px; font-size:13px; font-weight:800;">＋ カート</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="background:rgba(255,255,255,0.94); border-top:1px solid #e6e1f0; display:flex; padding:10px 24px 6px;">
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:700; color:#5b21b6;">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width:23px; height:23px;"><path d="M4 4h5v16H4zM10.5 4h5v16h-5zM17.2 5.2l4.6 1.2-3.8 14.3-4.6-1.2z"></path></svg>
+            ライブラリ
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:600; color:#a89fc4;">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width:23px; height:23px;"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm4 11h-5V6h1.8v5.2H16z"></path></svg>
+            履歴
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:600; color:#a89fc4;">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width:23px; height:23px;"><path d="M12 8.5A3.5 3.5 0 1 0 15.5 12 3.5 3.5 0 0 0 12 8.5zm9.2 5-1.9 1.5c.05-.33.2-.65.2-1s-.15-.67-.2-1l1.9-1.5a.6.6 0 0 0 .15-.75l-1.8-3.1a.6.6 0 0 0-.73-.26l-2.24.9a7.3 7.3 0 0 0-1.73-1l-.34-2.38A.6.6 0 0 0 13.9 4h-3.8a.6.6 0 0 0-.6.5l-.34 2.39a7.3 7.3 0 0 0-1.73 1l-2.24-.9a.6.6 0 0 0-.73.26l-1.8 3.1a.6.6 0 0 0 .15.75L4.7 12.5c-.05.33-.2.65-.2 1s.15.67.2 1l-1.9 1.5a.6.6 0 0 0-.15.75l1.8 3.1a.6.6 0 0 0 .73.26l2.24-.9a7.3 7.3 0 0 0 1.73 1l.34 2.38a.6.6 0 0 0 .6.51h3.8a.6.6 0 0 0 .6-.5l.34-2.39a7.3 7.3 0 0 0 1.73-1l2.24.9a.6.6 0 0 0 .73-.26l1.8-3.1a.6.6 0 0 0-.15-.75z"></path></svg>
+            設定
+          </div>
+        </div>
+        <div style="display:flex; justify-content:center; padding:4px 0 8px; background:rgba(255,255,255,0.94);"><span style="width:134px; height:5px; border-radius:999px; background:#221a3d;"></span></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================================================== 1e ================================================== -->
+  <div id="1e" style="display:flex; flex-direction:column; gap:16px;">
+    <div style="display:flex; align-items:baseline; gap:12px;">
+      <span style="background:#1e293b; color:#fff; font-size:14px; font-weight:800; padding:4px 12px; border-radius:8px;">1e</span>
+      <span style="font-size:20px; font-weight:800; color:#1e293b;">Ledger — ミニマルタイポグラフィ</span>
+      <span style="font-size:13px; color:#64748b;">カードを排したヘアライン区切りのリスト。巨大な巻数タイポが情報の主役。白+黒+紫1色。</span>
+    </div>
+    <div style="display:flex; gap:32px; flex-wrap:wrap;">
+
+      <!-- 1e light -->
+      <div style="width:390px; height:800px; background:#ffffff; border-radius:44px; box-shadow:0 24px 48px rgba(15,10,40,0.14), 0 0 0 1px rgba(0,0,0,0.08); overflow:hidden; display:flex; flex-direction:column;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 28px 4px; font-size:15px; font-weight:600; color:#0f0e12;">
+          <span>9:41</span>
+          <span style="display:flex; gap:5px;"><span style="width:18px; height:11px; background:#0f0e12; border-radius:2px; opacity:0.85;"></span><span style="width:16px; height:11px; background:#0f0e12; border-radius:2px; opacity:0.5;"></span><span style="width:24px; height:11px; background:#0f0e12; border-radius:3px;"></span></span>
+        </div>
+        <div style="padding:18px 24px 0; display:flex; align-items:baseline; justify-content:space-between;">
+          <div style="font-size:34px; font-weight:800; color:#0f0e12; letter-spacing:-0.03em;">進行中<span style="font-size:15px; font-weight:600; color:#a3a0ad; margin-left:8px;">4</span></div>
+          <div style="display:flex; align-items:center; gap:16px;">
+            <span style="font-size:13px; font-weight:600; color:#5b21b6; border-bottom:1.5px solid #5b21b6; padding-bottom:1px;">すべての店 ▾</span>
+            <span style="position:relative; display:inline-flex;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#0f0e12" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:23px; height:23px;"><circle cx="9" cy="20" r="1.4"></circle><circle cx="18" cy="20" r="1.4"></circle><path d="M2.5 3.5H5l2.4 11.3a1.8 1.8 0 0 0 1.8 1.4h8.3a1.8 1.8 0 0 0 1.76-1.4L22 7H6"></path></svg>
+              <span style="position:absolute; right:-7px; top:-6px; min-width:17px; text-align:center; background:#5b21b6; color:#fff; border-radius:999px; padding:1px 4px; font-size:10px; font-weight:800;">3</span>
+            </span>
+          </div>
+        </div>
+        <div style="flex:1; overflow:hidden; padding:10px 0 0; display:flex; flex-direction:column;">
+          <!-- row -->
+          <div style="display:flex; align-items:center; gap:16px; padding:18px 24px; border-bottom:1px solid #eeedf2;">
+            <div style="height:88px; width:62px; flex-shrink:0; background:repeating-linear-gradient(45deg,#efeef3 0 8px,#f6f5f9 8px 16px); display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:9px; color:#a3a0ad;">表紙</div>
+            <div style="flex:1; min-width:0;">
+              <div style="font-weight:700; font-size:17px; color:#0f0e12; letter-spacing:-0.01em;">ONE PIECE</div>
+              <div style="margin-top:3px; font-size:12px; color:#a3a0ad;">読了 108 ・ カート×2</div>
+            </div>
+            <div style="display:flex; align-items:baseline; gap:2px; flex-shrink:0;">
+              <span style="font-size:44px; font-weight:800; color:#5b21b6; letter-spacing:-0.04em; line-height:1;">109</span>
+              <span style="font-size:13px; font-weight:700; color:#a3a0ad;">巻</span>
+            </div>
+            <span style="flex-shrink:0; width:40px; height:40px; border-radius:999px; border:1.5px solid #0f0e12; display:flex; align-items:center; justify-content:center;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#0f0e12" stroke-width="2.2" stroke-linecap="round" style="width:18px; height:18px;"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+            </span>
+          </div>
+          <div style="display:flex; align-items:center; gap:16px; padding:18px 24px; border-bottom:1px solid #eeedf2;">
+            <div style="height:88px; width:62px; flex-shrink:0; background:repeating-linear-gradient(45deg,#efeef3 0 8px,#f6f5f9 8px 16px); display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:9px; color:#a3a0ad;">表紙</div>
+            <div style="flex:1; min-width:0;">
+              <div style="font-weight:700; font-size:17px; color:#0f0e12; letter-spacing:-0.01em;">キングダム</div>
+              <div style="margin-top:3px; font-size:12px; color:#a3a0ad;">読了 71</div>
+            </div>
+            <div style="display:flex; align-items:baseline; gap:2px; flex-shrink:0;">
+              <span style="font-size:44px; font-weight:800; color:#5b21b6; letter-spacing:-0.04em; line-height:1;">72</span>
+              <span style="font-size:13px; font-weight:700; color:#a3a0ad;">巻</span>
+            </div>
+            <span style="flex-shrink:0; width:40px; height:40px; border-radius:999px; border:1.5px solid #0f0e12; display:flex; align-items:center; justify-content:center;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#0f0e12" stroke-width="2.2" stroke-linecap="round" style="width:18px; height:18px;"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+            </span>
+          </div>
+          <div style="display:flex; align-items:center; gap:16px; padding:18px 24px; border-bottom:1px solid #eeedf2;">
+            <div style="height:88px; width:62px; flex-shrink:0; background:repeating-linear-gradient(45deg,#efeef3 0 8px,#f6f5f9 8px 16px); display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:9px; color:#a3a0ad;">表紙</div>
+            <div style="flex:1; min-width:0;">
+              <div style="font-weight:700; font-size:17px; color:#0f0e12; letter-spacing:-0.01em;">葬送のフリーレン</div>
+              <div style="margin-top:3px; font-size:12px; color:#a3a0ad;">読了 11</div>
+            </div>
+            <div style="display:flex; align-items:baseline; gap:2px; flex-shrink:0;">
+              <span style="font-size:44px; font-weight:800; color:#5b21b6; letter-spacing:-0.04em; line-height:1;">12</span>
+              <span style="font-size:13px; font-weight:700; color:#a3a0ad;">巻</span>
+            </div>
+            <span style="flex-shrink:0; width:40px; height:40px; border-radius:999px; border:1.5px solid #0f0e12; display:flex; align-items:center; justify-content:center;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#0f0e12" stroke-width="2.2" stroke-linecap="round" style="width:18px; height:18px;"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+            </span>
+          </div>
+          <div style="display:flex; align-items:center; gap:16px; padding:18px 24px;">
+            <div style="height:88px; width:62px; flex-shrink:0; background:repeating-linear-gradient(45deg,#efeef3 0 8px,#f6f5f9 8px 16px); display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:9px; color:#a3a0ad;">表紙</div>
+            <div style="flex:1; min-width:0;">
+              <div style="font-weight:700; font-size:17px; color:#0f0e12; letter-spacing:-0.01em;">ハイキュー!!</div>
+              <div style="margin-top:3px; font-size:12px; color:#a3a0ad;">読了 32 ・ カート×1</div>
+            </div>
+            <div style="display:flex; align-items:baseline; gap:2px; flex-shrink:0;">
+              <span style="font-size:44px; font-weight:800; color:#5b21b6; letter-spacing:-0.04em; line-height:1;">33</span>
+              <span style="font-size:13px; font-weight:700; color:#a3a0ad;">巻</span>
+            </div>
+            <span style="flex-shrink:0; width:40px; height:40px; border-radius:999px; border:1.5px solid #0f0e12; display:flex; align-items:center; justify-content:center;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#0f0e12" stroke-width="2.2" stroke-linecap="round" style="width:18px; height:18px;"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+            </span>
+          </div>
+        </div>
+        <div style="border-top:1px solid #eeedf2; display:flex; padding:12px 8px 6px; background:#fff;">
+          <div style="flex:1; text-align:center; font-size:11px; font-weight:800; color:#0f0e12;">進行中</div>
+          <div style="flex:1; text-align:center; font-size:11px; font-weight:600; color:#b8b5c2;">読みたい</div>
+          <div style="flex:1; text-align:center; font-size:11px; font-weight:600; color:#b8b5c2;">履歴</div>
+          <div style="flex:1; text-align:center; font-size:11px; font-weight:600; color:#b8b5c2;">読破</div>
+          <div style="flex:1; text-align:center; font-size:11px; font-weight:600; color:#b8b5c2;">設定</div>
+        </div>
+        <div style="display:flex; justify-content:center; padding:6px 0 8px; background:#fff;"><span style="width:134px; height:5px; border-radius:999px; background:#0f0e12;"></span></div>
+      </div>
+
+      <!-- 1e dark -->
+      <div style="width:390px; height:800px; background:#0f0e12; border-radius:44px; box-shadow:0 24px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.07); overflow:hidden; display:flex; flex-direction:column;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 28px 4px; font-size:15px; font-weight:600; color:#f4f3f7;">
+          <span>9:41</span>
+          <span style="display:flex; gap:5px;"><span style="width:18px; height:11px; background:#f4f3f7; border-radius:2px; opacity:0.85;"></span><span style="width:16px; height:11px; background:#f4f3f7; border-radius:2px; opacity:0.5;"></span><span style="width:24px; height:11px; background:#f4f3f7; border-radius:3px;"></span></span>
+        </div>
+        <div style="padding:18px 24px 0; display:flex; align-items:baseline; justify-content:space-between;">
+          <div style="font-size:34px; font-weight:800; color:#f4f3f7; letter-spacing:-0.03em;">進行中<span style="font-size:15px; font-weight:600; color:#5f5c6b; margin-left:8px;">4</span></div>
+          <div style="display:flex; align-items:center; gap:16px;">
+            <span style="font-size:13px; font-weight:600; color:#a78bfa; border-bottom:1.5px solid #a78bfa; padding-bottom:1px;">すべての店 ▾</span>
+            <span style="position:relative; display:inline-flex;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#f4f3f7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:23px; height:23px;"><circle cx="9" cy="20" r="1.4"></circle><circle cx="18" cy="20" r="1.4"></circle><path d="M2.5 3.5H5l2.4 11.3a1.8 1.8 0 0 0 1.8 1.4h8.3a1.8 1.8 0 0 0 1.76-1.4L22 7H6"></path></svg>
+              <span style="position:absolute; right:-7px; top:-6px; min-width:17px; text-align:center; background:#a78bfa; color:#0f0e12; border-radius:999px; padding:1px 4px; font-size:10px; font-weight:800;">3</span>
+            </span>
+          </div>
+        </div>
+        <div style="flex:1; overflow:hidden; padding:10px 0 0; display:flex; flex-direction:column;">
+          <div style="display:flex; align-items:center; gap:16px; padding:18px 24px; border-bottom:1px solid #232129;">
+            <div style="height:88px; width:62px; flex-shrink:0; background:repeating-linear-gradient(45deg,#232129 0 8px,#2b2833 8px 16px); display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:9px; color:#5f5c6b;">表紙</div>
+            <div style="flex:1; min-width:0;">
+              <div style="font-weight:700; font-size:17px; color:#f4f3f7; letter-spacing:-0.01em;">ONE PIECE</div>
+              <div style="margin-top:3px; font-size:12px; color:#5f5c6b;">読了 108 ・ カート×2</div>
+            </div>
+            <div style="display:flex; align-items:baseline; gap:2px; flex-shrink:0;">
+              <span style="font-size:44px; font-weight:800; color:#a78bfa; letter-spacing:-0.04em; line-height:1;">109</span>
+              <span style="font-size:13px; font-weight:700; color:#5f5c6b;">巻</span>
+            </div>
+            <span style="flex-shrink:0; width:40px; height:40px; border-radius:999px; border:1.5px solid #f4f3f7; display:flex; align-items:center; justify-content:center;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#f4f3f7" stroke-width="2.2" stroke-linecap="round" style="width:18px; height:18px;"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+            </span>
+          </div>
+          <div style="display:flex; align-items:center; gap:16px; padding:18px 24px; border-bottom:1px solid #232129;">
+            <div style="height:88px; width:62px; flex-shrink:0; background:repeating-linear-gradient(45deg,#232129 0 8px,#2b2833 8px 16px); display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:9px; color:#5f5c6b;">表紙</div>
+            <div style="flex:1; min-width:0;">
+              <div style="font-weight:700; font-size:17px; color:#f4f3f7; letter-spacing:-0.01em;">キングダム</div>
+              <div style="margin-top:3px; font-size:12px; color:#5f5c6b;">読了 71</div>
+            </div>
+            <div style="display:flex; align-items:baseline; gap:2px; flex-shrink:0;">
+              <span style="font-size:44px; font-weight:800; color:#a78bfa; letter-spacing:-0.04em; line-height:1;">72</span>
+              <span style="font-size:13px; font-weight:700; color:#5f5c6b;">巻</span>
+            </div>
+            <span style="flex-shrink:0; width:40px; height:40px; border-radius:999px; border:1.5px solid #f4f3f7; display:flex; align-items:center; justify-content:center;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#f4f3f7" stroke-width="2.2" stroke-linecap="round" style="width:18px; height:18px;"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+            </span>
+          </div>
+          <div style="display:flex; align-items:center; gap:16px; padding:18px 24px; border-bottom:1px solid #232129;">
+            <div style="height:88px; width:62px; flex-shrink:0; background:repeating-linear-gradient(45deg,#232129 0 8px,#2b2833 8px 16px); display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:9px; color:#5f5c6b;">表紙</div>
+            <div style="flex:1; min-width:0;">
+              <div style="font-weight:700; font-size:17px; color:#f4f3f7; letter-spacing:-0.01em;">葬送のフリーレン</div>
+              <div style="margin-top:3px; font-size:12px; color:#5f5c6b;">読了 11</div>
+            </div>
+            <div style="display:flex; align-items:baseline; gap:2px; flex-shrink:0;">
+              <span style="font-size:44px; font-weight:800; color:#a78bfa; letter-spacing:-0.04em; line-height:1;">12</span>
+              <span style="font-size:13px; font-weight:700; color:#5f5c6b;">巻</span>
+            </div>
+            <span style="flex-shrink:0; width:40px; height:40px; border-radius:999px; border:1.5px solid #f4f3f7; display:flex; align-items:center; justify-content:center;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#f4f3f7" stroke-width="2.2" stroke-linecap="round" style="width:18px; height:18px;"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+            </span>
+          </div>
+          <div style="display:flex; align-items:center; gap:16px; padding:18px 24px;">
+            <div style="height:88px; width:62px; flex-shrink:0; background:repeating-linear-gradient(45deg,#232129 0 8px,#2b2833 8px 16px); display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:9px; color:#5f5c6b;">表紙</div>
+            <div style="flex:1; min-width:0;">
+              <div style="font-weight:700; font-size:17px; color:#f4f3f7; letter-spacing:-0.01em;">ハイキュー!!</div>
+              <div style="margin-top:3px; font-size:12px; color:#5f5c6b;">読了 32 ・ カート×1</div>
+            </div>
+            <div style="display:flex; align-items:baseline; gap:2px; flex-shrink:0;">
+              <span style="font-size:44px; font-weight:800; color:#a78bfa; letter-spacing:-0.04em; line-height:1;">33</span>
+              <span style="font-size:13px; font-weight:700; color:#5f5c6b;">巻</span>
+            </div>
+            <span style="flex-shrink:0; width:40px; height:40px; border-radius:999px; border:1.5px solid #f4f3f7; display:flex; align-items:center; justify-content:center;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#f4f3f7" stroke-width="2.2" stroke-linecap="round" style="width:18px; height:18px;"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+            </span>
+          </div>
+        </div>
+        <div style="border-top:1px solid #232129; display:flex; padding:12px 8px 6px; background:#0f0e12;">
+          <div style="flex:1; text-align:center; font-size:11px; font-weight:800; color:#f4f3f7;">進行中</div>
+          <div style="flex:1; text-align:center; font-size:11px; font-weight:600; color:#4b4856;">読みたい</div>
+          <div style="flex:1; text-align:center; font-size:11px; font-weight:600; color:#4b4856;">履歴</div>
+          <div style="flex:1; text-align:center; font-size:11px; font-weight:600; color:#4b4856;">読破</div>
+          <div style="flex:1; text-align:center; font-size:11px; font-weight:600; color:#4b4856;">設定</div>
+        </div>
+        <div style="display:flex; justify-content:center; padding:6px 0 8px; background:#0f0e12;"><span style="width:134px; height:5px; border-radius:999px; background:#f4f3f7;"></span></div>
+      </div>
+
+    </div>
+  </div>
+
+</section>
+</x-dc>
+</body>
+</html>

@@ -23,8 +23,8 @@ export default function OfflineBanner() {
       style={{ bottom: insets.bottom + 56 }}
       className="absolute left-0 right-0 items-center"
     >
-      <View className="rounded-full bg-slate-800/90 px-4 py-1.5">
-        <Text className="text-xs font-semibold text-white">
+      <View className="rounded-full border border-line bg-card px-4 py-1.5 shadow-sm">
+        <Text className="text-xs font-semibold text-ink">
           オフライン — 保存済みの内容を表示しています
         </Text>
       </View>

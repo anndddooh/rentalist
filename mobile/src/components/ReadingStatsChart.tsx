@@ -47,24 +47,27 @@ interface CumulativePoint extends StatsPeriod {
   cumulative: number;
 }
 
-// 期間ごとの巻数を横棒で表示
+// 期間ごとの巻数を横棒で表示（濃色カード上。最新期間のバーだけ不透明ハイライト）
 function PeriodBars({ data, unit }: { data: CumulativePoint[]; unit: Unit }) {
   const max = Math.max(1, ...data.map((d) => d.count));
+  const lastIndex = data.length - 1;
   return (
     <ScrollView className="max-h-56" nestedScrollEnabled>
       <View className="gap-1 pr-1">
-        {data.map((d) => (
+        {data.map((d, i) => (
           <View key={d.period} className="flex-row items-center gap-2">
-            <Text className="w-14 shrink-0 text-right text-xs text-ink-muted">
+            <Text className="w-14 shrink-0 text-right text-xs text-white/60">
               {periodLabel(d.period, unit)}
             </Text>
-            <View className="h-4 flex-1 rounded bg-inset">
+            <View className="h-4 flex-1 rounded bg-white/10">
               <View
-                className="h-full rounded bg-brand"
+                className={`h-full rounded ${
+                  i === lastIndex ? "bg-brand" : "bg-brand/60"
+                }`}
                 style={{ width: `${(d.count / max) * 100}%` }}
               />
             </View>
-            <Text className="w-7 shrink-0 text-right text-xs font-semibold text-ink-muted">
+            <Text className="w-7 shrink-0 text-right text-xs font-semibold text-white/70">
               {d.count}
             </Text>
           </View>
@@ -127,13 +130,13 @@ export default function ReadingStatsChart() {
   if (!stats) return null;
 
   return (
-    <View className="rounded-lg bg-card p-3 shadow-sm">
+    <View className="rounded-[20px] bg-ink p-4 shadow-sm dark:bg-inset">
       <Pressable
         onPress={() => setOpen((v) => !v)}
         className="flex-row items-center justify-between"
       >
-        <Text className="text-sm font-bold text-ink">📊 読書統計</Text>
-        <Text className="text-xs text-ink-faint">
+        <Text className="text-sm font-bold text-white">読書統計</Text>
+        <Text className="text-xs text-white/60">
           {open ? "閉じる ▲" : "開く ▼"}
         </Text>
       </Pressable>
@@ -141,20 +144,25 @@ export default function ReadingStatsChart() {
       {open && (
         <View className="mt-3 gap-4">
           {stats.total === 0 ? (
-            <Text className="text-xs text-ink-faint">
+            <Text className="text-xs text-white/60">
               読破記録が増えると、ここに統計が表示されます。
             </Text>
           ) : (
             <>
               <View className="flex-row items-center justify-between">
-                <Text className="text-sm text-ink-muted">
-                  これまでに読んだ巻数{" "}
-                  <Text className="text-lg font-bold text-brand-text">
+                <View>
+                  <Text className="text-[11px] font-bold tracking-wide text-white/60">
+                    これまでに読んだ巻数
+                  </Text>
+                  <Text className="text-3xl font-extrabold text-white">
                     {stats.total}
-                  </Text>{" "}
-                  巻
-                </Text>
-                <View className="flex-row gap-1">
+                    <Text className="text-sm font-semibold text-white/60">
+                      {" "}
+                      巻
+                    </Text>
+                  </Text>
+                </View>
+                <View className="flex-row gap-1 rounded-full bg-white/10 p-1">
                   {(
                     [
                       ["monthly", "月"],
@@ -164,13 +172,13 @@ export default function ReadingStatsChart() {
                     <Pressable
                       key={key}
                       onPress={() => setUnit(key)}
-                      className={`rounded px-2.5 py-1 ${
-                        unit === key ? "bg-brand" : "bg-inset"
+                      className={`rounded-full px-3 py-1 ${
+                        unit === key ? "bg-white" : ""
                       }`}
                     >
                       <Text
-                        className={`text-xs font-semibold ${
-                          unit === key ? "text-white" : "text-ink-muted"
+                        className={`text-xs font-bold ${
+                          unit === key ? "text-brand" : "text-white/60"
                         }`}
                       >
                         {label}
@@ -181,14 +189,14 @@ export default function ReadingStatsChart() {
               </View>
 
               <View>
-                <Text className="mb-1 text-xs font-semibold text-ink-muted">
+                <Text className="mb-1 text-xs font-semibold text-white/60">
                   {unit === "monthly" ? "月" : "年"}ごとの読んだ巻数
                 </Text>
                 <PeriodBars data={series} unit={unit} />
               </View>
 
               <View>
-                <Text className="mb-1 text-xs font-semibold text-ink-muted">
+                <Text className="mb-1 text-xs font-semibold text-white/60">
                   累計の推移
                 </Text>
                 <CumulativeChart data={series} />

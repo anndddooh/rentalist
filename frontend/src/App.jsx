@@ -18,7 +18,7 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center text-slate-500">
+      <div className="flex h-full items-center justify-center text-ink-muted">
         読み込み中…
       </div>
     );

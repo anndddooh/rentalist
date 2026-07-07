@@ -8,7 +8,7 @@ export default function StarRating({ value = 0, onChange, size = "text-base" }) 
       {stars.map((n) => {
         const filled = n <= value;
         const star = (
-          <span className={filled ? "text-amber-400" : "text-slate-300"}>★</span>
+          <span className={filled ? "text-amber-400" : "text-ink-faint"}>★</span>
         );
         if (!onChange) {
           return <span key={n}>{star}</span>;

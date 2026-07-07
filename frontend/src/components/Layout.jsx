@@ -11,7 +11,7 @@ import { useCart } from "../context/CartContext.jsx";
 import Icon from "./Icon.jsx";
 import Logo from "./Logo.jsx";
 
-// モバイル下部ナビ（5タブ・幅が狭いため一部は短縮表記）
+// モバイル下部ナビ（5タブ）
 const MOBILE_NAV = [
   { to: "/", label: "ホーム", icon: "home", end: true },
   { to: "/wishlist", label: "読みたい", icon: "bookmark" },
@@ -26,7 +26,6 @@ const SIDEBAR_NAV = [
   { to: "/wishlist", label: "いつか読みたい", icon: "bookmark" },
   { to: "/history", label: "履歴", icon: "history" },
   { to: "/completed", label: "読破", icon: "trophy" },
-  { to: "/add", label: "シリーズ追加", icon: "plus" },
   { to: "/settings", label: "設定", icon: "settings" },
 ];
 
@@ -47,90 +46,89 @@ export default function Layout() {
   }
 
   return (
-    <div className="flex h-full">
-      {/* デスクトップ: 左サイドバー */}
-      <aside className="hidden w-56 shrink-0 flex-col bg-brand-dark text-white md:flex">
-        <Link to="/" className="px-5 py-4">
-          <Logo size={30} withText textClassName="text-xl text-white" />
+    <div className="flex h-full bg-surface">
+      {/* デスクトップ: 白サイドバー */}
+      <aside className="hidden w-60 shrink-0 flex-col border-r border-line bg-card md:flex">
+        <Link to="/" className="flex items-center gap-2.5 px-5 py-5">
+          <Logo size={32} withText textClassName="text-xl font-extrabold text-ink" />
         </Link>
-        <nav className="flex-1 space-y-1 px-2">
+        <nav className="flex-1 space-y-0.5 px-3">
           {SIDEBAR_NAV.map((item) => (
             <SidebarLink key={item.to} {...item} />
           ))}
-          <SidebarLink
-            to="/cart"
-            icon="cart"
-            label={`カート${cartCount > 0 ? `（${cartCount}）` : ""}`}
-          />
         </nav>
-        <div className="border-t border-white/10 p-4">
-          <div className="text-sm text-brand-light">{user?.username}</div>
-          <button
-            onClick={handleLogout}
-            className="mt-1 text-xs text-brand-light underline"
-          >
-            ログアウト
-          </button>
+
+        {/* カートサマリー（濃色カード） */}
+        <Link
+          to="/cart"
+          className="m-3 block rounded-[18px] bg-ink p-4 text-white"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-white/60">カート</span>
+            <span className="min-w-[20px] rounded-full bg-brand px-1.5 py-0.5 text-center text-xs font-extrabold text-white">
+              {cartCount}
+            </span>
+          </div>
+          <div className="mt-1.5 text-[13px] text-white/80">
+            {cartCount > 0 ? `${cartCount}冊が入っています` : "カートは空です"}
+          </div>
+          <span className="mt-2.5 block rounded-full bg-white py-2 text-center text-[13px] font-extrabold text-ink">
+            会計した →
+          </span>
+        </Link>
+
+        {/* ユーザー行 */}
+        <div className="flex items-center gap-2.5 px-5 pb-5">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-soft text-sm font-extrabold text-brand-text">
+            {user?.username?.[0] || "?"}
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="truncate text-[13px] font-bold text-ink">
+              {user?.username}
+            </div>
+            <button
+              onClick={handleLogout}
+              className="text-[11px] text-ink-faint hover:text-brand"
+            >
+              ログアウト
+            </button>
+          </div>
         </div>
       </aside>
 
       {/* メインカラム */}
       <div className="flex h-full flex-1 flex-col">
-        {/* モバイル: ヘッダー */}
-        <header className="flex items-center justify-between bg-brand px-4 py-2.5 text-white md:hidden">
-          <Link to="/">
-            <Logo size={26} withText textClassName="text-lg text-white" />
-          </Link>
-          <div className="flex items-center gap-3">
-            <Link to="/cart" className="relative" aria-label="カート">
-              <Icon name="cart" className="h-6 w-6" />
-              {cartCount > 0 && (
-                <span className="absolute -right-2 -top-2 rounded-full bg-rose-500 px-1.5 text-xs font-bold">
-                  {cartCount}
-                </span>
-              )}
-            </Link>
-            <button
-              onClick={handleLogout}
-              className="text-xs text-brand-light underline"
-            >
-              {user?.username}・ログアウト
-            </button>
-          </div>
-        </header>
-
-        <main className="flex-1 overflow-y-auto pb-20 md:pb-8">
-          <div className="mx-auto w-full max-w-md md:max-w-6xl">
+        <main className="flex-1 overflow-y-auto pb-24 md:pb-8">
+          <div className="mx-auto w-full max-w-md md:max-w-none">
             <Outlet />
           </div>
         </main>
       </div>
 
-      {/* モバイル: シリーズ追加 FAB */}
-      <Link
-        to="/add"
-        className="fixed bottom-20 right-4 z-10 flex h-14 w-14 items-center justify-center rounded-full bg-brand text-white shadow-lg md:hidden"
-        aria-label="シリーズを追加"
-      >
-        <Icon name="plus" className="h-7 w-7" strokeWidth={2.4} />
-      </Link>
-
       {/* モバイル: 下部ナビ */}
-      <nav className="fixed bottom-0 left-0 right-0 border-t border-slate-200 bg-white md:hidden">
-        <ul className="mx-auto flex max-w-md">
+      <nav className="fixed bottom-0 left-0 right-0 border-t border-line bg-card/95 backdrop-blur md:hidden">
+        <ul className="mx-auto flex max-w-md px-1 py-1.5">
           {MOBILE_NAV.map((item) => (
             <li key={item.to} className="flex-1">
-              <NavLink
-                to={item.to}
-                end={item.end}
-                className={({ isActive }) =>
-                  `flex flex-col items-center gap-0.5 py-2 text-xs ${
-                    isActive ? "text-brand" : "text-slate-400"
-                  }`
-                }
-              >
-                <Icon name={item.icon} className="h-6 w-6" />
-                {item.label}
+              <NavLink to={item.to} end={item.end}>
+                {({ isActive }) => (
+                  <div className="flex flex-col items-center gap-1 py-1">
+                    <span
+                      className={`flex rounded-full px-4 py-1 ${
+                        isActive ? "bg-brand-soft text-brand" : "text-ink-faint"
+                      }`}
+                    >
+                      <Icon name={item.icon} className="h-6 w-6" />
+                    </span>
+                    <span
+                      className={`text-[10px] font-bold ${
+                        isActive ? "text-brand" : "text-ink-faint"
+                      }`}
+                    >
+                      {item.label}
+                    </span>
+                  </div>
+                )}
               </NavLink>
             </li>
           ))}
@@ -146,10 +144,10 @@ function SidebarLink({ to, icon, label, end }) {
       to={to}
       end={end}
       className={({ isActive }) =>
-        `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium ${
+        `flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-semibold ${
           isActive
-            ? "bg-white/15 text-white"
-            : "text-brand-light hover:bg-white/5"
+            ? "bg-brand-soft text-brand"
+            : "text-ink-muted hover:bg-inset"
         }`
       }
     >

@@ -2,18 +2,24 @@ import { Link } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import { Pressable, Text, View } from "react-native";
 import { useCartQuery } from "@/hooks/useCart";
+import { useThemeColors } from "@/theme/colors";
 
-/** ヘッダー右のカートボタン（バッジ付き、web の Layout.jsx ヘッダー相当） */
+/** ヘッダー右のカートボタン（丸・bg-card、右上にブランド件数バッジ） */
 export function CartButton() {
   const { data } = useCartQuery();
+  const colors = useThemeColors();
   const count = data?.length ?? 0;
   return (
     <Link href="/cart" asChild>
-      <Pressable hitSlop={8} className="relative px-1">
-        <SymbolView name="cart.fill" tintColor="#ffffff" size={24} />
+      <Pressable
+        hitSlop={6}
+        accessibilityLabel="カート"
+        className="h-11 w-11 items-center justify-center rounded-full bg-card shadow-sm active:opacity-80"
+      >
+        <SymbolView name="cart.fill" tintColor={colors.brand} size={20} />
         {count > 0 && (
-          <View className="absolute -right-1.5 -top-1.5 min-w-[18px] items-center justify-center rounded-full bg-amber-400 px-1">
-            <Text className="text-[11px] font-bold text-slate-900">{count}</Text>
+          <View className="absolute -right-1 -top-1 min-w-[18px] items-center justify-center rounded-full bg-brand px-1">
+            <Text className="text-[11px] font-bold text-white">{count}</Text>
           </View>
         )}
       </Pressable>
@@ -21,12 +27,17 @@ export function CartButton() {
   );
 }
 
-/** ホームのヘッダー右の「＋」シリーズ追加ボタン（web の FAB 相当） */
+/** ホームのヘッダー右の「＋」シリーズ追加ボタン（丸・bg-card） */
 export function AddSeriesButton() {
+  const colors = useThemeColors();
   return (
     <Link href="/add-series" asChild>
-      <Pressable hitSlop={8} className="px-1">
-        <SymbolView name="plus" tintColor="#ffffff" size={22} />
+      <Pressable
+        hitSlop={6}
+        accessibilityLabel="シリーズを追加"
+        className="h-11 w-11 items-center justify-center rounded-full bg-card shadow-sm active:opacity-80"
+      >
+        <SymbolView name="plus" tintColor={colors.brand} size={22} />
       </Pressable>
     </Link>
   );

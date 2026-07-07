@@ -1,12 +1,18 @@
 import { Tabs } from "expo-router";
 import { SymbolView, type SymbolViewProps } from "expo-symbols";
 import { View, type ColorValue } from "react-native";
-import { AddSeriesButton, CartButton } from "@/components/HeaderButtons";
 import { useThemeColors } from "@/theme/colors";
 
+// アクティブ時は brand-soft のピルをアイコン背後に敷く（モックアップのタブバー）
 function tabIcon(name: SymbolViewProps["name"]) {
-  function TabIcon({ color }: { color: ColorValue }) {
-    return <SymbolView name={name} tintColor={color as string} size={26} />;
+  function TabIcon({ color, focused }: { color: ColorValue; focused: boolean }) {
+    return (
+      <View
+        className={`rounded-full px-4 py-1 ${focused ? "bg-brand-soft" : ""}`}
+      >
+        <SymbolView name={name} tintColor={color as string} size={24} />
+      </View>
+    );
   }
   return TabIcon;
 }
@@ -18,32 +24,20 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerStyle: { backgroundColor: colors.brand },
-        headerTintColor: "#ffffff",
-        headerTitleStyle: { fontWeight: "700" },
+        headerShown: false,
         tabBarActiveTintColor: colors.brandText,
         tabBarInactiveTintColor: colors.inkFaint,
-        tabBarStyle: { backgroundColor: colors.card },
+        tabBarStyle: {
+          backgroundColor: colors.card,
+          borderTopColor: colors.line,
+        },
+        tabBarLabelStyle: { fontSize: 10, fontWeight: "700" },
         sceneStyle: { backgroundColor: colors.surface },
-        headerRight: () => (
-          <View className="mr-3 flex-row items-center gap-4">
-            <CartButton />
-          </View>
-        ),
       }}
     >
       <Tabs.Screen
         name="index"
-        options={{
-          title: "ホーム",
-          tabBarIcon: tabIcon("house.fill"),
-          headerRight: () => (
-            <View className="mr-3 flex-row items-center gap-4">
-              <AddSeriesButton />
-              <CartButton />
-            </View>
-          ),
-        }}
+        options={{ title: "ホーム", tabBarIcon: tabIcon("house.fill") }}
       />
       <Tabs.Screen
         name="wishlist"

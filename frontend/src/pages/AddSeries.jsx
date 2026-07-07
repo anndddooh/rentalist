@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { createSeries, searchSeries } from "../api/series.js";
 import { bulkAddHistory } from "../api/history.js";
 import CoverImage from "../components/CoverImage.jsx";
+import Icon from "../components/Icon.jsx";
+import PageHeader, { RoundButton } from "../components/PageHeader.jsx";
 import StarRating from "../components/StarRating.jsx";
 import { errorMessage } from "../lib/errors.js";
 
@@ -109,95 +111,99 @@ export default function AddSeries() {
   });
 
   return (
-    <div className="space-y-4 p-3 md:mx-auto md:max-w-2xl">
-      <h1 className="text-lg font-bold text-slate-700">シリーズを追加</h1>
+    <div className="space-y-4 p-4 md:mx-auto md:max-w-2xl md:p-8">
+      <PageHeader
+        leading={
+          <RoundButton
+            onClick={() => navigate(-1)}
+            icon="arrowLeft"
+            label="戻る"
+            variant="ink"
+            strokeWidth={2.2}
+          />
+        }
+        title="シリーズを追加"
+      />
 
       <form
         onSubmit={handleSearch}
-        className="flex gap-2 rounded-lg bg-white p-3 shadow-sm"
+        className="flex items-center gap-2.5 rounded-full bg-card py-1.5 pl-4 pr-1.5 shadow-card"
       >
+        <Icon name="search" className="h-[18px] w-[18px] shrink-0 text-ink-faint" strokeWidth={2} />
         <input
-          className="flex-1 rounded border border-slate-300 px-2 py-1.5 text-sm"
+          className="flex-1 bg-transparent text-sm text-ink placeholder:text-ink-faint focus:outline-none"
           placeholder="タイトルで検索（楽天ブックス）"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
         <button
           type="submit"
-          className="rounded bg-brand px-3 py-1.5 text-sm font-semibold text-white"
+          className="shrink-0 rounded-full bg-brand px-4 py-2 text-sm font-bold text-white active:bg-brand-strong"
         >
           検索
         </button>
       </form>
+      <p className="text-center text-xs text-ink-faint">
+        楽天ブックスから検索。タップでフォームに反映されます。
+      </p>
 
       {searching && (
-        <p className="text-center text-sm text-slate-400">検索中…</p>
+        <p className="text-center text-sm text-ink-faint">検索中…</p>
       )}
 
       {searched && !searching && candidates.length === 0 && (
-        <p className="rounded bg-amber-50 px-3 py-2 text-sm text-amber-700">
+        <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">
           候補が見つかりませんでした。下のフォームに手動で入力してください。
         </p>
       )}
 
       {candidates.length > 0 && (
-        <div>
-          <p className="mb-1 text-xs text-slate-500">
-            該当の作品をタップすると、下のフォームに内容が反映されます。
-          </p>
-          <ul className="space-y-2">
-            {candidates.map((c, i) => {
-              const selected = selectedIndex === i;
-              return (
-                <li key={`${c.isbn}-${i}`}>
-                  <button
-                    onClick={() => pickCandidate(c, i)}
-                    className={`flex w-full gap-3 rounded-lg p-2 text-left shadow-sm ${
-                      selected
-                        ? "bg-brand-light ring-2 ring-brand"
-                        : "bg-white"
-                    }`}
-                  >
-                    <CoverImage
-                      url={c.cover_url}
-                      alt={c.title}
-                      className="h-20 w-14"
-                    />
-                    <div className="flex-1 text-sm">
-                      <div className="font-semibold">{c.title}</div>
-                      <div className="text-xs text-slate-500">{c.author}</div>
-                      <div className="text-xs text-slate-400">
-                        {c.publisher}
-                      </div>
+        <ul className="space-y-2">
+          {candidates.map((c, i) => {
+            const selected = selectedIndex === i;
+            return (
+              <li key={`${c.isbn}-${i}`}>
+                <button
+                  onClick={() => pickCandidate(c, i)}
+                  className={`flex w-full items-center gap-3 rounded-[18px] bg-card p-3 text-left shadow-card ${
+                    selected ? "ring-2 ring-brand" : ""
+                  }`}
+                >
+                  <CoverImage
+                    url={c.cover_url}
+                    alt={c.title}
+                    className="h-16 w-11 rounded-md"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-bold text-ink">{c.title}</div>
+                    <div className="text-[11px] text-ink-muted">
+                      {[c.author, c.publisher].filter(Boolean).join(" ・ ")}
                     </div>
-                    {selected && (
-                      <span className="self-center text-xs font-bold text-brand">
-                        ✓ 選択中
-                      </span>
-                    )}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
+                  </div>
+                  {selected && (
+                    <span className="shrink-0 self-center text-xs font-extrabold text-brand">
+                      ✓ 選択中
+                    </span>
+                  )}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
       )}
 
       <form
         ref={formRef}
         onSubmit={handleCreate}
-        className="scroll-mt-3 space-y-3 rounded-lg bg-white p-3 shadow-sm"
+        className="scroll-mt-3 space-y-3 rounded-card bg-card p-4 shadow-card"
       >
-        <p className="text-sm font-semibold text-slate-600">
-          シリーズ情報（検索候補を選ぶと自動入力されます）
-        </p>
         {selectedIndex !== null && (
-          <p className="rounded bg-brand-light px-2 py-1.5 text-xs text-brand-dark">
-            検索結果から「{form.title}」を反映しました。内容を確認して登録してください。
+          <p className="rounded-xl bg-brand-soft px-3 py-2 text-xs font-semibold text-brand-text">
+            「{form.title}」を反映しました。確認して登録してください。
           </p>
         )}
         {error && (
-          <p className="rounded bg-rose-50 px-2 py-1 text-xs text-rose-600">
+          <p className="rounded-lg bg-rose-50 px-2 py-1 text-xs text-rose-600">
             {error}
           </p>
         )}
@@ -242,7 +248,7 @@ export default function AddSeries() {
             {...field("read_up_to")}
             placeholder="例: 10"
           />
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-ink-muted">
             「N巻まで読んだ既存シリーズ」を登録する時に使うと、1〜N 巻の読破記録を一気に作成します。
           </p>
         </Labeled>
@@ -254,31 +260,30 @@ export default function AddSeries() {
           />
         </Labeled>
         <Labeled label="登録先">
-          <div className="flex gap-4 text-sm">
-            <label className="flex items-center gap-1">
-              <input
-                type="radio"
-                name="status"
-                checked={form.status === "active"}
-                onChange={() => setForm({ ...form, status: "active" })}
-              />
-              進行中
-            </label>
-            <label className="flex items-center gap-1">
-              <input
-                type="radio"
-                name="status"
-                checked={form.status === "wishlist"}
-                onChange={() => setForm({ ...form, status: "wishlist" })}
-              />
-              いつか読みたい
-            </label>
+          <div className="flex rounded-full bg-inset p-1">
+            {[
+              ["active", "進行中"],
+              ["wishlist", "いつか読みたい"],
+            ].map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setForm({ ...form, status: value })}
+                className={`flex-1 rounded-full py-2 text-center text-[13px] font-bold ${
+                  form.status === value
+                    ? "bg-card text-brand shadow-sm"
+                    : "text-ink-muted"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
           </div>
         </Labeled>
         <button
           type="submit"
           disabled={busy}
-          className="w-full rounded bg-brand py-2 font-semibold text-white disabled:opacity-50"
+          className="w-full rounded-full bg-brand py-3.5 text-[15px] font-extrabold text-white active:bg-brand-strong disabled:opacity-50"
         >
           {busy ? "登録中…" : "このシリーズを登録"}
         </button>
@@ -290,7 +295,9 @@ export default function AddSeries() {
 function Labeled({ label, children }) {
   return (
     <label className="block">
-      <span className="text-xs font-semibold text-slate-500">{label}</span>
+      <span className="text-[11px] font-bold tracking-wide text-ink-muted">
+        {label}
+      </span>
       <div className="mt-1">{children}</div>
     </label>
   );

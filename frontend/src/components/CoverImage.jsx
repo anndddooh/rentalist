@@ -14,10 +14,10 @@ export default function CoverImage({ url, alt, className = "" }) {
 
   return (
     <div
-      className={`flex shrink-0 items-center justify-center overflow-hidden rounded bg-slate-200 ${className}`}
+      className={`flex shrink-0 items-center justify-center overflow-hidden rounded bg-inset ${className}`}
     >
       {showPlaceholder ? (
-        <span className="px-1 text-center text-[10px] leading-tight text-slate-400">
+        <span className="px-1 text-center text-[10px] leading-tight text-ink-faint">
           表紙なし
         </span>
       ) : (

@@ -1,4 +1,5 @@
 import { Link } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -36,21 +37,28 @@ export default function Login() {
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-surface"
+      className="flex-1 bg-brand"
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
+      <StatusBar style="light" />
       <ScrollView
-        contentContainerClassName="flex-grow items-center justify-center p-6"
+        contentContainerClassName="flex-grow items-center justify-center gap-7 p-7"
         keyboardShouldPersistTaps="handled"
         style={{ paddingTop: insets.top }}
       >
-        <View className="w-full max-w-sm gap-4 rounded-xl bg-card p-6 shadow">
+        <View className="items-center gap-3.5">
+          <Logo size={64} />
           <View className="items-center">
-            <Logo size={48} withText textClassName="text-2xl text-brand-text" />
+            <Text className="text-[32px] font-extrabold tracking-tight text-white">
+              Rentalist
+            </Text>
+            <Text className="mt-1 text-sm font-medium text-white/70">
+              家族の漫画レンタルを、かしこく管理
+            </Text>
           </View>
-          <Text className="text-center text-sm text-ink-muted">
-            漫画レンタル管理にログイン
-          </Text>
+        </View>
+
+        <View className="w-full max-w-sm gap-3 rounded-[24px] bg-card p-5 shadow-lg">
           <ErrorNotice message={error} />
           <Field
             placeholder="ユーザー名"
@@ -74,10 +82,14 @@ export default function Login() {
             busy={busy}
             disabled={!username || !password}
           />
-          <Link href="/signup" className="text-center text-sm text-brand-text">
-            招待リンクからアカウント作成
-          </Link>
         </View>
+
+        <Link
+          href="/signup"
+          className="text-center text-sm font-semibold text-white/80"
+        >
+          招待リンクからアカウント作成
+        </Link>
       </ScrollView>
     </KeyboardAvoidingView>
   );

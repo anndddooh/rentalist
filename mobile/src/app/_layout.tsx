@@ -48,31 +48,23 @@ function RootStack() {
 
   return (
     <>
-      {/* ヘッダーは web と同じブランド紫。上に重なる文字は常に白 */}
-      <StatusBar style="light" />
+      {/* 各画面は独自のヘッダー（1a Refined）を持つ。地色に応じて自動でステータスバー配色 */}
+      <StatusBar style="auto" />
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: colors.brand },
-          headerTintColor: "#ffffff",
-          headerTitleStyle: { fontWeight: "700" },
+          headerShown: false,
           contentStyle: { backgroundColor: colors.surface },
         }}
       >
         <Stack.Protected guard={Boolean(user)}>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen
-            name="cart"
-            options={{ presentation: "modal", title: "カート" }}
-          />
-          <Stack.Screen
-            name="add-series"
-            options={{ presentation: "modal", title: "シリーズ追加" }}
-          />
-          <Stack.Screen name="series/[id]" options={{ title: "シリーズ詳細" }} />
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="cart" options={{ presentation: "modal" }} />
+          <Stack.Screen name="add-series" options={{ presentation: "modal" }} />
+          <Stack.Screen name="series/[id]" />
         </Stack.Protected>
         <Stack.Protected guard={!user}>
-          <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
-          <Stack.Screen name="(auth)/signup" options={{ title: "アカウント作成" }} />
+          <Stack.Screen name="(auth)/login" />
+          <Stack.Screen name="(auth)/signup" />
         </Stack.Protected>
       </Stack>
     </>

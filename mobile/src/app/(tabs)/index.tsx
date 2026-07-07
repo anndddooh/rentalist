@@ -2,10 +2,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as Haptics from "expo-haptics";
 import { useCallback, useState } from "react";
 import {
-  ActionSheetIOS,
   FlatList,
   Pressable,
   RefreshControl,
+  ScrollView,
   Text,
   View,
 } from "react-native";
@@ -13,7 +13,10 @@ import Toast from "react-native-toast-message";
 import { addToCart } from "@/api/cart";
 import { setAvailability } from "@/api/series";
 import type { AvailabilityStatus, Series } from "@/api/types";
+import { AddSeriesButton, CartButton } from "@/components/HeaderButtons";
+import ScreenHeader from "@/components/ScreenHeader";
 import SeriesCard from "@/components/SeriesCard";
+import { useAuth } from "@/hooks/useAuth";
 import { useSeriesList, seriesListKey } from "@/hooks/useSeries";
 import { useShopsQuery } from "@/hooks/useShops";
 import { errorMessage } from "@/lib/errors";
@@ -33,6 +36,7 @@ const STATUS_FILTERS: { key: AvailabilityStatus; label: string }[] = [
 
 export default function Home() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const [shopId, setShopId] = useState<number | null>(null);
   const [filters, setFilters] = useState<Record<AvailabilityStatus, boolean>>({
     available: true,
@@ -48,26 +52,10 @@ export default function Home() {
   const listKey = seriesListKey("active", shopId);
 
   const shopMode = shopId != null;
-  const selectedShop = shops.find((s) => s.id === shopId);
 
-  function openShopSelector() {
-    const options = [
-      "絞り込みなし（全シリーズ）",
-      ...shops.map((s) => s.name),
-      "キャンセル",
-    ];
-    ActionSheetIOS.showActionSheetWithOptions(
-      {
-        title: "ショップで絞り込み",
-        options,
-        cancelButtonIndex: options.length - 1,
-      },
-      (index) => {
-        if (index === options.length - 1) return;
-        setStickyIds(new Set());
-        setShopId(index === 0 ? null : shops[index - 1].id);
-      }
-    );
+  function selectShop(id: number | null) {
+    setStickyIds(new Set());
+    setShopId(id);
   }
 
   const rentMutation = useMutation({
@@ -133,66 +121,121 @@ export default function Home() {
   );
 
   return (
-    <FlatList
-      className="flex-1 bg-surface"
-      contentContainerClassName="gap-3 p-3"
-      data={visibleSeries}
-      keyExtractor={(item) => String(item.id)}
-      renderItem={renderItem}
-      refreshControl={
-        <RefreshControl
-          refreshing={seriesQuery.isRefetching}
-          onRefresh={() => {
-            queryClient.invalidateQueries({ queryKey: ["series"] });
-            queryClient.invalidateQueries({ queryKey: ["shops"] });
-          }}
-        />
-      }
-      ListHeaderComponent={
-        <View className="rounded-lg bg-card p-3 shadow-sm">
-          <Text className="text-xs font-semibold text-ink-muted">
-            ショップで絞り込み
-          </Text>
-          <Pressable
-            onPress={openShopSelector}
-            className="mt-1 flex-row items-center justify-between rounded-md border border-line px-3 py-2"
-          >
-            <Text className="text-sm text-ink">
-              {selectedShop ? selectedShop.name : "絞り込みなし（全シリーズ）"}
-            </Text>
-            <Text className="text-xs text-ink-faint">▾</Text>
-          </Pressable>
+    <View className="flex-1 bg-surface">
+      <ScreenHeader
+        subtitle={`こんにちは、${user?.username ?? ""}さん`}
+        title="つづきを借りる"
+        right={
+          <View className="flex-row items-center gap-2.5">
+            <AddSeriesButton />
+            <CartButton />
+          </View>
+        }
+      />
+      <FlatList
+        className="flex-1 bg-surface"
+        contentContainerClassName="gap-3 px-4 pb-4"
+        data={visibleSeries}
+        keyExtractor={(item) => String(item.id)}
+        renderItem={renderItem}
+        refreshControl={
+          <RefreshControl
+            refreshing={seriesQuery.isRefetching}
+            onRefresh={() => {
+              queryClient.invalidateQueries({ queryKey: ["series"] });
+              queryClient.invalidateQueries({ queryKey: ["shops"] });
+            }}
+          />
+        }
+        ListHeaderComponent={
+          <View className="gap-2 pb-1 pt-1">
+            {/* ショップ切替チップ列（横スクロール） */}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerClassName="gap-2"
+            >
+              <ShopChip
+                label="すべて"
+                active={shopId == null}
+                allMode
+                onPress={() => selectShop(null)}
+              />
+              {shops.map((s) => (
+                <ShopChip
+                  key={s.id}
+                  label={s.name}
+                  active={shopId === s.id}
+                  onPress={() => selectShop(s.id)}
+                />
+              ))}
+            </ScrollView>
 
-          {shopMode && (
-            <View className="mt-2 flex-row gap-2">
-              {STATUS_FILTERS.map((f) => (
-                <Pressable
-                  key={f.key}
-                  onPress={() => toggleFilter(f.key)}
-                  className={`rounded-full px-3 py-1 ${
-                    filters[f.key] ? "bg-brand" : "bg-inset"
-                  }`}
-                >
-                  <Text
-                    className={`text-xs font-semibold ${
-                      filters[f.key] ? "text-white" : "text-ink-muted"
+            {shopMode && (
+              <View className="flex-row items-center gap-2">
+                <Text className="text-[11px] font-bold text-ink-faint">
+                  在庫:
+                </Text>
+                {STATUS_FILTERS.map((f) => (
+                  <Pressable
+                    key={f.key}
+                    onPress={() => toggleFilter(f.key)}
+                    className={`rounded-full px-3 py-1 ${
+                      filters[f.key] ? "bg-ink" : "bg-card shadow-sm"
                     }`}
                   >
-                    {f.label}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-          )}
-        </View>
-      }
-      ListEmptyComponent={
-        <Text className="py-10 text-center text-sm text-ink-faint">
-          {seriesQuery.isLoading
-            ? "読み込み中…"
-            : "進行中のシリーズがありません。右上の＋から追加できます。"}
-        </Text>
-      }
-    />
+                    <Text
+                      className={`text-xs font-bold ${
+                        filters[f.key] ? "text-white" : "text-ink-muted"
+                      }`}
+                    >
+                      {f.label}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            )}
+          </View>
+        }
+        ListEmptyComponent={
+          <Text className="py-10 text-center text-sm text-ink-faint">
+            {seriesQuery.isLoading
+              ? "読み込み中…"
+              : "進行中のシリーズがありません。右上の＋から追加できます。"}
+          </Text>
+        }
+      />
+    </View>
+  );
+}
+
+/** ショップ切替チップ（アクティブ: すべて=bg-ink / 店舗=bg-brand、非アクティブ=bg-card） */
+function ShopChip({
+  label,
+  active,
+  allMode = false,
+  onPress,
+}: {
+  label: string;
+  active: boolean;
+  allMode?: boolean;
+  onPress: () => void;
+}) {
+  const activeBg = allMode ? "bg-ink" : "bg-brand";
+  return (
+    <Pressable
+      onPress={onPress}
+      className={`rounded-full px-3.5 py-2 ${
+        active ? activeBg : "bg-card shadow-sm"
+      }`}
+    >
+      <Text
+        className={`text-[13px] font-bold ${
+          active ? "text-white" : "text-ink-muted"
+        }`}
+      >
+        {label}
+      </Text>
+    </Pressable>
   );
 }

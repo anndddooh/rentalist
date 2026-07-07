@@ -126,7 +126,7 @@ export default function Celebration({
 
         <Animated.View
           style={cardStyle}
-          className="mx-6 items-center rounded-2xl bg-card p-6 shadow-2xl"
+          className="mx-6 items-center rounded-[20px] bg-card p-6 shadow-2xl"
         >
           <Text className="text-6xl">🎉</Text>
           <Text className="mt-2 text-xl font-bold text-brand-text">

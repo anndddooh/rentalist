@@ -2,7 +2,9 @@ import { useCallback, useEffect, useState } from "react";
 import { addToCart } from "../api/cart.js";
 import { listSeries, setAvailability } from "../api/series.js";
 import { listShops } from "../api/shops.js";
+import PageHeader, { RoundButton } from "../components/PageHeader.jsx";
 import SeriesCard from "../components/SeriesCard.jsx";
+import { useAuth } from "../context/AuthContext.jsx";
 import { useCart } from "../context/CartContext.jsx";
 import { errorMessage } from "../lib/errors.js";
 
@@ -33,7 +35,8 @@ export default function Home() {
   const [stickyIds, setStickyIds] = useState(() => new Set());
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState("");
-  const { refreshCart } = useCart();
+  const { cartCount, refreshCart } = useCart();
+  const { user } = useAuth();
 
   // loading は初回のみ true。レンタル等の再取得ではグリッドを保持し、
   // 一覧をアンマウントしない（スクロール位置が飛ぶのを防ぐ）。
@@ -121,48 +124,69 @@ export default function Home() {
     : series;
 
   return (
-    <div className="space-y-3 p-3">
-      <div className="rounded-lg bg-white p-3 shadow-sm md:max-w-sm">
-        <label className="text-xs font-semibold text-slate-500">
-          ショップで絞り込み
-        </label>
-        <select
-          value={shopId}
-          onChange={(e) => handleShopChange(e.target.value)}
-          className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
-        >
-          <option value="">絞り込みなし（全シリーズ）</option>
-          {shops.map((shop) => (
-            <option key={shop.id} value={shop.id}>
-              {shop.name}
-            </option>
-          ))}
-        </select>
+    <div className="space-y-4 p-4 md:p-8">
+      <PageHeader
+        eyebrow={`こんにちは、${user?.username ?? ""}さん`}
+        title="つづきを借りる"
+        actions={
+          <>
+            <RoundButton to="/add" icon="plus" label="シリーズを追加" strokeWidth={2.4} />
+            <RoundButton to="/cart" icon="cart" label="カート" badge={cartCount} />
+          </>
+        }
+      />
 
-        {shopMode && (
-          <div className="mt-2 flex gap-2">
-            {STATUS_FILTERS.map((f) => (
-              <button
-                key={f.key}
-                onClick={() => toggleFilter(f.key)}
-                className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                  filters[f.key]
-                    ? "bg-brand text-white"
-                    : "bg-slate-200 text-slate-500"
-                }`}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
-        )}
+      {/* ショップ切替チップ列 */}
+      <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-wrap md:px-0">
+        <button
+          onClick={() => handleShopChange("")}
+          className={`chip shrink-0 ${
+            !shopMode
+              ? "bg-ink text-white"
+              : "bg-card text-ink-muted shadow-sm"
+          }`}
+        >
+          すべて
+        </button>
+        {shops.map((shop) => (
+          <button
+            key={shop.id}
+            onClick={() => handleShopChange(String(shop.id))}
+            className={`chip shrink-0 ${
+              String(shop.id) === shopId
+                ? "bg-brand text-white"
+                : "bg-card text-ink-muted shadow-sm"
+            }`}
+          >
+            {shop.name}
+          </button>
+        ))}
       </div>
 
+      {shopMode && (
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] font-bold text-ink-faint">在庫:</span>
+          {STATUS_FILTERS.map((f) => (
+            <button
+              key={f.key}
+              onClick={() => toggleFilter(f.key)}
+              className={`rounded-full px-3 py-1.5 text-xs font-bold ${
+                filters[f.key]
+                  ? "bg-ink text-white"
+                  : "bg-card text-ink-faint shadow-sm"
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+      )}
+
       {loading ? (
-        <p className="py-10 text-center text-sm text-slate-400">読み込み中…</p>
+        <p className="py-10 text-center text-sm text-ink-faint">読み込み中…</p>
       ) : visibleSeries.length === 0 ? (
-        <p className="py-10 text-center text-sm text-slate-400">
-          進行中のシリーズがありません。右下の＋から追加できます。
+        <p className="py-10 text-center text-sm text-ink-faint">
+          進行中のシリーズがありません。右上の＋から追加できます。
         </p>
       ) : (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
@@ -179,7 +203,7 @@ export default function Home() {
       )}
 
       {toast && (
-        <div className="fixed bottom-24 left-1/2 z-20 -translate-x-1/2 rounded-full bg-slate-800 px-4 py-2 text-sm text-white shadow-lg">
+        <div className="fixed bottom-24 left-1/2 z-20 -translate-x-1/2 rounded-full bg-ink px-4 py-2 text-sm text-white shadow-lg">
           {toast}
         </div>
       )}

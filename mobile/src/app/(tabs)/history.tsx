@@ -25,6 +25,7 @@ import {
 import type { RentalHistoryItem, Series } from "@/api/types";
 import { BrandButton, ErrorNotice, Field } from "@/components/form";
 import ReadingStatsChart from "@/components/ReadingStatsChart";
+import ScreenHeader from "@/components/ScreenHeader";
 import { useSeriesListAll } from "@/hooks/useSeries";
 import { errorMessage } from "@/lib/errors";
 
@@ -120,137 +121,160 @@ export default function History() {
   }
 
   return (
-    <FlatList
-      className="flex-1 bg-surface"
-      contentContainerClassName="gap-2 p-3 pb-10"
-      data={entries}
-      keyExtractor={(item) => String(item.id)}
-      refreshControl={
-        <RefreshControl
-          refreshing={historyQuery.isRefetching && !historyQuery.isFetchingNextPage}
-          onRefresh={invalidateHistory}
-        />
-      }
-      onEndReachedThreshold={0.3}
-      onEndReached={() => {
-        if (historyQuery.hasNextPage && !historyQuery.isFetchingNextPage) {
-          historyQuery.fetchNextPage();
-        }
-      }}
-      ListHeaderComponent={
-        <View className="gap-3 pb-1">
-          <ReadingStatsChart />
-
-          <View className="flex-row items-center justify-between">
-            <Text className="text-xs text-ink-muted">
-              {totalCount > 0
-                ? `全 ${totalCount}件${
-                    entries.length < totalCount
-                      ? `（${entries.length}件表示中）`
-                      : ""
-                  }`
-                : ""}
+    <View className="flex-1 bg-surface">
+      <ScreenHeader
+        subtitle={totalCount > 0 ? `これまでに ${totalCount}巻` : "読んだ記録"}
+        title="履歴"
+        right={
+          <Pressable
+            onPress={() => setShowForm((v) => !v)}
+            className="rounded-full bg-brand px-4 py-2.5 active:bg-brand-strong"
+          >
+            <Text className="text-[13px] font-bold text-white">
+              {showForm ? "閉じる" : "＋ 追加"}
             </Text>
-            <Pressable
-              onPress={() => setShowForm((v) => !v)}
-              className="rounded bg-brand px-3 py-1 active:bg-brand-strong"
-            >
-              <Text className="text-sm font-semibold text-white">
-                {showForm ? "閉じる" : "+ 追加"}
-              </Text>
-            </Pressable>
-          </View>
+          </Pressable>
+        }
+      />
+      <FlatList
+        className="flex-1 bg-surface"
+        contentContainerClassName="gap-2 px-4 pb-10 pt-1"
+        data={entries}
+        keyExtractor={(item) => String(item.id)}
+        refreshControl={
+          <RefreshControl
+            refreshing={
+              historyQuery.isRefetching && !historyQuery.isFetchingNextPage
+            }
+            onRefresh={invalidateHistory}
+          />
+        }
+        onEndReachedThreshold={0.3}
+        onEndReached={() => {
+          if (historyQuery.hasNextPage && !historyQuery.isFetchingNextPage) {
+            historyQuery.fetchNextPage();
+          }
+        }}
+        ListHeaderComponent={
+          <View className="gap-3 pb-1">
+            <ReadingStatsChart />
 
-          {showForm && (
-            <View className="gap-2 rounded-lg bg-card p-3 shadow-sm">
-              <ErrorNotice message={formError} />
-              <Pressable
-                onPress={() => pickSeries((s) => s && setFormSeries(s), false)}
-                className="rounded-md border border-line px-3 py-2.5"
-              >
-                <Text
-                  className={`text-base ${
-                    formSeries ? "text-ink" : "text-ink-faint"
-                  }`}
+            {showForm && (
+              <View className="gap-2 rounded-[20px] bg-card p-3.5 shadow-sm">
+                <ErrorNotice message={formError} />
+                <Pressable
+                  onPress={() => pickSeries((s) => s && setFormSeries(s), false)}
+                  className="rounded-xl bg-inset px-4 py-3"
                 >
-                  {formSeries ? formSeries.title : "シリーズを選択"}
-                </Text>
-              </Pressable>
-              <Field
-                placeholder="巻数"
-                value={formVolume}
-                onChangeText={setFormVolume}
-                keyboardType="number-pad"
-              />
-              <View className="flex-row items-center justify-between">
-                <Text className="text-sm text-ink-muted">借りた日</Text>
-                <DateTimePicker
-                  value={formDate}
-                  mode="date"
-                  onChange={(_event, date) => date && setFormDate(date)}
+                  <Text
+                    className={`text-base ${
+                      formSeries ? "text-ink" : "text-ink-faint"
+                    }`}
+                  >
+                    {formSeries ? formSeries.title : "シリーズを選択"}
+                  </Text>
+                </Pressable>
+                <Field
+                  placeholder="巻数"
+                  value={formVolume}
+                  onChangeText={setFormVolume}
+                  keyboardType="number-pad"
+                />
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-sm text-ink-muted">借りた日</Text>
+                  <DateTimePicker
+                    value={formDate}
+                    mode="date"
+                    onChange={(_event, date) => date && setFormDate(date)}
+                  />
+                </View>
+                <BrandButton
+                  title={addMutation.isPending ? "追加中…" : "履歴に追加"}
+                  onPress={() => addMutation.mutate()}
+                  busy={addMutation.isPending}
+                  disabled={!formSeries || !formVolume}
                 />
               </View>
-              <BrandButton
-                title={addMutation.isPending ? "追加中…" : "履歴に追加"}
-                onPress={() => addMutation.mutate()}
-                busy={addMutation.isPending}
-                disabled={!formSeries || !formVolume}
-              />
-            </View>
-          )}
-
-          <Pressable
-            onPress={() => pickSeries(setFilterSeries, true)}
-            className="flex-row items-center justify-between rounded-md border border-line bg-card px-3 py-2"
-          >
-            <Text className="text-sm text-ink">
-              {filterSeries ? filterSeries.title : "すべてのシリーズ"}
-            </Text>
-            <Text className="text-xs text-ink-faint">▾</Text>
-          </Pressable>
-        </View>
-      }
-      renderItem={({ item }) => (
-        <View className="overflow-hidden rounded-lg shadow-sm">
-          <ReanimatedSwipeable
-            renderRightActions={() => (
-              <Pressable
-                onPress={() => confirmDelete(item)}
-                className="w-20 items-center justify-center bg-rose-500"
-              >
-                <Text className="text-sm font-semibold text-white">削除</Text>
-              </Pressable>
             )}
-            overshootRight={false}
-          >
-            <View className="flex-row items-center justify-between bg-card p-3">
-              <View>
-                <Text className="text-sm text-ink">
-                  <Text className="font-semibold">{item.series_title}</Text>{" "}
-                  <Text className="text-brand-text">
-                    {item.volume_number}巻
-                  </Text>
+
+            {/* フィルタチップ */}
+            <View className="flex-row gap-2">
+              <Pressable
+                onPress={() => setFilterSeries(null)}
+                className={`rounded-full px-3.5 py-2 ${
+                  filterSeries ? "bg-card shadow-sm" : "bg-ink"
+                }`}
+              >
+                <Text
+                  className={`text-[13px] font-bold ${
+                    filterSeries ? "text-ink-muted" : "text-white"
+                  }`}
+                >
+                  すべて
                 </Text>
-                <Text className="text-xs text-ink-faint">
-                  {new Date(item.rented_at).toLocaleDateString("ja-JP")}
+              </Pressable>
+              <Pressable
+                onPress={() => pickSeries(setFilterSeries, true)}
+                className={`rounded-full px-3.5 py-2 ${
+                  filterSeries ? "bg-brand" : "bg-card shadow-sm"
+                }`}
+              >
+                <Text
+                  className={`text-[13px] font-bold ${
+                    filterSeries ? "text-white" : "text-ink-muted"
+                  }`}
+                >
+                  {filterSeries ? filterSeries.title : "シリーズで絞る ▾"}
                 </Text>
-              </View>
+              </Pressable>
             </View>
-          </ReanimatedSwipeable>
-        </View>
-      )}
-      ListEmptyComponent={
-        <Text className="py-10 text-center text-sm text-ink-faint">
-          {historyQuery.isLoading ? "読み込み中…" : "履歴がありません。"}
-        </Text>
-      }
-      ListFooterComponent={
-        historyQuery.isFetchingNextPage ? (
-          <Text className="py-3 text-center text-xs text-ink-faint">
-            読み込み中…
+          </View>
+        }
+        renderItem={({ item }) => (
+          <View className="overflow-hidden rounded-[16px] shadow-sm">
+            <ReanimatedSwipeable
+              renderRightActions={() => (
+                <Pressable
+                  onPress={() => confirmDelete(item)}
+                  className="w-20 items-center justify-center bg-rose-500"
+                >
+                  <Text className="text-sm font-semibold text-white">
+                    削除
+                  </Text>
+                </Pressable>
+              )}
+              overshootRight={false}
+            >
+              <View className="flex-row items-center justify-between bg-card px-4 py-3.5">
+                <View className="flex-1">
+                  <Text className="text-sm text-ink">
+                    <Text className="font-bold">{item.series_title}</Text>{" "}
+                    <Text className="font-bold text-brand-text">
+                      {item.volume_number}巻
+                    </Text>
+                  </Text>
+                  <Text className="mt-0.5 text-xs text-ink-faint">
+                    {new Date(item.rented_at).toLocaleDateString("ja-JP")}
+                  </Text>
+                </View>
+                <Text className="text-base text-ink-faint">›</Text>
+              </View>
+            </ReanimatedSwipeable>
+          </View>
+        )}
+        ListEmptyComponent={
+          <Text className="py-10 text-center text-sm text-ink-faint">
+            {historyQuery.isLoading ? "読み込み中…" : "履歴がありません。"}
           </Text>
-        ) : null
-      }
-    />
+        }
+        ListFooterComponent={
+          historyQuery.isFetchingNextPage ? (
+            <Text className="py-3 text-center text-xs text-ink-faint">
+              読み込み中…
+            </Text>
+          ) : null
+        }
+      />
+    </View>
   );
 }

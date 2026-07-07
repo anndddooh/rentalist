@@ -1,5 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
+import { SymbolView } from "expo-symbols";
 import { useRef, useState } from "react";
 import {
   Alert,
@@ -8,6 +9,7 @@ import {
   Pressable,
   ScrollView,
   Text,
+  TextInput,
   View,
 } from "react-native";
 import Toast from "react-native-toast-message";
@@ -15,8 +17,10 @@ import { bulkAddHistory, createSeries, searchSeries } from "@/api/series";
 import type { RakutenCandidate } from "@/api/types";
 import CoverImage from "@/components/CoverImage";
 import { BrandButton, ErrorNotice, Field } from "@/components/form";
+import ScreenHeader from "@/components/ScreenHeader";
 import StarRating from "@/components/StarRating";
 import { errorMessage } from "@/lib/errors";
+import { useThemeColors } from "@/theme/colors";
 
 const EMPTY_FORM = {
   title: "",
@@ -40,6 +44,7 @@ function cleanSeriesTitle(rawTitle: string): string {
 
 export default function AddSeries() {
   const queryClient = useQueryClient();
+  const colors = useThemeColors();
   const scrollRef = useRef<ScrollView>(null);
   const formY = useRef(0);
   const [query, setQuery] = useState("");
@@ -134,16 +139,23 @@ export default function AddSeries() {
       className="flex-1 bg-surface"
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
+      <ScreenHeader onBack={() => router.back()} title="シリーズを追加" />
       <ScrollView
         ref={scrollRef}
-        contentContainerClassName="gap-4 p-3 pb-10"
+        contentContainerClassName="gap-4 px-4 pb-10 pt-1"
         keyboardShouldPersistTaps="handled"
       >
         {/* 楽天検索 */}
-        <View className="flex-row gap-2 rounded-lg bg-card p-3 shadow-sm">
-          <Field
-            className="flex-1"
+        <View className="flex-row items-center gap-2.5 rounded-full bg-card py-1.5 pl-4 pr-1.5 shadow-sm">
+          <SymbolView
+            name="magnifyingglass"
+            tintColor={colors.inkFaint}
+            size={18}
+          />
+          <TextInput
+            className="flex-1 text-base text-ink"
             placeholder="タイトルで検索（楽天ブックス）"
+            placeholderTextColor={colors.inkFaint}
             value={query}
             onChangeText={setQuery}
             returnKeyType="search"
@@ -151,9 +163,9 @@ export default function AddSeries() {
           />
           <Pressable
             onPress={handleSearch}
-            className="justify-center rounded bg-brand px-4 active:bg-brand-strong"
+            className="justify-center rounded-full bg-brand px-4 py-2 active:bg-brand-strong"
           >
-            <Text className="text-sm font-semibold text-white">検索</Text>
+            <Text className="text-sm font-bold text-white">検索</Text>
           </Pressable>
         </View>
 
@@ -162,14 +174,14 @@ export default function AddSeries() {
         )}
 
         {searched && !searching && candidates.length === 0 && (
-          <Text className="rounded bg-amber-50 px-3 py-2 text-sm text-amber-700 dark:bg-amber-950 dark:text-amber-300">
+          <Text className="rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-700 dark:bg-amber-950 dark:text-amber-300">
             候補が見つかりませんでした。下のフォームに手動で入力してください。
           </Text>
         )}
 
         {candidates.length > 0 && (
           <View className="gap-2">
-            <Text className="text-xs text-ink-muted">
+            <Text className="text-center text-xs text-ink-faint">
               該当の作品をタップすると、下のフォームに内容が反映されます。
             </Text>
             {candidates.map((c, i) => {
@@ -178,15 +190,13 @@ export default function AddSeries() {
                 <Pressable
                   key={`${c.isbn ?? c.title}-${i}`}
                   onPress={() => pickCandidate(c, i)}
-                  className={`flex-row gap-3 rounded-lg p-2 shadow-sm ${
-                    selected
-                      ? "bg-brand-soft border-2 border-brand"
-                      : "bg-card"
+                  className={`flex-row items-center gap-3 rounded-[18px] p-2.5 shadow-sm ${
+                    selected ? "border-2 border-brand bg-brand-soft" : "bg-card"
                   }`}
                 >
                   <CoverImage url={c.cover_url} className="h-20 w-14" />
                   <View className="flex-1">
-                    <Text className="text-sm font-semibold text-ink">
+                    <Text className="text-sm font-bold text-ink">
                       {c.title}
                     </Text>
                     <Text className="text-xs text-ink-muted">{c.author}</Text>
@@ -207,16 +217,16 @@ export default function AddSeries() {
 
         {/* 登録フォーム */}
         <View
-          className="gap-3 rounded-lg bg-card p-3 shadow-sm"
+          className="gap-3 rounded-[20px] bg-card p-4 shadow-sm"
           onLayout={(e) => {
             formY.current = e.nativeEvent.layout.y;
           }}
         >
-          <Text className="text-sm font-semibold text-ink-muted">
+          <Text className="text-[13px] font-extrabold text-ink">
             シリーズ情報（検索候補を選ぶと自動入力されます）
           </Text>
           {selectedIndex !== null && (
-            <Text className="rounded bg-brand-soft px-2 py-1.5 text-xs text-brand-text">
+            <Text className="rounded-xl bg-brand-soft px-3 py-2 text-xs font-semibold text-brand-text">
               検索結果から「{form.title}
               」を反映しました。内容を確認して登録してください。
             </Text>

@@ -42,20 +42,20 @@ export default function Celebration({ titles = [], onClose }) {
         ))}
       </div>
 
-      <div className="pop-in mx-6 rounded-2xl bg-white p-6 text-center shadow-2xl">
+      <div className="pop-in mx-6 rounded-card bg-card p-6 text-center shadow-2xl">
         <div className="text-6xl">🎉</div>
         <h2 className="mt-2 text-xl font-bold text-brand">読破おめでとう！</h2>
         <ul className="mt-3 space-y-1">
           {titles.map((title) => (
-            <li key={title} className="font-bold text-slate-700">
+            <li key={title} className="font-bold text-ink">
               {title}
             </li>
           ))}
         </ul>
-        <p className="mt-2 text-xs text-slate-400">最終巻まで読み終えました 🏆</p>
+        <p className="mt-2 text-xs text-ink-faint">最終巻まで読み終えました 🏆</p>
         <button
           onClick={onClose}
-          className="mt-4 rounded-full bg-brand px-8 py-2 text-sm font-semibold text-white"
+          className="mt-4 rounded-full bg-brand px-8 py-2 text-sm font-semibold text-white active:bg-brand-strong"
         >
           閉じる
         </button>

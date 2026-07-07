@@ -14,7 +14,7 @@ import {
 } from "../api/series.js";
 import { listShops } from "../api/shops.js";
 import CoverImage from "../components/CoverImage.jsx";
-import Icon from "../components/Icon.jsx";
+import { RoundButton } from "../components/PageHeader.jsx";
 import ShopStatusEditor from "../components/ShopStatusEditor.jsx";
 import StarRating from "../components/StarRating.jsx";
 import { errorMessage } from "../lib/errors.js";
@@ -24,6 +24,12 @@ const STATUS_LABELS = {
   wishlist: "いつか読みたい",
   completed: "読破済み",
 };
+
+const STATUS_OPTIONS = [
+  ["active", "進行中"],
+  ["wishlist", "読みたい"],
+  ["completed", "読破"],
+];
 
 export default function SeriesDetail() {
   const { id } = useParams();
@@ -112,7 +118,7 @@ export default function SeriesDetail() {
   }, [bulkMessage]);
 
   if (!series || !form) {
-    return <p className="p-6 text-center text-sm text-slate-400">読み込み中…</p>;
+    return <p className="p-6 text-center text-sm text-ink-faint">読み込み中…</p>;
   }
 
   async function handleSave(e) {
@@ -193,48 +199,83 @@ export default function SeriesDetail() {
   });
 
   return (
-    <div className="space-y-4 p-3 md:mx-auto md:max-w-2xl">
-      <button
-        onClick={goBack}
-        className="flex items-center gap-1 text-sm font-medium text-slate-500 hover:text-brand"
-      >
-        <Icon name="arrowLeft" className="h-5 w-5" />
-        戻る
-      </button>
+    <div className="space-y-4 p-4 md:mx-auto md:max-w-2xl md:p-8">
+      <div className="flex items-center justify-between">
+        <RoundButton
+          onClick={goBack}
+          icon="arrowLeft"
+          label="戻る"
+          variant="ink"
+          strokeWidth={2.2}
+        />
+      </div>
 
-      <div className="flex gap-3 rounded-lg bg-white p-3 shadow-sm">
-        <CoverImage url={coverUrl} alt={series.title} className="h-32 w-24" />
-        <div className="text-sm">
-          <h1 className="text-base font-bold text-slate-800">{series.title}</h1>
-          <p className="mt-1 text-slate-500">
-            {STATUS_LABELS[series.status]}
-          </p>
-          <p className="text-slate-500">
-            読了 {series.current_volume}巻
-            {series.total_volumes ? ` / 全${series.total_volumes}巻` : ""}
-          </p>
-          {series.status === "completed" ? (
-            <p className="font-semibold text-brand">🎉 全巻読破</p>
-          ) : (
-            <p className="text-slate-500">次の巻: {series.next_volume}巻</p>
+      {/* ヒーロー */}
+      <div className="flex gap-4">
+        <CoverImage
+          url={coverUrl}
+          alt={series.title}
+          className="h-[150px] w-[106px] rounded-xl shadow-card"
+        />
+        <div className="flex flex-1 flex-col justify-center gap-1.5">
+          <h1 className="text-[22px] font-extrabold leading-tight tracking-tight text-ink">
+            {series.title}
+          </h1>
+          {series.author && (
+            <p className="text-xs text-ink-muted">
+              {series.author}
+              {series.author_kana && (
+                <span className="text-ink-faint">（{series.author_kana}）</span>
+              )}
+            </p>
+          )}
+          {(series.publisher || series.magazine_label) && (
+            <p className="text-xs text-ink-muted">
+              {[series.publisher, series.magazine_label]
+                .filter(Boolean)
+                .join(" ・ ")}
+            </p>
           )}
           <StarRating value={series.favorite_score} size="text-sm" />
+          <div className="flex flex-wrap gap-1.5">
+            <span className="rounded-full bg-brand-soft px-2.5 py-0.5 text-[11px] font-bold text-brand-text">
+              {STATUS_LABELS[series.status]}
+            </span>
+            <span className="rounded-full bg-card px-2.5 py-0.5 text-[11px] font-bold text-ink-muted shadow-sm">
+              読了 {series.current_volume}巻
+              {series.total_volumes ? ` / 全${series.total_volumes}巻` : ""}
+            </span>
+          </div>
         </div>
       </div>
+
+      {/* 次に借りる巻 */}
+      {series.status !== "completed" && (
+        <div className="flex items-center justify-between rounded-card bg-brand px-5 py-4 text-white shadow-[0_8px_20px_rgba(91,33,182,0.3)]">
+          <div>
+            <div className="text-[11px] font-bold tracking-wider text-white/70">
+              次に借りる巻
+            </div>
+            <div className="text-[26px] font-extrabold tracking-tight">
+              {series.next_volume}巻
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 編集フォーム */}
       <form
         onSubmit={handleSave}
-        className="space-y-3 rounded-lg bg-white p-3 shadow-sm"
+        className="space-y-3 rounded-card bg-card p-4 shadow-card"
       >
-        <p className="text-sm font-semibold text-slate-600">基本情報の編集</p>
+        <p className="text-[13px] font-extrabold text-ink">基本情報の編集</p>
         {error && (
-          <p className="rounded bg-rose-50 px-2 py-1 text-xs text-rose-600">
+          <p className="rounded-lg bg-rose-50 px-2 py-1 text-xs text-rose-600">
             {error}
           </p>
         )}
         {saved && (
-          <p className="rounded bg-brand-light px-2 py-1 text-xs text-brand-dark">
+          <p className="rounded-lg bg-brand-soft px-2 py-1 text-xs text-brand-text">
             保存しました。
           </p>
         )}
@@ -269,23 +310,34 @@ export default function SeriesDetail() {
           />
         </Field>
         <Field label="ステータス">
-          <select className="input" {...f("status")}>
-            <option value="active">進行中</option>
-            <option value="wishlist">いつか読みたい</option>
-            <option value="completed">読破済み</option>
-          </select>
+          <div className="flex rounded-full bg-inset p-1">
+            {STATUS_OPTIONS.map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setForm({ ...form, status: value })}
+                className={`flex-1 rounded-full py-2 text-center text-xs font-bold ${
+                  form.status === value
+                    ? "bg-card text-brand shadow-sm"
+                    : "text-ink-muted"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </Field>
         <button
           type="submit"
-          className="w-full rounded bg-brand py-2 text-sm font-semibold text-white"
+          className="w-full rounded-full bg-ink py-2.5 text-sm font-bold text-white"
         >
           保存
         </button>
       </form>
 
       {/* 表紙設定 */}
-      <div className="space-y-2 rounded-lg bg-white p-3 shadow-sm">
-        <p className="text-sm font-semibold text-slate-600">表紙画像の設定</p>
+      <div className="space-y-2 rounded-card bg-card p-4 shadow-card">
+        <p className="text-[13px] font-extrabold text-ink">表紙画像の設定</p>
         <Field label="対象の巻">
           <input
             type="number"
@@ -313,15 +365,15 @@ export default function SeriesDetail() {
         </Field>
         <button
           onClick={handleCoverSave}
-          className="w-full rounded bg-slate-600 py-2 text-sm font-semibold text-white"
+          className="w-full rounded-full bg-ink py-2.5 text-sm font-bold text-white"
         >
           表紙を設定
         </button>
       </div>
 
       {/* ショップ別貸出状況 */}
-      <div className="space-y-2 rounded-lg bg-white p-3 shadow-sm">
-        <p className="text-sm font-semibold text-slate-600">
+      <div className="space-y-2 rounded-card bg-card p-4 shadow-card">
+        <p className="text-[13px] font-extrabold text-ink">
           ショップ別の貸出状況
         </p>
         <ShopStatusEditor
@@ -332,28 +384,28 @@ export default function SeriesDetail() {
       </div>
 
       {/* 履歴 */}
-      <div className="space-y-2 rounded-lg bg-white p-3 shadow-sm">
+      <div className="space-y-2 rounded-card bg-card p-4 shadow-card">
         <div className="flex items-center justify-between">
-          <p className="text-sm font-semibold text-slate-600">読破記録</p>
+          <p className="text-[13px] font-extrabold text-ink">読破記録</p>
           <button
             onClick={() => {
               setBulkOpen((v) => !v);
               setBulkMessage("");
             }}
-            className="text-xs font-semibold text-brand underline"
+            className="text-xs font-bold text-brand"
           >
-            {bulkOpen ? "閉じる" : "+ N巻まで一括追加"}
+            {bulkOpen ? "閉じる" : "＋ N巻まで一括追加"}
           </button>
         </div>
 
         {bulkMessage && (
-          <p className="rounded bg-brand-light px-2 py-1 text-xs text-brand-dark">
+          <p className="rounded-lg bg-brand-soft px-2 py-1 text-xs text-brand-text">
             {bulkMessage}
           </p>
         )}
 
         {bulkOpen && (
-          <div className="space-y-2 rounded border border-brand-light bg-brand-light/30 p-2">
+          <div className="space-y-2 rounded-xl bg-brand-soft/40 p-3">
             <Field label="巻数（N）">
               <input
                 type="number"
@@ -364,14 +416,14 @@ export default function SeriesDetail() {
                 placeholder="例: 10"
               />
             </Field>
-            <p className="text-xs text-slate-600">
+            <p className="text-xs text-ink-muted">
               1〜N 巻の読破記録を追加します。既に登録済みの巻はそのまま残ります。
             </p>
             <div className="flex gap-2">
               <button
                 onClick={handleBulkAdd}
                 disabled={bulkBusy}
-                className="flex-1 rounded bg-brand py-2 text-sm font-semibold text-white disabled:opacity-50"
+                className="flex-1 rounded-full bg-brand py-2 text-sm font-bold text-white active:bg-brand-strong disabled:opacity-50"
               >
                 {bulkBusy ? "追加中…" : "追加"}
               </button>
@@ -381,7 +433,7 @@ export default function SeriesDetail() {
                   setBulkToVolume("");
                 }}
                 disabled={bulkBusy}
-                className="flex-1 rounded bg-slate-200 py-2 text-sm font-semibold text-slate-600 disabled:opacity-50"
+                className="flex-1 rounded-full bg-inset py-2 text-sm font-bold text-ink-muted disabled:opacity-50"
               >
                 キャンセル
               </button>
@@ -390,10 +442,10 @@ export default function SeriesDetail() {
         )}
 
         {history.length === 0 ? (
-          <p className="text-xs text-slate-400">記録はありません。</p>
+          <p className="text-xs text-ink-faint">記録はありません。</p>
         ) : (
           <>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-ink-muted">
               全 {historyTotalCount}件
               {history.length < historyTotalCount
                 ? `（${history.length}件表示中）`
@@ -401,9 +453,12 @@ export default function SeriesDetail() {
             </p>
             <ul className="text-sm">
               {history.map((h) => (
-                <li key={h.id} className="flex justify-between py-0.5">
-                  <span>{h.volume_number}巻</span>
-                  <span className="text-xs text-slate-400">
+                <li
+                  key={h.id}
+                  className="flex justify-between border-b border-line py-2 last:border-b-0"
+                >
+                  <span className="font-bold text-ink">{h.volume_number}巻</span>
+                  <span className="text-xs text-ink-faint">
                     {new Date(h.rented_at).toLocaleDateString("ja-JP")}
                   </span>
                 </li>
@@ -413,11 +468,11 @@ export default function SeriesDetail() {
               <button
                 onClick={loadMoreHistory}
                 disabled={historyLoadingMore}
-                className="w-full rounded bg-slate-100 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-200 disabled:opacity-50"
+                className="block w-full py-1 text-center text-xs font-bold text-brand disabled:opacity-50"
               >
                 {historyLoadingMore
                   ? "読み込み中…"
-                  : `もっと読み込む（残り ${historyTotalCount - history.length}件）`}
+                  : `もっと見る（残り ${historyTotalCount - history.length}件）`}
               </button>
             )}
           </>
@@ -425,11 +480,11 @@ export default function SeriesDetail() {
       </div>
 
       {/* 削除 */}
-      <div className="space-y-2 rounded-lg border border-rose-200 bg-white p-3 shadow-sm">
+      <div className="space-y-2 rounded-card bg-card p-4 shadow-card">
         {!showDelete ? (
           <button
             onClick={() => setShowDelete(true)}
-            className="text-sm font-semibold text-rose-600"
+            className="text-sm font-bold text-rose-500"
           >
             このシリーズを削除
           </button>
@@ -439,7 +494,7 @@ export default function SeriesDetail() {
               ⚠️ 削除すると、このシリーズの読破記録・カート・貸出状況も
               すべて完全に削除されます。この操作は取り消せません。
             </p>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-ink-muted">
               確認のため、シリーズ名「{series.title}」を入力してください。
             </p>
             <input
@@ -452,7 +507,7 @@ export default function SeriesDetail() {
               <button
                 onClick={handleDelete}
                 disabled={deleteConfirm !== series.title}
-                className="flex-1 rounded bg-rose-600 py-2 text-sm font-semibold text-white disabled:opacity-40"
+                className="flex-1 rounded-full bg-rose-600 py-2 text-sm font-bold text-white disabled:opacity-40"
               >
                 削除する
               </button>
@@ -461,7 +516,7 @@ export default function SeriesDetail() {
                   setShowDelete(false);
                   setDeleteConfirm("");
                 }}
-                className="flex-1 rounded bg-slate-200 py-2 text-sm font-semibold text-slate-600"
+                className="flex-1 rounded-full bg-inset py-2 text-sm font-bold text-ink-muted"
               >
                 キャンセル
               </button>
@@ -476,7 +531,9 @@ export default function SeriesDetail() {
 function Field({ label, children }) {
   return (
     <label className="block">
-      <span className="text-xs font-semibold text-slate-500">{label}</span>
+      <span className="text-[11px] font-bold tracking-wide text-ink-muted">
+        {label}
+      </span>
       <div className="mt-1">{children}</div>
     </label>
   );

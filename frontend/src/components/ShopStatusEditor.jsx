@@ -29,7 +29,7 @@ export default function ShopStatusEditor({ seriesId, shops, statusMap = {} }) {
 
   if (shops.length === 0) {
     return (
-      <p className="text-xs text-slate-400">
+      <p className="text-xs text-ink-faint">
         ショップが未登録です。設定画面から登録できます。
       </p>
     );
@@ -42,10 +42,10 @@ export default function ShopStatusEditor({ seriesId, shops, statusMap = {} }) {
         const meta = AVAILABILITY[status];
         return (
           <li key={shop.id} className="flex items-center justify-between text-sm">
-            <span className="text-slate-600">{shop.name}</span>
+            <span className="font-medium text-ink">{shop.name}</span>
             <button
               onClick={() => cycle(shop.id)}
-              className={`rounded px-2 py-1 text-xs font-semibold ${meta.cls}`}
+              className={`rounded-full px-3 py-1 text-xs font-bold ${meta.cls}`}
             >
               {meta.label} ⇄
             </button>

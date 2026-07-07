@@ -20,7 +20,7 @@ export default function CoverImage({
 
   return (
     <View
-      className={`shrink-0 items-center justify-center overflow-hidden rounded bg-inset ${className}`}
+      className={`shrink-0 items-center justify-center overflow-hidden rounded-[10px] bg-inset ${className}`}
     >
       {showPlaceholder ? (
         <Text className="px-1 text-center text-[10px] leading-tight text-ink-faint">

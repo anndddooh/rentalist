@@ -2,7 +2,15 @@
  * Rentalist のロゴ。開いた本＋しおりのマーク。
  * withText=true でワードマーク「Rentalist」を併記する。
  */
-export default function Logo({ size = 32, withText = false, textClassName = "" }) {
+export default function Logo({
+  size = 32,
+  withText = false,
+  textClassName = "",
+  inverted = false,
+}) {
+  // inverted=true: 紫背景の上で使う白地バージョン（ログイン画面など）
+  const box = inverted ? "#ffffff" : "#5b21b6";
+  const mark = inverted ? "#5b21b6" : "#ffffff";
   return (
     <span className="inline-flex items-center gap-2">
       <svg
@@ -13,14 +21,14 @@ export default function Logo({ size = 32, withText = false, textClassName = "" }
         xmlns="http://www.w3.org/2000/svg"
         aria-label="Rentalist"
       >
-        <rect width="48" height="48" rx="12" fill="#5b21b6" />
+        <rect width="48" height="48" rx="12" fill={box} />
         <path
           d="M24 17c-3.3-2.4-7.6-3.2-11.7-2.5a1 1 0 0 0-.8 1v15.9a1 1 0 0 0 1.2 1c3.6-.6 7.2.1 10 2.2a1.1 1.1 0 0 0 1.3 0c2.8-2.1 6.4-2.8 10-2.2a1 1 0 0 0 1.2-1V15.5a1 1 0 0 0-.8-1c-4.1-.7-8.4.1-11.7 2.5z"
-          fill="#ffffff"
+          fill={mark}
         />
         <path
           d="M24 17v17.6"
-          stroke="#5b21b6"
+          stroke={box}
           strokeWidth="2.2"
           strokeLinecap="round"
         />

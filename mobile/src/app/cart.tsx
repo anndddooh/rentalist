@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as Haptics from "expo-haptics";
+import { router } from "expo-router";
 import { useState } from "react";
 import { Alert, FlatList, Pressable, Text, View } from "react-native";
 import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeable";
@@ -8,6 +9,7 @@ import { checkout, clearCart, removeFromCart } from "@/api/cart";
 import type { CartItem } from "@/api/types";
 import Celebration from "@/components/Celebration";
 import { BrandButton } from "@/components/form";
+import ScreenHeader from "@/components/ScreenHeader";
 import { useCartQuery } from "@/hooks/useCart";
 import { errorMessage } from "@/lib/errors";
 
@@ -86,35 +88,44 @@ export default function Cart() {
         <Celebration titles={celebration} onClose={() => setCelebration([])} />
       )}
 
+      <ScreenHeader
+        onBack={() => router.back()}
+        subtitle={`${items.length}冊`}
+        title="カート"
+        right={
+          items.length > 0 ? (
+            <Pressable onPress={confirmClear} hitSlop={6}>
+              <Text className="text-[13px] font-bold text-rose-500">
+                全削除
+              </Text>
+            </Pressable>
+          ) : undefined
+        }
+      />
+
       <FlatList
         data={items}
         keyExtractor={(item) => String(item.id)}
-        contentContainerClassName="gap-2 p-3"
-        ListHeaderComponent={
-          items.length > 0 ? (
-            <View className="flex-row items-center justify-between">
-              <Text className="text-xs text-ink-muted">{items.length}件</Text>
-              <Pressable onPress={confirmClear} hitSlop={6}>
-                <Text className="text-xs font-semibold text-rose-500 underline">
-                  カートを全削除
-                </Text>
-              </Pressable>
-            </View>
-          ) : null
-        }
+        contentContainerClassName="gap-2.5 px-4 pb-4 pt-1"
         renderItem={({ item }) => (
-          <View className="overflow-hidden rounded-lg shadow-sm">
+          <View className="overflow-hidden rounded-[18px] shadow-sm">
             <ReanimatedSwipeable
               renderRightActions={() => (
                 <DeleteAction onPress={() => removeMutation.mutate(item)} />
               )}
               overshootRight={false}
             >
-              <View className="flex-row items-center justify-between bg-card p-3">
-                <Text className="flex-1 text-sm text-ink">
-                  <Text className="font-semibold">{item.series_title}</Text>{" "}
-                  <Text className="text-brand-text">{item.volume_number}巻</Text>
-                </Text>
+              <View className="flex-row items-center justify-between gap-3 bg-card px-4 py-3.5">
+                <View className="flex-1">
+                  <Text className="text-[15px] font-bold text-ink">
+                    {item.series_title}
+                  </Text>
+                  <View className="mt-1 self-start rounded-md bg-brand-soft px-2 py-0.5">
+                    <Text className="text-xs font-bold text-brand-text">
+                      {item.volume_number}巻
+                    </Text>
+                  </View>
+                </View>
                 <Text className="text-xs text-ink-faint">← スワイプで削除</Text>
               </View>
             </ReanimatedSwipeable>
@@ -129,19 +140,19 @@ export default function Cart() {
         }
         ListFooterComponent={
           items.length > 0 ? (
-            <View className="mt-2 gap-2">
+            <View className="mt-3 gap-3">
+              <Text className="text-center text-xs leading-5 text-ink-faint">
+                レジで会計したらこのボタンを押すと、各シリーズの「次に借りる巻」が繰り上がります。
+              </Text>
               <BrandButton
                 title={
                   checkoutMutation.isPending
                     ? "確定中…"
-                    : `確定する（${items.length}件）`
+                    : `会計した — ${items.length}冊を確定する`
                 }
                 onPress={() => checkoutMutation.mutate()}
                 busy={checkoutMutation.isPending}
               />
-              <Text className="text-center text-xs text-ink-faint">
-                レジで会計したらこのボタンを押すと、各シリーズの巻数が繰り上がります。
-              </Text>
             </View>
           ) : null
         }

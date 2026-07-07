@@ -42,6 +42,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     bundleIdentifier: env.bundleId,
     supportsTablet: false,
+    // iOS 18+ のライト/ダーク外観に応じたアプリアイコン
+    icon: {
+      light: "./assets/images/icon.png",
+      dark: "./assets/images/icon-dark.png",
+    },
     // 暗号化は HTTPS(TLS) と Keychain のみ = 適用除外。輸出コンプライアンス申告を免除
     config: {
       usesNonExemptEncryption: false,

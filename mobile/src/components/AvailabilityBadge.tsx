@@ -14,7 +14,7 @@ export const AVAILABILITY: Record<
   unavailable: {
     label: "貸出なし",
     pillCls: "bg-inset",
-    textCls: "text-ink-muted",
+    textCls: "text-ink-faint",
   },
   unknown: {
     label: "未確認",
@@ -39,9 +39,9 @@ export default function AvailabilityBadge({
       onPress={onPress}
       disabled={!onPress}
       hitSlop={4}
-      className={`rounded px-2 py-1 ${avail.pillCls}`}
+      className={`rounded-full px-2.5 py-1 ${avail.pillCls}`}
     >
-      <Text className={`text-xs font-semibold ${avail.textCls}`}>
+      <Text className={`text-xs font-bold ${avail.textCls}`}>
         {avail.label}
         {showCycleHint && " ⇄"}
       </Text>

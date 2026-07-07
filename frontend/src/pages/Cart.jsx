@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { checkout, clearCart, listCart, removeFromCart } from "../api/cart.js";
 import Celebration from "../components/Celebration.jsx";
+import Icon from "../components/Icon.jsx";
+import PageHeader, { RoundButton } from "../components/PageHeader.jsx";
 import { useCart } from "../context/CartContext.jsx";
 import { errorMessage } from "../lib/errors.js";
 
@@ -12,6 +15,7 @@ export default function Cart() {
   const [celebration, setCelebration] = useState([]);
   const [confirmClear, setConfirmClear] = useState(false);
   const { refreshCart } = useCart();
+  const navigate = useNavigate();
 
   async function load() {
     setLoading(true);
@@ -63,84 +67,107 @@ export default function Cart() {
   }
 
   return (
-    <div className="space-y-3 p-3 md:mx-auto md:max-w-2xl">
+    <div className="space-y-4 p-4 md:mx-auto md:max-w-2xl md:p-8">
       {celebration.length > 0 && (
         <Celebration titles={celebration} onClose={() => setCelebration([])} />
       )}
-      <h1 className="text-lg font-bold text-slate-700">カート</h1>
+
+      <PageHeader
+        leading={
+          <RoundButton
+            onClick={() => navigate(-1)}
+            icon="arrowLeft"
+            label="戻る"
+            variant="ink"
+            strokeWidth={2.2}
+          />
+        }
+        eyebrow={`${items.length}冊`}
+        title="カート"
+        actions={
+          items.length > 0 &&
+          (confirmClear ? (
+            <span className="flex items-center gap-1.5 text-xs">
+              <button
+                onClick={handleClear}
+                disabled={busy}
+                className="rounded-full bg-rose-500 px-3 py-1.5 font-bold text-white disabled:opacity-50"
+              >
+                全削除
+              </button>
+              <button
+                onClick={() => setConfirmClear(false)}
+                className="rounded-full bg-inset px-3 py-1.5 font-bold text-ink-muted"
+              >
+                やめる
+              </button>
+            </span>
+          ) : (
+            <button
+              onClick={() => setConfirmClear(true)}
+              className="text-sm font-bold text-rose-500"
+            >
+              全削除
+            </button>
+          ))
+        }
+      />
 
       {message && (
-        <p className="rounded bg-brand-light px-3 py-2 text-sm text-brand-dark">
+        <p className="rounded-lg bg-brand-soft px-3 py-2 text-sm text-brand-text">
           {message}
         </p>
       )}
 
       {loading ? (
-        <p className="py-10 text-center text-sm text-slate-400">読み込み中…</p>
+        <p className="py-10 text-center text-sm text-ink-faint">読み込み中…</p>
       ) : items.length === 0 ? (
-        <p className="py-10 text-center text-sm text-slate-400">
+        <p className="py-10 text-center text-sm text-ink-faint">
           カートは空です。ホームの「レンタル」ボタンから追加できます。
         </p>
       ) : (
         <>
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-500">{items.length}件</span>
-            {confirmClear ? (
-              <span className="flex items-center gap-1.5 text-xs">
-                <span className="text-slate-500">空にしますか？</span>
-                <button
-                  onClick={handleClear}
-                  disabled={busy}
-                  className="rounded bg-rose-500 px-2 py-1 font-semibold text-white disabled:opacity-50"
-                >
-                  全削除
-                </button>
-                <button
-                  onClick={() => setConfirmClear(false)}
-                  className="rounded bg-slate-200 px-2 py-1 font-semibold text-slate-600"
-                >
-                  キャンセル
-                </button>
-              </span>
-            ) : (
-              <button
-                onClick={() => setConfirmClear(true)}
-                className="text-xs font-semibold text-rose-500 underline"
-              >
-                カートを全削除
-              </button>
-            )}
-          </div>
-          <ul className="space-y-2">
+          <ul className="space-y-2.5">
             {items.map((item) => (
               <li
                 key={item.id}
-                className="flex items-center justify-between rounded-lg bg-white p-3 shadow-sm"
+                className="flex items-center gap-3.5 rounded-[18px] bg-card p-3.5 shadow-card"
               >
-                <span className="text-sm">
-                  <span className="font-semibold">{item.series_title}</span>{" "}
-                  <span className="text-brand">{item.volume_number}巻</span>
-                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="text-[15px] font-bold text-ink">
+                    {item.series_title}
+                  </div>
+                  <div className="mt-1">
+                    <span className="rounded-md bg-brand-soft px-2 py-0.5 text-xs font-bold text-brand-text">
+                      {item.volume_number}巻
+                    </span>
+                  </div>
+                </div>
                 <button
                   onClick={() => handleRemove(item.id)}
-                  className="text-xs text-rose-500 underline"
+                  aria-label="カートから削除"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-inset text-ink-muted"
                 >
-                  削除
+                  <Icon name="close" className="h-4 w-4" strokeWidth={2} />
                 </button>
               </li>
             ))}
           </ul>
 
-          <button
-            onClick={handleCheckout}
-            disabled={busy}
-            className="w-full rounded-lg bg-brand py-3 font-bold text-white disabled:opacity-50"
-          >
-            {busy ? "確定中…" : `確定する（${items.length}件）`}
-          </button>
-          <p className="text-center text-xs text-slate-400">
-            レジで会計したらこのボタンを押すと、各シリーズの巻数が繰り上がります。
-          </p>
+          <div className="space-y-2.5 pt-2">
+            <p className="text-center text-xs leading-relaxed text-ink-faint">
+              レジで会計したらこのボタンを押すと、
+              <br />
+              各シリーズの「次に借りる巻」が繰り上がります。
+            </p>
+            <button
+              onClick={handleCheckout}
+              disabled={busy}
+              className="w-full rounded-full bg-brand py-4 text-base font-extrabold text-white shadow-[0_8px_20px_rgba(91,33,182,0.35)] active:bg-brand-strong disabled:opacity-50"
+            >
+              {busy ? "確定中…" : `会計した — ${items.length}冊を確定する`}
+            </button>
+          </div>
         </>
       )}
     </div>

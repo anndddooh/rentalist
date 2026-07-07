@@ -1,4 +1,5 @@
 import { router } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -7,6 +8,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { checkInvite, signup } from "@/api/auth";
 import { BrandButton, ErrorNotice, Field } from "@/components/form";
 import Logo from "@/components/Logo";
@@ -23,6 +25,7 @@ function extractToken(input: string): string | null {
 
 export default function Signup() {
   const { signIn } = useAuth();
+  const insets = useSafeAreaInsets();
   const [inviteInput, setInviteInput] = useState("");
   const [validToken, setValidToken] = useState<string | null>(null);
   const [checking, setChecking] = useState(false);
@@ -70,18 +73,28 @@ export default function Signup() {
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-surface"
+      className="flex-1 bg-brand"
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
+      <StatusBar style="light" />
       <ScrollView
-        contentContainerClassName="flex-grow items-center justify-center p-6"
+        contentContainerClassName="flex-grow items-center justify-center gap-7 p-7"
         keyboardShouldPersistTaps="handled"
+        style={{ paddingTop: insets.top }}
       >
-        <View className="w-full max-w-sm gap-4 rounded-xl bg-card p-6 shadow">
+        <View className="items-center gap-3.5">
+          <Logo size={64} />
           <View className="items-center">
-            <Logo size={48} withText textClassName="text-2xl text-brand-text" />
+            <Text className="text-[32px] font-extrabold tracking-tight text-white">
+              Rentalist
+            </Text>
+            <Text className="mt-1 text-sm font-medium text-white/70">
+              家族の漫画レンタルを、かしこく管理
+            </Text>
           </View>
+        </View>
 
+        <View className="w-full max-w-sm gap-3 rounded-[24px] bg-card p-5 shadow-lg">
           {!validToken ? (
             <>
               <Text className="text-center text-sm text-ink-muted">
@@ -102,7 +115,7 @@ export default function Signup() {
                 disabled={!inviteInput.trim()}
               />
               <Text
-                className="text-center text-sm text-brand-text"
+                className="text-center text-sm font-semibold text-brand-text"
                 onPress={() => router.back()}
               >
                 ログイン画面へ戻る

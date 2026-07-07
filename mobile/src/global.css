@@ -2,35 +2,35 @@
 @tailwind components;
 @tailwind utilities;
 
-/* セマンティックカラートークン（値は RGB 三つ組。tailwind.config.js が参照）
-   ライト: web 版の意匠（slate-100 背景 / 白カード / brand #5b21b6）をそのまま踏襲。
-   ダーク: slate-900 系 + brand は彩度を上げてコントラスト確保。 */
+/* デザイン言語 1a「Refined」のセマンティックカラートークン（RGB 三つ組。tailwind.config.js が参照）
+   ライト: 地色 #f6f5f9 / カード #fff / インク #1e1b2e / ブランド紫 #5b21b6。
+   ダーク: 地色 #161226 / カード #221c38 / インク #f1eefb / ブランド #8b5cf6。 */
 :root {
-  --color-brand: 91 33 182; /* #5b21b6 violet-800 */
-  --color-brand-strong: 76 29 149; /* #4c1d95 violet-900 (押下色) */
-  --color-brand-soft: 237 233 254; /* #ede9fe violet-100 */
-  --color-brand-text: 91 33 182;
-  --color-surface: 241 245 249; /* slate-100 */
-  --color-card: 255 255 255;
-  --color-inset: 226 232 240; /* slate-200 (プレースホルダ等の沈み込み面) */
-  --color-ink: 30 41 59; /* slate-800 */
-  --color-ink-muted: 100 116 139; /* slate-500 */
-  --color-ink-faint: 148 163 184; /* slate-400 */
-  --color-line: 203 213 225; /* slate-300 */
+  --color-brand: 91 33 182; /* #5b21b6 */
+  --color-brand-strong: 76 29 149; /* #4c1d95 押下色 */
+  --color-brand-soft: 237 233 254; /* #ede9fe チップ地 */
+  --color-brand-text: 91 33 182; /* #5b21b6 */
+  --color-surface: 246 245 249; /* #f6f5f9 地色 */
+  --color-card: 255 255 255; /* #ffffff */
+  --color-inset: 246 245 249; /* #f6f5f9 フォーム欄の沈み込み面 */
+  --color-ink: 30 27 46; /* #1e1b2e */
+  --color-ink-muted: 124 111 155; /* #7c6f9b サブ */
+  --color-ink-faint: 164 155 192; /* #a49bc0 淡 */
+  --color-line: 236 234 242; /* #eceaf2 罫線 */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-brand: 124 58 237; /* violet-600 */
-    --color-brand-strong: 109 40 217; /* violet-700 */
-    --color-brand-soft: 46 16 101; /* violet-950 */
-    --color-brand-text: 167 139 250; /* violet-400 */
-    --color-surface: 15 23 42; /* slate-900 */
-    --color-card: 30 41 59; /* slate-800 */
-    --color-inset: 51 65 85; /* slate-700 */
-    --color-ink: 241 245 249; /* slate-100 */
-    --color-ink-muted: 148 163 184; /* slate-400 */
-    --color-ink-faint: 100 116 139; /* slate-500 */
-    --color-line: 71 85 105; /* slate-600 */
+    --color-brand: 139 92 246; /* #8b5cf6 */
+    --color-brand-strong: 109 40 217; /* #6d28d9 */
+    --color-brand-soft: 55 48 90; /* #37305a チップ地 */
+    --color-brand-text: 196 181 253; /* #c4b5fd アクセント */
+    --color-surface: 22 18 38; /* #161226 */
+    --color-card: 34 28 56; /* #221c38 */
+    --color-inset: 42 35 68; /* #2a2344 */
+    --color-ink: 241 238 251; /* #f1eefb */
+    --color-ink-muted: 157 146 194; /* #9d92c2 */
+    --color-ink-faint: 125 113 159; /* #7d719f */
+    --color-line: 46 39 73; /* #2e2749 */
   }
 }
