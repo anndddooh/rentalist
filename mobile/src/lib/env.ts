@@ -1,24 +1,35 @@
 import Constants from "expo-constants";
 
-type Extra = { appEnv: "development" | "staging" | "production"; apiBaseUrl: string | null };
+type Extra = {
+  appEnv: "development" | "staging" | "production";
+  apiBaseUrl: string | null;
+};
 
 const extra = (Constants.expoConfig?.extra ?? {}) as Partial<Extra>;
 
 export const APP_ENV = extra.appEnv ?? "development";
 
 /**
- * development のときの API ベース URL を導出する。
- * - EXPO_PUBLIC_API_URL があれば最優先（Expo Go のままステージング等へ接続する用途）
- * - なければ Metro の hostUri（例 "192.168.1.10:8081"）から Mac の LAN IP を取り、
- *   ローカル Django（:8000）に向ける
+ * API ベース URL の解決順（優先度高い順）:
+ * 1. EXPO_PUBLIC_API_URL … 明示上書き。dev client で staging/ローカルを切替える用途
+ *    （.env.local や `EXPO_PUBLIC_API_URL=... expo start` で指定）
+ * 2. extra.apiBaseUrl が「文字列」のとき … staging/production ビルドで焼き込まれる値
+ *    ※ dev client では extra.apiBaseUrl が null 以外のオブジェクトになることがあり、
+ *      素の `?? ` だと誤ってそれを使ってしまうため typeof で厳密にガードする
+ * 3. development 既定 … Metro の hostUri から Mac の LAN IP を導出し :8000（ローカル Django）
  */
-function devBaseUrl(): string {
-  if (process.env.EXPO_PUBLIC_API_URL) return process.env.EXPO_PUBLIC_API_URL;
+function resolveBaseUrl(): string {
+  if (process.env.EXPO_PUBLIC_API_URL) {
+    return process.env.EXPO_PUBLIC_API_URL;
+  }
+  if (typeof extra.apiBaseUrl === "string" && extra.apiBaseUrl.length > 0) {
+    return extra.apiBaseUrl;
+  }
   const host = Constants.expoConfig?.hostUri?.split(":")[0];
   return `http://${host ?? "localhost"}:8000`;
 }
 
-export const API_BASE_URL = extra.apiBaseUrl ?? devBaseUrl();
+export const API_BASE_URL = resolveBaseUrl();
 
 /** web (frontend/src/api/client.js) と同じく `${BASE}/api` を API ルートとする */
 export const API_BASE = `${API_BASE_URL}/api`;
