@@ -1,2 +1,2 @@
 release: python manage.py migrate --noinput
-web: gunicorn rentalist.wsgi --log-file -
+web: gunicorn rentalist.wsgi --workers 2 --threads 4 --worker-class gthread --log-file -
