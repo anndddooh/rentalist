@@ -92,3 +92,44 @@ def test_me_requires_authentication():
     anon = APIClient()
     resp = anon.get("/api/auth/me/")
     assert resp.status_code == 401
+
+
+def test_jwt_token_obtain_includes_user(user):
+    """ログイン応答にユーザー情報が含まれる（/auth/me/ の往復を省くため）。"""
+    from rest_framework.test import APIClient
+
+    resp = APIClient().post(
+        "/api/auth/token/",
+        {"username": "taro", "password": "pw-strong-123"},
+        format="json",
+    )
+    assert resp.status_code == 200
+    assert resp.data["user"] == {"id": user.id, "username": "taro", "is_staff": False}
+
+
+def test_jwt_refresh_includes_user(user):
+    """トークン更新の応答にユーザー情報が含まれる。"""
+    from rest_framework.test import APIClient
+    from rest_framework_simplejwt.tokens import RefreshToken
+
+    refresh = str(RefreshToken.for_user(user))
+    resp = APIClient().post("/api/auth/token/refresh/", {"refresh": refresh}, format="json")
+    assert resp.status_code == 200
+    assert "access" in resp.data
+    assert resp.data["user"] == {"id": user.id, "username": "taro", "is_staff": False}
+
+
+@pytest.mark.parametrize("change", ["deactivate", "delete"])
+def test_jwt_refresh_rejects_inactive_or_deleted_user(user, change):
+    """無効化・削除されたユーザーの refresh トークンでは更新できない。"""
+    from rest_framework.test import APIClient
+    from rest_framework_simplejwt.tokens import RefreshToken
+
+    refresh = str(RefreshToken.for_user(user))
+    if change == "deactivate":
+        user.is_active = False
+        user.save()
+    else:
+        user.delete()
+    resp = APIClient().post("/api/auth/token/refresh/", {"refresh": refresh}, format="json")
+    assert resp.status_code == 401
