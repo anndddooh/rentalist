@@ -5,7 +5,13 @@
 詳細な知識は knowledge wiki の `wiki/projects/rentalist.md` に累積している。
 
 <!-- BEGIN claude-knowledge (distill 自動管理 / この外側は温存) -->
-## 既知の決定・ハマり所（自動蒸留 / 2026-07-10 更新）
+## 既知の決定・ハマり所（自動蒸留 / 2026-10-22 更新）
+
+- **表示が遅い主因は Neon が us-east-1（VPS はシンガポール、1 クエリ約 0.2s）＋ gunicorn が sync 1 ワーカー**（2026-10-22 実測）。手順は `plans/perf-slow-page-load-handoff.md`。性能改善では N+1 より先に「DB 距離」と「ワーカー並列化」を疑う。Neon 移行時は新リージョンで新規プロジェクト作成（リージョン変更不可）。
+- **対策1〜4（gthread / Neon シンガポール移行 / 起動時の /auth/me/ 省略 / 表紙の未取得結果キャッシュ）は 2026-10-25 に本番反映済み**（DB は Neon ap-southeast-1 の新プロジェクト。経緯は `plans/perf-slow-page-load-handoff.md`）。staging は新 Neon プロジェクトの `rentalist_staging` DB を使用中。staging 用 Web は `cd frontend && npm run deploy:staging`（https://rentalist-staging.annndddddooooooo.workers.dev）。
+- **`conn_health_checks=True` は DB が VPS と同リージョンである前提**: DB が米国にあった間は確認クエリの往復で +0.23 秒/リクエスト悪化した（staging 実測）。ブランチでは移行に合わせて有効化済み（01d83a2）。
+- 並列化の効果は「同時 N 本送信」で測る（1 本だけでは差が出ない）。
+- Claude Code からは本番 VPS への root SSH・本番 `dokku run`・本番ログ読み取り・amend/ブランチ削除が権限拒否される。計測は curl と `dokku config:get` で行い、試験変更は一時ブランチで試す。
 
 - **デプロイは Dokku（DigitalOcean VPS 167.172.65.18, Singapore）**: `git push dokku main` で buildpack 自動デプロイ。**`dokku config:set` で env を変えた後は `dokku ps:rebuild <app>` が必要**（buildpack が env をビルド時に焼き込むため、config:set だけでは反映されない）。ステージングは `rentalist-api-staging.167.172.65.18.nip.io` + Neon staging ブランチ。
 - **Neon DB**: Django 本番は Pooled URL（`-pooler`）で可。ただし **`pg_restore` は Direct URL（`-pooler` なし）必須**（pgbouncer transaction mode は startup parameters 不可）。
