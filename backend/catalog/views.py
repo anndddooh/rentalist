@@ -67,12 +67,12 @@ class SeriesViewSet(viewsets.ModelViewSet):
             cover = series.covers.filter(volume_number=volume).first()
             if cover is not None:
                 return Response(VolumeCoverSerializer(cover).data)
-            url, provisional = rakuten.find_volume_cover(series.title, volume)
+            url, provisional = rakuten.find_volume_cover_cached(series.title, volume)
             if url is None:
                 return Response({"volume_number": volume, "resolved_url": None})
             if provisional:
                 # 発売前の仮表紙: 表示用にURLは返すが DB には保存しない
-                # （次回リクエスト時に再 fetch して本表紙への差し替えを拾う）
+                # （キャッシュ期限切れ後の再 fetch で本表紙への差し替えを拾う）
                 return Response(
                     {
                         "volume_number": volume,

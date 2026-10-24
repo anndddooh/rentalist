@@ -362,7 +362,7 @@ def test_series_cover_get_returns_provisional_url_without_caching(api, user, mon
     """楽天が仮表紙を返したら URL は返却するが VolumeCover を作らない。"""
     series = make_series(user)
     monkeypatch.setattr(
-        "catalog.views.rakuten.find_volume_cover",
+        "catalog.views.rakuten.find_volume_cover_cached",
         lambda title, vol: ("https://example.com/provisional.gif", True),
     )
     resp = api.get(f"/api/series/{series.id}/cover/?volume=7")
@@ -377,7 +377,7 @@ def test_series_cover_get_caches_when_not_provisional(api, user, monkeypatch):
     """楽天が本表紙を返したら従来通り VolumeCover に保存される。"""
     series = make_series(user)
     monkeypatch.setattr(
-        "catalog.views.rakuten.find_volume_cover",
+        "catalog.views.rakuten.find_volume_cover_cached",
         lambda title, vol: ("https://example.com/real_1_5.jpg", False),
     )
     resp = api.get(f"/api/series/{series.id}/cover/?volume=2")

@@ -31,3 +31,13 @@ def _disable_rakuten_network(settings):
     """テスト中は楽天APIを呼ばない（認証情報を空にしてモック動作させる）。"""
     settings.RAKUTEN_APP_ID = ""
     settings.RAKUTEN_ACCESS_KEY = ""
+
+
+@pytest.fixture(autouse=True)
+def _clear_cache():
+    """楽天表紙の結果キャッシュ等がテスト間で漏れないよう毎回クリアする。"""
+    from django.core.cache import cache
+
+    cache.clear()
+    yield
+    cache.clear()

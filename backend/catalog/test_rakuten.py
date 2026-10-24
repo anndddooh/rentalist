@@ -285,3 +285,54 @@ def test_flags_real_cover_as_not_provisional():
         url, provisional = rakuten.find_volume_cover("ありす、宇宙までも", 6)
     assert url.endswith("9784098637782_1_28.jpg?_ex=200x200")
     assert provisional is False
+
+
+# --- find_volume_cover_cached: 「見つからない」「仮表紙」を TTL 付きでキャッシュ ---
+
+
+@override_settings(RAKUTEN_APP_ID="x", RAKUTEN_ACCESS_KEY="y")
+def test_cached_lookup_caches_not_found():
+    """見つからなかった結果はキャッシュされ、2回目は楽天を呼ばない。"""
+    with patch.object(rakuten.requests, "get", return_value=_fake_response([])) as get:
+        assert rakuten.find_volume_cover_cached("存在しない作品", 3) == (None, False)
+        calls = get.call_count
+        assert rakuten.find_volume_cover_cached("存在しない作品", 3) == (None, False)
+        assert get.call_count == calls
+
+
+@override_settings(RAKUTEN_APP_ID="x", RAKUTEN_ACCESS_KEY="y")
+def test_cached_lookup_caches_provisional():
+    """仮表紙の結果もキャッシュされ、2回目は楽天を呼ばずに同じ URL を返す。"""
+    items = [
+        {
+            "title": "ありす、宇宙までも 7",
+            "seriesName": "ありす、宇宙までも",
+            "largeImageUrl": "https://example.com/noimage.gif",
+            "availability": "5",
+        }
+    ]
+    with patch.object(rakuten.requests, "get", return_value=_fake_response(items)) as get:
+        first = rakuten.find_volume_cover_cached("ありす、宇宙までも", 7)
+        calls = get.call_count
+        assert rakuten.find_volume_cover_cached("ありす、宇宙までも", 7) == first
+        assert get.call_count == calls
+    assert first[1] is True
+
+
+@override_settings(RAKUTEN_APP_ID="x", RAKUTEN_ACCESS_KEY="y")
+def test_cached_lookup_does_not_cache_api_failure():
+    """楽天 API の失敗（タイムアウト等）はキャッシュせず、次回は再度問い合わせる。"""
+    import requests
+
+    with patch.object(rakuten.requests, "get", side_effect=requests.Timeout("t/o")):
+        assert rakuten.find_volume_cover_cached("鬼滅の刃", 1) == (None, False)
+    items = [
+        {
+            "title": "鬼滅の刃 1",
+            "seriesName": "鬼滅の刃",
+            "largeImageUrl": "https://example.com/kim1_1_5.jpg",
+        }
+    ]
+    with patch.object(rakuten.requests, "get", return_value=_fake_response(items)):
+        url, provisional = rakuten.find_volume_cover_cached("鬼滅の刃", 1)
+    assert url == "https://example.com/kim1_1_5.jpg" and provisional is False

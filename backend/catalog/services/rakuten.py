@@ -10,6 +10,7 @@ RAKUTEN_APP_ID と RAKUTEN_ACCESS_KEY の片方でも未設定ならモックデ
 バースト時の意図せぬブロックを防ぐため、モジュール内の簡易スロットリングで
 呼び出し間隔を最低限確保する。
 """
+import hashlib
 import logging
 import re
 import threading
@@ -17,6 +18,7 @@ import time
 
 import requests
 from django.conf import settings
+from django.core.cache import cache
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +27,12 @@ RAKUTEN_ENDPOINT = (
 )
 BOOKS_COMIC_GENRE = "001001"  # 本 > コミック
 REQUEST_TIMEOUT = 6
+
+# find_volume_cover_cached のキャッシュ期間。本表紙は呼び出し側が DB に保存するので対象外。
+# 見つからない巻は滅多に状況が変わらないので長め、仮表紙は本表紙への差し替えを
+# 早めに拾えるよう短め。キャッシュはプロセス内メモリ（Django 既定の LocMemCache）。
+COVER_NOT_FOUND_TTL_SEC = 24 * 60 * 60
+COVER_PROVISIONAL_TTL_SEC = 6 * 60 * 60
 
 # 楽天API呼び出しの最小間隔。accessKey + IP登録方式なので 1秒/req までは
 # 締めず、バースト時のブロックリスクを抑えつつ未取得巻多数のホーム表示
@@ -223,11 +231,23 @@ def is_provisional_url(url):
     return bool(_PROVISIONAL_URL_RE.search(url))
 
 
+class _LookupFailed(Exception):
+    """楽天 API の呼び出し自体が失敗した（「見つからない」とは区別する）。"""
+
+
 def _fetch_and_match(query, target_title, target_volume):
     """query で楽天検索し、target_title の target_volume 巻に一致する (url, provisional) を返す。
 
-    見つからなければ (None, False)。
+    見つからなければ (None, False)。API 失敗時も (None, False)。
     """
+    try:
+        return _search_and_match(query, target_title, target_volume)
+    except _LookupFailed:
+        return None, False
+
+
+def _search_and_match(query, target_title, target_volume):
+    """_fetch_and_match の本体。API 失敗時は _LookupFailed を送出する。"""
     params = {
         **_auth_params(),
         "title": query,
@@ -243,7 +263,7 @@ def _fetch_and_match(query, target_title, target_volume):
         data = resp.json()
     except (requests.RequestException, ValueError) as exc:
         _log_api_failure("表紙取得", exc)
-        return None, False
+        raise _LookupFailed from exc
 
     for entry in data.get("Items", []):
         item = entry["Item"]
@@ -275,3 +295,33 @@ def find_volume_cover(title, volume_number):
     if url is not None:
         return url, provisional
     return _fetch_and_match(f"{title} {volume_number}", title, volume_number)
+
+
+def find_volume_cover_cached(title, volume_number):
+    """find_volume_cover の結果のうち「見つからない」「仮表紙」を TTL 付きでキャッシュする。
+
+    これらは DB に保存されないため、キャッシュしないとページ表示のたびに楽天を
+    呼び直し、スロットリングで直列化して表紙の表示が遅くなる。
+    API 失敗（タイムアウト等）は一時的なものなのでキャッシュしない。
+    """
+    title = (title or "").strip()
+    if not title or not _is_configured():
+        return None, False
+    digest = hashlib.sha1(title.encode("utf-8")).hexdigest()
+    key = f"rakuten:cover:{digest}:{volume_number}"
+    hit = cache.get(key)
+    if hit is not None:
+        return tuple(hit)
+    try:
+        url, provisional = _search_and_match(title, title, volume_number)
+        if url is None:
+            url, provisional = _search_and_match(
+                f"{title} {volume_number}", title, volume_number
+            )
+    except _LookupFailed:
+        return None, False
+    if url is None:
+        cache.set(key, (None, False), COVER_NOT_FOUND_TTL_SEC)
+    elif provisional:
+        cache.set(key, (url, True), COVER_PROVISIONAL_TTL_SEC)
+    return url, provisional
