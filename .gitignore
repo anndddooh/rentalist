@@ -40,3 +40,6 @@ frontend/.vite/
 .dev.vars*
 !.dev.vars.example
 .claude/settings.local.json
+
+# Claude Code のプランファイル（~/.claude 側でミラー保存している）
+plans/
