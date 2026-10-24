@@ -34,8 +34,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         await loadRefreshToken();
         if (hasSession()) {
-          await authApi.refreshSession();
-          const me = await authApi.fetchMe();
+          // 更新応答に user が含まれていれば /auth/me/ の往復を省く
+          const data = await authApi.refreshSession();
+          const me = data.user ?? (await authApi.fetchMe());
           if (active) setUser(me);
         }
       } catch {
@@ -56,8 +57,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn = useCallback(async (username: string, password: string) => {
-    await authApi.login(username, password);
-    const me = await authApi.fetchMe();
+    const data = await authApi.login(username, password);
+    const me = data.user ?? (await authApi.fetchMe());
     setUser(me);
   }, []);
 

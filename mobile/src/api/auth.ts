@@ -3,7 +3,7 @@ import type { Invite, Me } from "./types";
 import { getRefreshToken, setAccessToken, setRefreshToken } from "@/lib/tokens";
 
 export async function login(username: string, password: string) {
-  const { data } = await api.post<{ access: string; refresh: string }>(
+  const { data } = await api.post<{ access: string; refresh: string; user?: Me }>(
     "/auth/token/",
     { username, password }
   );
@@ -15,7 +15,7 @@ export async function login(username: string, password: string) {
 export async function refreshSession() {
   const refresh = getRefreshToken();
   if (!refresh) throw new Error("no session");
-  const { data } = await api.post<{ access: string }>("/auth/token/refresh/", {
+  const { data } = await api.post<{ access: string; user?: Me }>("/auth/token/refresh/", {
     refresh,
   });
   setAccessToken(data.access);

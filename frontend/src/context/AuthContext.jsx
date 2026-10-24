@@ -18,8 +18,9 @@ export function AuthProvider({ children }) {
     async function bootstrap() {
       if (hasSession()) {
         try {
-          await refreshSession();
-          setUser(await fetchMe());
+          // 更新応答に user が含まれていれば /auth/me/ の往復を省く
+          const data = await refreshSession();
+          setUser(data.user ?? (await fetchMe()));
         } catch {
           clearTokens();
         }
@@ -30,8 +31,8 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = useCallback(async (username, password) => {
-    await apiLogin(username, password);
-    const me = await fetchMe();
+    const data = await apiLogin(username, password);
+    const me = data.user ?? (await fetchMe());
     setUser(me);
     return me;
   }, []);
