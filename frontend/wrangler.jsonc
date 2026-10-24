@@ -6,5 +6,16 @@
   "assets": {
     "directory": "./dist",
     "not_found_handling": "single-page-application"
+  },
+  // ステージング（staging API 向け）。`npm run deploy:staging` で手動デプロイする。
+  // 本番の Workers Builds（`wrangler deploy`）はトップレベル設定のみを使うので影響しない。
+  "env": {
+    "staging": {
+      "name": "rentalist-staging",
+      "assets": {
+        "directory": "./dist",
+        "not_found_handling": "single-page-application"
+      }
+    }
   }
 }

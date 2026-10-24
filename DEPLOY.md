@@ -307,6 +307,21 @@ ssh dokku@167.172.65.18 run rentalist-api-staging python manage.py createsuperus
 - **Web/バックエンドの検証**: 検証ブランチを `git push dokku-staging <branch>:main` で
   デプロイして本番相当で確認 → OK なら main にマージして本番へ。
 
+### 8-5. ステージング用 Web フロント（rentalist-staging Worker）
+staging API を向いた Web 画面。本番の Workers Builds（自動）とは別に、手元から手動でデプロイする。
+
+| | 本番 | ステージング |
+|---|---|---|
+| Worker 名 | `rentalist` | `rentalist-staging`（`frontend/wrangler.jsonc` の `env.staging`） |
+| URL | `https://rentalist.annndddddooooooo.workers.dev` | `https://rentalist-staging.annndddddooooooo.workers.dev` |
+| デプロイ | main への push で Workers Builds が自動実行 | `cd frontend && npm run deploy:staging` |
+
+- `deploy:staging` は `VITE_API_BASE_URL` を staging API にしてビルド → `wrangler deploy --env staging`。
+  チェックアウト中のブランチがそのまま出るので、バックエンドと同じブランチを出すこと。
+- 初回・認証切れ時は `npx wrangler login`（ブラウザ認証）が必要。
+- staging API の CORS にこの URL を登録済み:
+  `ssh dokku@167.172.65.18 config:set rentalist-api-staging CORS_ALLOWED_ORIGINS="http://localhost:5173,https://rentalist-staging.annndddddooooooo.workers.dev"`
+
 ---
 
 ## 環境変数まとめ
