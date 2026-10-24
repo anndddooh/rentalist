@@ -80,7 +80,12 @@ DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
 if DATABASE_URL:
     DATABASES = {
         "default": dj_database_url.parse(
-            DATABASE_URL, conn_max_age=600, ssl_require=not DEBUG
+            DATABASE_URL,
+            conn_max_age=600,
+            # 持続接続が Neon の自動サスペンド等で切れていたら使い回さず張り直す。
+            # DB が VPS と同じシンガポールにある前提（遠いと確認の往復が毎回効く）
+            conn_health_checks=True,
+            ssl_require=not DEBUG,
         )
     }
 else:
