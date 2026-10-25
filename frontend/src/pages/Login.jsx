@@ -49,7 +49,7 @@ export default function Login() {
         className="w-full max-w-sm space-y-3 rounded-3xl bg-card p-5 shadow-[0_20px_40px_rgba(30,10,80,0.3)]"
       >
         {error && (
-          <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600">
+          <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600 dark:bg-rose-950 dark:text-rose-300">
             {error}
           </p>
         )}

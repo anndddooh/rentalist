@@ -158,7 +158,8 @@ function SeriesDetailLoaded({ series }: { series: Series }) {
       queryClient.invalidateQueries({ queryKey: ["cover", id] });
       queryClient.invalidateQueries({ queryKey: ["series"] });
     },
-    onError: (err) => setError(errorMessage(err)),
+    // 表紙カードは画面下方にあり、上部の ErrorNotice では気付けないため Toast で出す
+    onError: (err) => Toast.show({ type: "error", text1: errorMessage(err) }),
   });
 
   const bulkMutation = useMutation({
@@ -173,7 +174,7 @@ function SeriesDetailLoaded({ series }: { series: Series }) {
       });
       invalidateSeries();
     },
-    onError: (err) => setError(errorMessage(err)),
+    onError: (err) => Toast.show({ type: "error", text1: errorMessage(err) }),
   });
 
   const deleteMutation = useMutation({
@@ -190,7 +191,10 @@ function SeriesDetailLoaded({ series }: { series: Series }) {
   function handleBulkAdd() {
     const n = Number(bulkToVolume);
     if (!Number.isInteger(n) || n < 1) {
-      setError("巻数は 1 以上の整数を指定してください。");
+      Toast.show({
+        type: "error",
+        text1: "巻数は 1 以上の整数を指定してください。",
+      });
       return;
     }
     bulkMutation.mutate(n);

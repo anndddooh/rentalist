@@ -44,12 +44,12 @@ export default function Completed() {
                   alt={s.title}
                   className="aspect-[2/3] h-auto w-full rounded-xl shadow-card"
                 />
-                <span className="absolute bottom-2 left-2 rounded-full bg-ink/85 px-2.5 py-0.5 text-[11px] font-bold text-white">
+                <span className="absolute bottom-2 left-2 rounded-full bg-black/70 px-2.5 py-0.5 text-[11px] font-bold text-white">
                   全{s.total_volumes ?? s.current_volume}巻
                 </span>
               </div>
               <div>
-                <div className="font-bold leading-tight text-ink">
+                <div className="line-clamp-2 font-bold leading-tight text-ink">
                   {s.title}
                 </div>
                 <StarRating value={s.favorite_score} size="text-xs" />

@@ -6,6 +6,7 @@ import CoverImage from "../components/CoverImage.jsx";
 import Icon from "../components/Icon.jsx";
 import PageHeader, { RoundButton } from "../components/PageHeader.jsx";
 import StarRating from "../components/StarRating.jsx";
+import { useToast } from "../context/ToastContext.jsx";
 import { errorMessage } from "../lib/errors.js";
 
 const EMPTY_FORM = {
@@ -38,6 +39,7 @@ export default function AddSeries() {
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const toast = useToast();
 
   async function handleSearch(e) {
     e.preventDefault();
@@ -97,6 +99,7 @@ export default function AddSeries() {
           return;
         }
       }
+      toast.success(`「${created.title}」を登録しました`);
       navigate(form.status === "wishlist" ? "/wishlist" : "/");
     } catch (err) {
       setError(errorMessage(err));
@@ -138,9 +141,10 @@ export default function AddSeries() {
         />
         <button
           type="submit"
-          className="shrink-0 rounded-full bg-brand px-4 py-2 text-sm font-bold text-white active:bg-brand-strong"
+          disabled={searching}
+          className="shrink-0 rounded-full bg-brand px-4 py-2 text-sm font-bold text-white active:bg-brand-strong disabled:opacity-50"
         >
-          検索
+          {searching ? "検索中…" : "検索"}
         </button>
       </form>
       <p className="text-center text-xs text-ink-faint">
@@ -152,7 +156,7 @@ export default function AddSeries() {
       )}
 
       {searched && !searching && candidates.length === 0 && (
-        <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">
+        <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700 dark:bg-amber-950 dark:text-amber-300">
           候補が見つかりませんでした。下のフォームに手動で入力してください。
         </p>
       )}
@@ -203,7 +207,7 @@ export default function AddSeries() {
           </p>
         )}
         {error && (
-          <p className="rounded-lg bg-rose-50 px-2 py-1 text-xs text-rose-600">
+          <p className="rounded-lg bg-rose-50 px-2 py-1 text-xs text-rose-600 dark:bg-rose-950 dark:text-rose-300">
             {error}
           </p>
         )}

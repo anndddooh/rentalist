@@ -2,9 +2,15 @@ import { Link } from "react-router-dom";
 import SeriesCover from "./SeriesCover.jsx";
 
 export const AVAILABILITY = {
-  available: { label: "貸出あり", cls: "bg-emerald-100 text-emerald-700" },
+  available: {
+    label: "貸出あり",
+    cls: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300",
+  },
   unavailable: { label: "貸出なし", cls: "bg-inset text-ink-faint" },
-  unknown: { label: "未確認", cls: "bg-amber-100 text-amber-700" },
+  unknown: {
+    label: "未確認",
+    cls: "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
+  },
 };
 
 /**
@@ -37,7 +43,7 @@ export default function SeriesCard({
           className="h-28 w-20 rounded-[10px] md:aspect-[2/3] md:h-auto md:w-full md:rounded-xl"
         />
         {/* デスクトップ: 表紙上に濃ピルで次巻を表示 */}
-        <span className="absolute left-2.5 top-2.5 hidden rounded-full bg-ink/85 px-3 py-1 text-xs font-bold text-white md:inline-block">
+        <span className="absolute left-2.5 top-2.5 hidden rounded-full bg-black/70 px-3 py-1 text-xs font-bold text-white md:inline-block">
           次は {series.next_volume}巻
         </span>
       </Link>
