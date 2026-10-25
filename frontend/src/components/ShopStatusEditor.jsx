@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { setAvailability } from "../api/series.js";
+import { useToast } from "../context/ToastContext.jsx";
+import { errorMessage } from "../lib/errors.js";
 import { AVAILABILITY } from "./SeriesCard.jsx";
 
 const CYCLE = {
@@ -14,17 +16,22 @@ const CYCLE = {
  */
 export default function ShopStatusEditor({ seriesId, shops, statusMap = {} }) {
   const [local, setLocal] = useState(statusMap);
+  const toast = useToast();
 
   async function cycle(shopId) {
     const current = local[shopId] || "unknown";
     const next = CYCLE[current];
-    await setAvailability(seriesId, shopId, next);
-    setLocal((prev) => {
-      const updated = { ...prev };
-      if (next === "unknown") delete updated[shopId];
-      else updated[shopId] = next;
-      return updated;
-    });
+    try {
+      await setAvailability(seriesId, shopId, next);
+      setLocal((prev) => {
+        const updated = { ...prev };
+        if (next === "unknown") delete updated[shopId];
+        else updated[shopId] = next;
+        return updated;
+      });
+    } catch (err) {
+      toast.error(errorMessage(err));
+    }
   }
 
   if (shops.length === 0) {

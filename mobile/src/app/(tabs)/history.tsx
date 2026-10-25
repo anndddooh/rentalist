@@ -89,6 +89,10 @@ export default function History() {
         rentedAt: formDate.toISOString(),
       }),
     onSuccess: () => {
+      Toast.show({
+        type: "success",
+        text1: `「${formSeries?.title ?? ""}」${formVolume}巻を履歴に追加しました`,
+      });
       setShowForm(false);
       setFormSeries(null);
       setFormVolume("");
@@ -101,7 +105,10 @@ export default function History() {
 
   const deleteMutation = useMutation({
     mutationFn: (entry: RentalHistoryItem) => deleteHistory(entry.id),
-    onSuccess: invalidateHistory,
+    onSuccess: () => {
+      Toast.show({ type: "success", text1: "履歴を削除しました" });
+      invalidateHistory();
+    },
     onError: (err) => Toast.show({ type: "error", text1: errorMessage(err) }),
   });
 
@@ -207,7 +214,7 @@ export default function History() {
               >
                 <Text
                   className={`text-[13px] font-bold ${
-                    filterSeries ? "text-ink-muted" : "text-white"
+                    filterSeries ? "text-ink-muted" : "text-surface"
                   }`}
                 >
                   すべて

@@ -5,13 +5,14 @@ import Celebration from "../components/Celebration.jsx";
 import Icon from "../components/Icon.jsx";
 import PageHeader, { RoundButton } from "../components/PageHeader.jsx";
 import { useCart } from "../context/CartContext.jsx";
+import { useToast } from "../context/ToastContext.jsx";
 import { errorMessage } from "../lib/errors.js";
 
 export default function Cart() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState("");
+  const toast = useToast();
   const [celebration, setCelebration] = useState([]);
   const [confirmClear, setConfirmClear] = useState(false);
   const { refreshCart } = useCart();
@@ -31,9 +32,14 @@ export default function Cart() {
   }, []);
 
   async function handleRemove(id) {
-    await removeFromCart(id);
-    refreshCart();
-    load();
+    try {
+      await removeFromCart(id);
+      // 再取得を待たずに一覧から外す（再読み込みで一覧が消えてちらつかないように）
+      setItems((prev) => prev.filter((item) => item.id !== id));
+      refreshCart();
+    } catch (err) {
+      toast.error(errorMessage(err));
+    }
   }
 
   async function handleClear() {
@@ -41,8 +47,10 @@ export default function Cart() {
     try {
       await clearCart();
       setConfirmClear(false);
+      setItems([]);
       refreshCart();
-      await load();
+    } catch (err) {
+      toast.error(errorMessage(err));
     } finally {
       setBusy(false);
     }
@@ -50,17 +58,16 @@ export default function Cart() {
 
   async function handleCheckout() {
     setBusy(true);
-    setMessage("");
     try {
       const result = await checkout();
-      setMessage(`${result.count}件を確定しました。巻数を繰り上げました。`);
+      toast.success(`${result.count}件を確定しました。巻数を繰り上げました。`);
       if (result.completed_series?.length) {
         setCelebration(result.completed_series.map((s) => s.title));
       }
       refreshCart();
       load();
     } catch (err) {
-      setMessage(errorMessage(err));
+      toast.error(errorMessage(err));
     } finally {
       setBusy(false);
     }
@@ -112,12 +119,6 @@ export default function Cart() {
           ))
         }
       />
-
-      {message && (
-        <p className="rounded-lg bg-brand-soft px-3 py-2 text-sm text-brand-text">
-          {message}
-        </p>
-      )}
 
       {loading ? (
         <p className="py-10 text-center text-sm text-ink-faint">読み込み中…</p>

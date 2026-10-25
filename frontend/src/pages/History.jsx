@@ -8,10 +8,14 @@ import {
 import { listSeries } from "../api/series.js";
 import PageHeader from "../components/PageHeader.jsx";
 import ReadingStats from "../components/ReadingStats.jsx";
+import { useToast } from "../context/ToastContext.jsx";
 import { errorMessage } from "../lib/errors.js";
 
+// ローカル日付の YYYY-MM-DD（toISOString は UTC なので日本時間の 0〜9 時に前日になる）
 function todayISODate() {
-  return new Date().toISOString().slice(0, 10);
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
 export default function History() {
@@ -29,6 +33,8 @@ export default function History() {
     rentedAt: todayISODate(),
   });
   const [error, setError] = useState("");
+  const [adding, setAdding] = useState(false);
+  const toast = useToast();
   // 履歴の追加・削除時にこの値を変えて統計セクションを再取得させる
   const [statsToken, setStatsToken] = useState(0);
 
@@ -67,12 +73,16 @@ export default function History() {
   async function handleAdd(e) {
     e.preventDefault();
     setError("");
+    setAdding(true);
     try {
       await addHistory({
         seriesId: Number(form.seriesId),
         volumeNumber: Number(form.volumeNumber),
-        rentedAt: new Date(form.rentedAt).toISOString(),
+        // "YYYY-MM-DD" を new Date() に渡すと UTC 0時扱いになるため、ローカル日付として解釈する
+        rentedAt: new Date(`${form.rentedAt}T00:00:00`).toISOString(),
       });
+      const title = allSeries.find((s) => String(s.id) === form.seriesId)?.title;
+      toast.success(`「${title ?? ""}」${form.volumeNumber}巻を履歴に追加しました`);
       setShowForm(false);
       setForm({ seriesId: "", volumeNumber: "", rentedAt: todayISODate() });
       setStatsToken((t) => t + 1);
@@ -80,6 +90,8 @@ export default function History() {
       load();
     } catch (err) {
       setError(errorMessage(err));
+    } finally {
+      setAdding(false);
     }
   }
 
@@ -91,11 +103,17 @@ export default function History() {
     ) {
       return;
     }
-    await deleteHistory(id);
+    try {
+      await deleteHistory(id);
+    } catch (err) {
+      toast.error(errorMessage(err));
+      return;
+    }
     // ロード済みの items を保ったまま、削除分だけ取り除く（pagination 位置を維持）
     setEntries((prev) => prev.filter((h) => h.id !== id));
     setTotalCount((c) => Math.max(0, c - 1));
     setStatsToken((t) => t + 1);
+    toast.success("履歴を削除しました");
   }
 
   return (
@@ -121,7 +139,7 @@ export default function History() {
           className="space-y-2 rounded-card bg-card p-4 shadow-card"
         >
           {error && (
-            <p className="rounded-lg bg-rose-50 px-2 py-1 text-xs text-rose-600">
+            <p className="rounded-lg bg-rose-50 px-2 py-1 text-xs text-rose-600 dark:bg-rose-950 dark:text-rose-300">
               {error}
             </p>
           )}
@@ -156,27 +174,31 @@ export default function History() {
           />
           <button
             type="submit"
-            className="w-full rounded-full bg-brand py-2.5 text-sm font-bold text-white active:bg-brand-strong"
+            disabled={adding}
+            className="w-full rounded-full bg-brand py-2.5 text-sm font-bold text-white active:bg-brand-strong disabled:opacity-50"
           >
-            履歴に追加
+            {adding ? "追加中…" : "履歴に追加"}
           </button>
         </form>
       )}
 
       {/* フィルタ */}
       <div className="flex items-center gap-2">
-        <span
+        <button
+          onClick={() => setFilterSeries("")}
           className={`chip ${
-            filterSeries ? "bg-card text-ink-muted shadow-sm" : "bg-ink text-white"
+            filterSeries ? "bg-card text-ink-muted shadow-sm" : "bg-ink text-surface"
           }`}
         >
           すべて
-        </span>
+        </button>
         <div className="relative">
           <select
             value={filterSeries}
             onChange={(e) => setFilterSeries(e.target.value)}
-            className="chip appearance-none bg-card pr-8 text-ink-muted shadow-sm"
+            className={`chip max-w-[60vw] appearance-none truncate pr-8 shadow-sm md:max-w-xs ${
+              filterSeries ? "bg-brand text-white" : "bg-card text-ink-muted"
+            }`}
           >
             <option value="">シリーズで絞る</option>
             {allSeries.map((s) => (
@@ -185,7 +207,11 @@ export default function History() {
               </option>
             ))}
           </select>
-          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-ink-faint">
+          <span
+            className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs ${
+              filterSeries ? "text-white/70" : "text-ink-faint"
+            }`}
+          >
             ▾
           </span>
         </div>

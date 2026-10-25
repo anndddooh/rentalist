@@ -65,7 +65,7 @@ export default function Signup() {
 
         {tokenState === "invalid" && (
           <div className="space-y-3 text-center">
-            <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600">
+            <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600 dark:bg-rose-950 dark:text-rose-300">
               この招待リンクは無効、または期限切れです。
             </p>
             <Link to="/login" className="text-sm font-bold text-brand">
@@ -80,7 +80,7 @@ export default function Signup() {
               招待リンクからアカウントを作成
             </p>
             {error && (
-              <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600">
+              <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600 dark:bg-rose-950 dark:text-rose-300">
                 {error}
               </p>
             )}

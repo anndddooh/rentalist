@@ -61,7 +61,7 @@ export default function Layout() {
         {/* カートサマリー（濃色カード） */}
         <Link
           to="/cart"
-          className="m-3 block rounded-[18px] bg-ink p-4 text-white"
+          className="m-3 block rounded-[18px] bg-ink p-4 text-white dark:bg-inset"
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-white/60">カート</span>
@@ -72,7 +72,7 @@ export default function Layout() {
           <div className="mt-1.5 text-[13px] text-white/80">
             {cartCount > 0 ? `${cartCount}冊が入っています` : "カートは空です"}
           </div>
-          <span className="mt-2.5 block rounded-full bg-white py-2 text-center text-[13px] font-extrabold text-ink">
+          <span className="mt-2.5 block rounded-full bg-white py-2 text-center text-[13px] font-extrabold text-ink dark:text-surface">
             会計した →
           </span>
         </Link>

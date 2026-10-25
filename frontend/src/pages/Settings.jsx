@@ -10,6 +10,7 @@ import {
 import Icon from "../components/Icon.jsx";
 import PageHeader from "../components/PageHeader.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
+import { useToast } from "../context/ToastContext.jsx";
 import { errorMessage } from "../lib/errors.js";
 
 export default function Settings() {
@@ -19,6 +20,8 @@ export default function Settings() {
   const [editing, setEditing] = useState(null); // shop id or "new"
   const [draft, setDraft] = useState({ name: "", memo: "" });
   const [error, setError] = useState("");
+  const [savingShop, setSavingShop] = useState(false);
+  const toast = useToast();
 
   const [invites, setInvites] = useState([]);
   const [inviteError, setInviteError] = useState("");
@@ -43,16 +46,20 @@ export default function Settings() {
   async function saveShop(e) {
     e.preventDefault();
     setError("");
+    setSavingShop(true);
     try {
       if (editing === "new") {
         await createShop(draft);
       } else {
         await updateShop(editing, draft);
       }
+      toast.success(`「${draft.name}」を保存しました`);
       setEditing(null);
       loadShops();
     } catch (err) {
       setError(errorMessage(err));
+    } finally {
+      setSavingShop(false);
     }
   }
 
@@ -64,8 +71,13 @@ export default function Settings() {
     ) {
       return;
     }
-    await deleteShop(shop.id);
-    loadShops();
+    try {
+      await deleteShop(shop.id);
+      toast.success(`「${shop.name}」を削除しました`);
+      loadShops();
+    } catch (err) {
+      toast.error(errorMessage(err));
+    }
   }
 
   async function handleCreateInvite() {
@@ -73,6 +85,7 @@ export default function Settings() {
     try {
       await createInvite();
       setInvites(await listInvites());
+      toast.success("招待リンクを発行しました");
     } catch (err) {
       setInviteError(errorMessage(err));
     }
@@ -80,6 +93,15 @@ export default function Settings() {
 
   function inviteUrl(path) {
     return `${window.location.origin}${path}`;
+  }
+
+  async function copyInvite(path) {
+    try {
+      await navigator.clipboard.writeText(inviteUrl(path));
+      toast.success("招待リンクをコピーしました");
+    } catch {
+      toast.error("コピーできませんでした。リンクを手動で選択してコピーしてください。");
+    }
   }
 
   function handleLogout() {
@@ -111,7 +133,7 @@ export default function Settings() {
         </div>
 
         {error && (
-          <p className="mx-4 mt-3 rounded-lg bg-rose-50 px-2 py-1 text-xs text-rose-600">
+          <p className="mx-4 mt-3 rounded-lg bg-rose-50 px-2 py-1 text-xs text-rose-600 dark:bg-rose-950 dark:text-rose-300">
             {error}
           </p>
         )}
@@ -135,9 +157,10 @@ export default function Settings() {
             <div className="flex gap-2">
               <button
                 type="submit"
-                className="flex-1 rounded-full bg-brand py-2 text-sm font-bold text-white active:bg-brand-strong"
+                disabled={savingShop}
+                className="flex-1 rounded-full bg-brand py-2 text-sm font-bold text-white active:bg-brand-strong disabled:opacity-50"
               >
-                保存
+                {savingShop ? "保存中…" : "保存"}
               </button>
               <button
                 type="button"
@@ -205,7 +228,7 @@ export default function Settings() {
             </button>
           </div>
           {inviteError && (
-            <p className="mx-4 mt-3 rounded-lg bg-rose-50 px-2 py-1 text-xs text-rose-600">
+            <p className="mx-4 mt-3 rounded-lg bg-rose-50 px-2 py-1 text-xs text-rose-600 dark:bg-rose-950 dark:text-rose-300">
               {inviteError}
             </p>
           )}
@@ -227,7 +250,7 @@ export default function Settings() {
                     <span
                       className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${
                         inv.is_valid
-                          ? "bg-emerald-100 text-emerald-700"
+                          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
                           : "bg-inset text-ink-faint"
                       }`}
                     >
@@ -235,11 +258,7 @@ export default function Settings() {
                     </span>
                     {inv.is_valid && (
                       <button
-                        onClick={() =>
-                          navigator.clipboard?.writeText(
-                            inviteUrl(inv.signup_path)
-                          )
-                        }
+                        onClick={() => copyInvite(inv.signup_path)}
                         className="font-bold text-brand"
                       >
                         リンクをコピー

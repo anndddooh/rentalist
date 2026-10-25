@@ -76,6 +76,9 @@ body {
   .pop-in {
     animation: pop-in 0.4s ease-out;
   }
+  .toast-in {
+    animation: toast-in 0.22s ease-out;
+  }
 }
 
 @keyframes confetti-fall {
@@ -100,6 +103,17 @@ body {
   }
   100% {
     transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes toast-in {
+  0% {
+    transform: translateY(-16px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
     opacity: 1;
   }
 }

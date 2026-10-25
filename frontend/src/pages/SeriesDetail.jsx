@@ -17,6 +17,7 @@ import CoverImage from "../components/CoverImage.jsx";
 import { RoundButton } from "../components/PageHeader.jsx";
 import ShopStatusEditor from "../components/ShopStatusEditor.jsx";
 import StarRating from "../components/StarRating.jsx";
+import { useToast } from "../context/ToastContext.jsx";
 import { errorMessage } from "../lib/errors.js";
 
 const STATUS_LABELS = {
@@ -44,22 +45,26 @@ export default function SeriesDetail() {
   const [coverUrl, setCoverUrl] = useState(null);
   const [form, setForm] = useState(null);
   const [error, setError] = useState("");
-  const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const toast = useToast();
 
   // 表紙設定
   const [coverVolume, setCoverVolume] = useState(1);
   const [coverInputUrl, setCoverInputUrl] = useState("");
   const [coverFile, setCoverFile] = useState(null);
+  const [coverBusy, setCoverBusy] = useState(false);
+  // ファイル選択後に input をリセットするための key
+  const [coverFileKey, setCoverFileKey] = useState(0);
 
   // 削除確認
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [showDelete, setShowDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   // 一括履歴追加 UI 用
   const [bulkOpen, setBulkOpen] = useState(false);
   const [bulkToVolume, setBulkToVolume] = useState("");
   const [bulkBusy, setBulkBusy] = useState(false);
-  const [bulkMessage, setBulkMessage] = useState("");
 
   async function load() {
     const data = await getSeries(id);
@@ -111,12 +116,6 @@ export default function SeriesDetail() {
     loadHistory();
   }, [id]);
 
-  useEffect(() => {
-    if (!bulkMessage) return;
-    const timer = setTimeout(() => setBulkMessage(""), 5000);
-    return () => clearTimeout(timer);
-  }, [bulkMessage]);
-
   if (!series || !form) {
     return <p className="p-6 text-center text-sm text-ink-faint">読み込み中…</p>;
   }
@@ -124,22 +123,24 @@ export default function SeriesDetail() {
   async function handleSave(e) {
     e.preventDefault();
     setError("");
-    setSaved(false);
+    setSaving(true);
     try {
       const payload = {
         ...form,
         total_volumes: form.total_volumes ? Number(form.total_volumes) : null,
       };
       await updateSeries(id, payload);
-      setSaved(true);
+      toast.success("保存しました。");
       load();
     } catch (err) {
       setError(errorMessage(err));
+    } finally {
+      setSaving(false);
     }
   }
 
   async function handleCoverSave() {
-    setError("");
+    setCoverBusy(true);
     try {
       await setCover(id, {
         volumeNumber: Number(coverVolume),
@@ -148,31 +149,35 @@ export default function SeriesDetail() {
       });
       setCoverInputUrl("");
       setCoverFile(null);
+      setCoverFileKey((k) => k + 1);
+      toast.success("表紙を設定しました。");
       const displayVol = series.status === "completed" ? 1 : series.next_volume;
       const c = await getCover(id, displayVol);
       setCoverUrl(c.resolved_url);
     } catch (err) {
-      setError(errorMessage(err));
+      // 表紙カードは画面下方にあるため、上部の通知でエラーを伝える
+      toast.error(errorMessage(err));
+    } finally {
+      setCoverBusy(false);
     }
   }
 
   async function handleBulkAdd() {
     const n = Number(bulkToVolume);
     if (!Number.isInteger(n) || n < 1) {
-      setError("巻数は 1 以上の整数を指定してください。");
+      toast.error("巻数は 1 以上の整数を指定してください。");
       return;
     }
     setBulkBusy(true);
-    setError("");
     try {
       const result = await bulkAddHistory(id, n);
-      setBulkMessage(`${result.created}件の読破記録を追加しました。`);
+      toast.success(`${result.created}件の読破記録を追加しました。`);
       setBulkToVolume("");
       setBulkOpen(false);
       // 履歴とシリーズを再取得（履歴は先頭ページから読み直し）
       await Promise.all([loadHistory(), load()]);
     } catch (err) {
-      setError(errorMessage(err));
+      toast.error(errorMessage(err));
     } finally {
       setBulkBusy(false);
     }
@@ -180,8 +185,15 @@ export default function SeriesDetail() {
 
   async function handleDelete() {
     if (deleteConfirm !== series.title) return;
-    await deleteSeries(id);
-    navigate("/");
+    setDeleting(true);
+    try {
+      await deleteSeries(id);
+      toast.success("シリーズを削除しました。");
+      navigate("/");
+    } catch (err) {
+      toast.error(errorMessage(err));
+      setDeleting(false);
+    }
   }
 
   function goBack() {
@@ -249,19 +261,19 @@ export default function SeriesDetail() {
         </div>
       </div>
 
-      {/* 次に借りる巻 */}
-      {series.status !== "completed" && (
-        <div className="flex items-center justify-between rounded-card bg-brand px-5 py-4 text-white shadow-[0_8px_20px_rgba(91,33,182,0.3)]">
-          <div>
-            <div className="text-[11px] font-bold tracking-wider text-white/70">
-              次に借りる巻
-            </div>
-            <div className="text-[26px] font-extrabold tracking-tight">
-              {series.next_volume}巻
-            </div>
+      {/* 次に借りる巻（読破済みは読破ステータス） */}
+      <div className="flex items-center justify-between rounded-card bg-brand px-5 py-4 text-white shadow-[0_8px_20px_rgba(91,33,182,0.3)]">
+        <div>
+          <div className="text-[11px] font-bold tracking-wider text-white/70">
+            {series.status === "completed" ? "読破ステータス" : "次に借りる巻"}
+          </div>
+          <div className="text-[26px] font-extrabold tracking-tight">
+            {series.status === "completed"
+              ? "🎉 全巻読破"
+              : `${series.next_volume}巻`}
           </div>
         </div>
-      )}
+      </div>
 
       {/* 編集フォーム */}
       <form
@@ -270,13 +282,8 @@ export default function SeriesDetail() {
       >
         <p className="text-[13px] font-extrabold text-ink">基本情報の編集</p>
         {error && (
-          <p className="rounded-lg bg-rose-50 px-2 py-1 text-xs text-rose-600">
+          <p className="rounded-lg bg-rose-50 px-2 py-1 text-xs text-rose-600 dark:bg-rose-950 dark:text-rose-300">
             {error}
-          </p>
-        )}
-        {saved && (
-          <p className="rounded-lg bg-brand-soft px-2 py-1 text-xs text-brand-text">
-            保存しました。
           </p>
         )}
         <Field label="タイトル">
@@ -329,9 +336,10 @@ export default function SeriesDetail() {
         </Field>
         <button
           type="submit"
-          className="w-full rounded-full bg-ink py-2.5 text-sm font-bold text-white"
+          disabled={saving || !form.title.trim()}
+          className="w-full rounded-full bg-brand py-2.5 text-sm font-bold text-white active:bg-brand-strong disabled:opacity-50"
         >
-          保存
+          {saving ? "保存中…" : "保存"}
         </button>
       </form>
 
@@ -357,17 +365,21 @@ export default function SeriesDetail() {
         </Field>
         <Field label="または画像をアップロード">
           <input
+            key={coverFileKey}
             type="file"
             accept="image/*"
-            className="text-xs"
+            className="text-xs text-ink-muted"
             onChange={(e) => setCoverFile(e.target.files[0] || null)}
           />
         </Field>
         <button
           onClick={handleCoverSave}
-          className="w-full rounded-full bg-ink py-2.5 text-sm font-bold text-white"
+          disabled={
+            coverBusy || !coverVolume || (!coverInputUrl.trim() && !coverFile)
+          }
+          className="w-full rounded-full bg-ink-muted py-2.5 text-sm font-bold text-white disabled:opacity-50"
         >
-          表紙を設定
+          {coverBusy ? "設定中…" : "表紙を設定"}
         </button>
       </div>
 
@@ -388,21 +400,12 @@ export default function SeriesDetail() {
         <div className="flex items-center justify-between">
           <p className="text-[13px] font-extrabold text-ink">読破記録</p>
           <button
-            onClick={() => {
-              setBulkOpen((v) => !v);
-              setBulkMessage("");
-            }}
+            onClick={() => setBulkOpen((v) => !v)}
             className="text-xs font-bold text-brand"
           >
             {bulkOpen ? "閉じる" : "＋ N巻まで一括追加"}
           </button>
         </div>
-
-        {bulkMessage && (
-          <p className="rounded-lg bg-brand-soft px-2 py-1 text-xs text-brand-text">
-            {bulkMessage}
-          </p>
-        )}
 
         {bulkOpen && (
           <div className="space-y-2 rounded-xl bg-brand-soft/40 p-3">
@@ -506,7 +509,7 @@ export default function SeriesDetail() {
             <div className="flex gap-2">
               <button
                 onClick={handleDelete}
-                disabled={deleteConfirm !== series.title}
+                disabled={deleteConfirm !== series.title || deleting}
                 className="flex-1 rounded-full bg-rose-600 py-2 text-sm font-bold text-white disabled:opacity-40"
               >
                 削除する
