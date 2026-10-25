@@ -6,6 +6,7 @@ import PageHeader, { RoundButton } from "../components/PageHeader.jsx";
 import SeriesCard from "../components/SeriesCard.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useCart } from "../context/CartContext.jsx";
+import { useToast } from "../context/ToastContext.jsx";
 import { errorMessage } from "../lib/errors.js";
 
 // 貸出状況バッジをタップしたときの遷移順
@@ -34,7 +35,7 @@ export default function Home() {
   // 「貸出なし」フィルタ OFF のまま「あり→なし」にサイクルしてもカードが消えない。
   const [stickyIds, setStickyIds] = useState(() => new Set());
   const [loading, setLoading] = useState(true);
-  const [toast, setToast] = useState("");
+  const toast = useToast();
   const { cartCount, refreshCart } = useCart();
   const { user } = useAuth();
 
@@ -60,19 +61,14 @@ export default function Home() {
     load();
   }, [load]);
 
-  function flash(message) {
-    setToast(message);
-    setTimeout(() => setToast(""), 2000);
-  }
-
   async function handleRent(target) {
     try {
       await addToCart(target.id);
-      flash(`「${target.title}」をカートに追加しました`);
+      toast.success(`「${target.title}」をカートに追加しました`);
       refreshCart();
       load();
     } catch (err) {
-      flash(errorMessage(err));
+      toast.error(errorMessage(err));
     }
   }
 
@@ -100,7 +96,7 @@ export default function Home() {
           s.id === target.id ? { ...s, availability_status: current } : s
         )
       );
-      flash(errorMessage(err));
+      toast.error(errorMessage(err));
     }
   }
 
@@ -142,7 +138,7 @@ export default function Home() {
           onClick={() => handleShopChange("")}
           className={`chip shrink-0 ${
             !shopMode
-              ? "bg-ink text-white"
+              ? "bg-ink text-surface"
               : "bg-card text-ink-muted shadow-sm"
           }`}
         >
@@ -172,7 +168,7 @@ export default function Home() {
               onClick={() => toggleFilter(f.key)}
               className={`rounded-full px-3 py-1.5 text-xs font-bold ${
                 filters[f.key]
-                  ? "bg-ink text-white"
+                  ? "bg-ink text-surface"
                   : "bg-card text-ink-faint shadow-sm"
               }`}
             >
@@ -199,12 +195,6 @@ export default function Home() {
               onCycleAvailability={handleCycleAvailability}
             />
           ))}
-        </div>
-      )}
-
-      {toast && (
-        <div className="fixed bottom-24 left-1/2 z-20 -translate-x-1/2 rounded-full bg-ink px-4 py-2 text-sm text-white shadow-lg">
-          {toast}
         </div>
       )}
     </div>

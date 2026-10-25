@@ -6,11 +6,15 @@ import PageHeader, { RoundButton } from "../components/PageHeader.jsx";
 import SeriesCover from "../components/SeriesCover.jsx";
 import ShopStatusEditor from "../components/ShopStatusEditor.jsx";
 import StarRating from "../components/StarRating.jsx";
+import { useToast } from "../context/ToastContext.jsx";
+import { errorMessage } from "../lib/errors.js";
 
 export default function Wishlist() {
   const [series, setSeries] = useState([]);
   const [shops, setShops] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [startingId, setStartingId] = useState(null);
+  const toast = useToast();
 
   async function load() {
     try {
@@ -25,9 +29,17 @@ export default function Wishlist() {
     listShops().then(setShops).catch(() => {});
   }, []);
 
-  async function startReading(id) {
-    await updateSeries(id, { status: "active" });
-    load();
+  async function startReading(target) {
+    setStartingId(target.id);
+    try {
+      await updateSeries(target.id, { status: "active" });
+      toast.success(`「${target.title}」を読み始めました`);
+      await load();
+    } catch (err) {
+      toast.error(errorMessage(err));
+    } finally {
+      setStartingId(null);
+    }
   }
 
   return (
@@ -73,10 +85,11 @@ export default function Wishlist() {
                     <StarRating value={s.favorite_score} size="text-sm" />
                   </div>
                   <button
-                    onClick={() => startReading(s.id)}
-                    className="mt-auto w-full rounded-full border-[1.5px] border-brand py-2 text-center text-sm font-bold text-brand"
+                    onClick={() => startReading(s)}
+                    disabled={startingId === s.id}
+                    className="mt-auto w-full rounded-full border-[1.5px] border-brand py-2 text-center text-sm font-bold text-brand active:bg-brand-soft disabled:opacity-50"
                   >
-                    読み始める
+                    {startingId === s.id ? "更新中…" : "読み始める"}
                   </button>
                 </div>
               </div>
