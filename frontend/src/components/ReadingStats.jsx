@@ -37,7 +37,7 @@ function fillGaps(data, unit) {
 }
 
 /**
- * 履歴ページ上部の読書統計カード（濃色 bg-ink）。
+ * 履歴ページ上部の読書統計カード（濃色 bg-ink。ダーク時は ink が明色になるため bg-inset）。
  * 直近の期間を縦棒グラフで表示し、最新期間だけをハイライトする。
  * reloadToken が変わると（履歴の追加・削除時）再取得する。
  */
@@ -64,7 +64,7 @@ export default function ReadingStats({ reloadToken = 0 }) {
   const max = Math.max(1, ...series.map((d) => d.count));
 
   return (
-    <div className="rounded-card bg-ink p-4 text-white">
+    <div className="rounded-card bg-ink p-4 text-white dark:bg-inset">
       <div className="flex items-center justify-between">
         <div>
           <div className="text-[11px] font-bold uppercase tracking-wider text-white/50">
@@ -84,7 +84,7 @@ export default function ReadingStats({ reloadToken = 0 }) {
               key={key}
               onClick={() => setUnit(key)}
               className={`rounded-full px-3 py-1 text-xs font-bold ${
-                unit === key ? "bg-white text-ink" : "text-white/60"
+                unit === key ? "bg-white text-ink dark:text-surface" : "text-white/60"
               }`}
             >
               {label}
@@ -105,14 +105,17 @@ export default function ReadingStats({ reloadToken = 0 }) {
             return (
               <div
                 key={d.period}
-                className="flex flex-1 flex-col items-center gap-1"
+                className="flex h-full flex-1 flex-col items-center gap-1"
               >
-                <div
-                  className={`w-full rounded-t-md ${
-                    isLast ? "bg-brand" : "bg-white/20"
-                  }`}
-                  style={{ height: `${h}%` }}
-                />
+                {/* 高さ % を効かせるため、伸縮する入れ物の中で下寄せにする */}
+                <div className="flex w-full flex-1 items-end justify-center">
+                  <div
+                    className={`w-full max-w-[40px] rounded-t-md ${
+                      isLast ? "bg-brand" : "bg-white/20"
+                    }`}
+                    style={{ height: `${h}%` }}
+                  />
+                </div>
                 <span
                   className={`text-[10px] ${
                     isLast ? "font-bold text-white" : "text-white/50"

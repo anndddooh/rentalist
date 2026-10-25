@@ -186,7 +186,7 @@ export default function Home() {
                   >
                     <Text
                       className={`text-xs font-bold ${
-                        filters[f.key] ? "text-white" : "text-ink-muted"
+                        filters[f.key] ? "text-surface" : "text-ink-muted"
                       }`}
                     >
                       {f.label}
@@ -222,6 +222,8 @@ function ShopChip({
   onPress: () => void;
 }) {
   const activeBg = allMode ? "bg-ink" : "bg-brand";
+  // bg-ink はダーク時に明色になるため、文字は地色（surface）で反転させる
+  const activeText = allMode ? "text-surface" : "text-white";
   return (
     <Pressable
       onPress={onPress}
@@ -231,7 +233,7 @@ function ShopChip({
     >
       <Text
         className={`text-[13px] font-bold ${
-          active ? "text-white" : "text-ink-muted"
+          active ? activeText : "text-ink-muted"
         }`}
       >
         {label}
