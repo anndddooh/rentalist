@@ -44,6 +44,7 @@ export default function Settings() {
         ? createShop(draft)
         : updateShop(editing as number, draft),
     onSuccess: () => {
+      Toast.show({ type: "success", text1: `「${draft.name}」を保存しました` });
       setEditing(null);
       queryClient.invalidateQueries({ queryKey: ["shops"] });
     },
@@ -52,7 +53,8 @@ export default function Settings() {
 
   const deleteMutation = useMutation({
     mutationFn: (shop: RentalShop) => deleteShop(shop.id),
-    onSuccess: () => {
+    onSuccess: (_data, shop) => {
+      Toast.show({ type: "success", text1: `「${shop.name}」を削除しました` });
       queryClient.invalidateQueries({ queryKey: ["shops"] });
       queryClient.invalidateQueries({ queryKey: ["series"] });
     },
@@ -76,7 +78,10 @@ export default function Settings() {
 
   const inviteMutation = useMutation({
     mutationFn: createInvite,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["invites"] }),
+    onSuccess: () => {
+      Toast.show({ type: "success", text1: "招待トークンを発行しました" });
+      queryClient.invalidateQueries({ queryKey: ["invites"] });
+    },
     onError: (err) => Toast.show({ type: "error", text1: errorMessage(err) }),
   });
 
