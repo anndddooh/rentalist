@@ -54,7 +54,7 @@ class SeriesViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"])
     def search(self, request):
-        """楽天ブックスでシリーズ候補を検索する。"""
+        """楽天ブックス・楽天Koboでシリーズ候補を検索する。"""
         query = request.query_params.get("q", "")
         return Response(rakuten.search_series(query))
 

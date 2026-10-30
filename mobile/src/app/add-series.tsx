@@ -154,7 +154,7 @@ export default function AddSeries() {
           />
           <TextInput
             className="flex-1 text-base text-ink"
-            placeholder="タイトルで検索（楽天ブックス）"
+            placeholder="タイトルで検索（楽天ブックス・楽天Kobo）"
             placeholderTextColor={colors.inkFaint}
             value={query}
             onChangeText={setQuery}
@@ -199,6 +199,13 @@ export default function AddSeries() {
                     <Text className="text-sm font-bold text-ink">
                       {c.title}
                     </Text>
+                    {c.source === "rakuten_kobo" && (
+                      <View className="mt-0.5 self-start rounded-full bg-brand-soft px-2">
+                        <Text className="text-[10px] font-bold text-brand-text">
+                          電子版
+                        </Text>
+                      </View>
+                    )}
                     <Text className="text-xs text-ink-muted">{c.author}</Text>
                     <Text className="text-xs text-ink-faint">
                       {c.publisher}

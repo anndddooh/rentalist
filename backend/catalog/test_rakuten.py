@@ -336,3 +336,172 @@ def test_cached_lookup_does_not_cache_api_failure():
     with patch.object(rakuten.requests, "get", return_value=_fake_response(items)):
         url, provisional = rakuten.find_volume_cover_cached("鬼滅の刃", 1)
     assert url == "https://example.com/kim1_1_5.jpg" and provisional is False
+
+
+# --- 楽天Kobo 併用（シリーズ検索・表紙取得） ---
+
+
+def _route_by_endpoint(books_items, kobo_items):
+    """呼び出し先 URL で紙/Kobo のレスポンスを出し分ける requests.get の代役。
+
+    値に例外を渡すとその取得元は失敗扱いになる。
+    """
+
+    def fake_get(url, params=None, timeout=None):
+        items = kobo_items if url == rakuten.KOBO_ENDPOINT else books_items
+        if isinstance(items, Exception):
+            raise items
+        return _fake_response(items)
+
+    return fake_get
+
+
+@override_settings(RAKUTEN_APP_ID="x", RAKUTEN_ACCESS_KEY="y")
+def test_search_groups_volumes_into_one_candidate_per_series():
+    """巻ごとの結果はシリーズ単位にまとめ、代表は1巻・title はシリーズ名にする。"""
+    books = [
+        {"title": "キングダム 3", "publisherName": "集英社", "largeImageUrl": "k3"},
+        {"title": "キングダム 1", "publisherName": "集英社", "largeImageUrl": "k1"},
+        {"title": "キングダム 公式ガイドブック", "publisherName": "集英社"},
+    ]
+    with patch.object(rakuten.requests, "get", side_effect=_route_by_endpoint(books, [])):
+        results = rakuten.search_series("キングダム")
+    assert [r["title"] for r in results] == ["キングダム", "キングダム 公式ガイドブック"]
+    assert results[0]["cover_url"] == "k1"
+
+
+@override_settings(RAKUTEN_APP_ID="x", RAKUTEN_ACCESS_KEY="y")
+def test_search_adds_kobo_only_series_and_prefers_books_data_for_shared_ones():
+    """紙で見つからない作品は Kobo から補い、両方にある作品は紙の情報を使う。"""
+    books = [
+        {
+            "title": "ONE PIECE 1 (ジャンプコミックス)",
+            "publisherName": "集英社",
+            "seriesName": "ジャンプコミックス",
+        },
+    ]
+    kobo = [
+        {"title": "ONE PIECE モノクロ版 1", "publisherName": "集英社", "seriesName": "ONE PIECE"},
+        {"title": "ONE PIECE 1", "publisherName": "集英社/電子", "seriesName": "ONE PIECE"},
+        {"title": "賭博堕天録カイジ 1", "publisherName": "フクモトプロ", "seriesName": "賭博堕天録カイジ"},
+    ]
+    with patch.object(rakuten.requests, "get", side_effect=_route_by_endpoint(books, kobo)):
+        results = rakuten.search_series("ONE PIECE")
+    by_title = {r["title"]: r for r in results}
+    assert set(by_title) == {"ONE PIECE", "ONE PIECE モノクロ版", "賭博堕天録カイジ"}
+    assert by_title["ONE PIECE"]["source"] == "rakuten_books"
+    assert by_title["ONE PIECE"]["series_name"] == "ジャンプコミックス"
+    kaiji = by_title["賭博堕天録カイジ"]
+    assert kaiji["source"] == "rakuten_kobo"
+    # Kobo の seriesName は作品名なのでレーベル欄（series_name）には入れない
+    assert kaiji["series_name"] == ""
+    # 入力文字列を含むシリーズが先頭に来る
+    assert results[-1]["title"] == "賭博堕天録カイジ"
+
+
+@override_settings(RAKUTEN_APP_ID="x", RAKUTEN_ACCESS_KEY="y")
+def test_search_excludes_serialized_editions_from_kobo():
+    """【連載版】・分冊版・合本などの単行本でない電子版は候補に出さない。"""
+    kobo = [
+        {"title": "変な家　【連載版】（12）前"},
+        {"title": "変な家 分冊版 3"},
+        {"title": "合本版　変な家 1～3巻"},
+        {"title": "変な家 1"},
+    ]
+    with patch.object(rakuten.requests, "get", side_effect=_route_by_endpoint([], kobo)):
+        results = rakuten.search_series("変な家")
+    assert [r["title"] for r in results] == ["変な家"]
+
+
+@override_settings(RAKUTEN_APP_ID="x", RAKUTEN_ACCESS_KEY="y")
+def test_search_merges_series_despite_notation_differences():
+    """全角/半角や長音・空白の違いは同じシリーズとして1件にまとめる。"""
+    books = [{"title": "１００万円の女たち（１）", "publisherName": "小学館"}]
+    kobo = [{"title": "100万円の女たち 1", "publisherName": "小学館/電子"}]
+    with patch.object(rakuten.requests, "get", side_effect=_route_by_endpoint(books, kobo)):
+        results = rakuten.search_series("100万円の女たち")
+    assert len(results) == 1
+    assert results[0]["publisher"] == "小学館"
+
+
+@override_settings(RAKUTEN_APP_ID="x", RAKUTEN_ACCESS_KEY="y")
+def test_search_returns_kobo_results_when_books_api_fails():
+    """紙の検索 API が失敗しても Kobo の結果は返す。"""
+    import requests
+
+    kobo = [{"title": "メイキャッパー　1", "publisherName": "秋田書店"}]
+    fake_get = _route_by_endpoint(requests.Timeout("t/o"), kobo)
+    with patch.object(rakuten.requests, "get", side_effect=fake_get):
+        results = rakuten.search_series("メイキャッパー")
+    assert [r["title"] for r in results] == ["メイキャッパー"]
+
+
+@override_settings(RAKUTEN_APP_ID="x", RAKUTEN_ACCESS_KEY="y")
+def test_cover_falls_back_to_kobo_when_books_has_no_match():
+    """紙の検索（2段とも）で見つからない巻は Kobo の表紙を使う。"""
+    kobo = [{"title": "賭博堕天録カイジ 3", "largeImageUrl": "https://example.com/kobo3.jpg"}]
+    with patch.object(
+        rakuten.requests, "get", side_effect=_route_by_endpoint([], kobo)
+    ) as mock_get:
+        url, provisional = rakuten.find_volume_cover("賭博堕天録カイジ", 3)
+    assert url == "https://example.com/kobo3.jpg"
+    assert provisional is False
+    urls = [c.args[0] for c in mock_get.call_args_list]
+    assert urls == [rakuten.RAKUTEN_ENDPOINT, rakuten.RAKUTEN_ENDPOINT, rakuten.KOBO_ENDPOINT]
+
+
+@override_settings(RAKUTEN_APP_ID="x", RAKUTEN_ACCESS_KEY="y")
+def test_cached_lookup_does_not_cache_not_found_when_any_source_failed():
+    """紙は見つからず Kobo が失敗した場合、「見つからない」をキャッシュしない。"""
+    import requests
+
+    fake_get = _route_by_endpoint([], requests.Timeout("t/o"))
+    with patch.object(rakuten.requests, "get", side_effect=fake_get) as mock_get:
+        assert rakuten.find_volume_cover_cached("未知の作品", 2) == (None, False)
+        calls = mock_get.call_count
+        assert rakuten.find_volume_cover_cached("未知の作品", 2) == (None, False)
+        assert mock_get.call_count == calls * 2
+
+
+@override_settings(RAKUTEN_APP_ID="x", RAKUTEN_ACCESS_KEY="y")
+def test_search_excludes_free_trial_and_special_editions():
+    """期間限定無料版・特装版などは別シリーズとして並べない。"""
+    kobo = [
+        {"title": "狂四郎2030【期間限定無料】 1"},
+        {"title": "スーパーの裏でヤニ吸うふたり 8巻特装版 小冊子付き"},
+        {"title": "狂四郎2030 1"},
+    ]
+    with patch.object(rakuten.requests, "get", side_effect=_route_by_endpoint([], kobo)):
+        results = rakuten.search_series("狂四郎")
+    assert [r["title"] for r in results] == ["狂四郎2030"]
+
+
+@override_settings(RAKUTEN_APP_ID="x", RAKUTEN_ACCESS_KEY="y")
+def test_search_normalizes_kobo_fullwidth_and_trailing_separator():
+    """Kobo の全角英数字は半角に揃え、巻数前に残る区切り記号は落とす。"""
+    kobo = [{"title": "五佰年ＢＯＸ（１）"}, {"title": "じゃりン子チエ【新訂版】 ： 1"}]
+    with patch.object(rakuten.requests, "get", side_effect=_route_by_endpoint([], kobo)):
+        results = rakuten.search_series("x")
+    assert [r["title"] for r in results] == ["五佰年BOX", "じゃりン子チエ【新訂版】"]
+
+
+@override_settings(RAKUTEN_APP_ID="x", RAKUTEN_ACCESS_KEY="y")
+def test_cover_matches_fullwidth_kobo_title():
+    """登録名が半角でも、Kobo の全角タイトルの巻に一致させる。"""
+    kobo = [{"title": "五佰年ＢＯＸ（１）", "largeImageUrl": "https://example.com/box1.jpg"}]
+    with patch.object(rakuten.requests, "get", side_effect=_route_by_endpoint([], kobo)):
+        url, _ = rakuten.find_volume_cover("五佰年BOX", 1)
+    assert url == "https://example.com/box1.jpg"
+
+
+@override_settings(RAKUTEN_APP_ID="x", RAKUTEN_ACCESS_KEY="y")
+def test_retries_once_on_rate_limit():
+    """429（回数制限）のときは1回だけ待って再試行する。"""
+    limited = MagicMock(status_code=429)
+    ok = _fake_response([{"title": "メイキャッパー 1"}])
+    ok.status_code = 200
+    with patch.object(rakuten, "RATE_LIMIT_RETRY_WAIT_SEC", 0), patch.object(
+        rakuten.requests, "get", side_effect=[limited, ok, _fake_response([])]
+    ):
+        results = rakuten.search_series("メイキャッパー")
+    assert [r["title"] for r in results] == ["メイキャッパー"]
