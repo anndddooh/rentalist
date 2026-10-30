@@ -90,6 +90,8 @@ export interface RakutenCandidate {
   cover_url: string | null;
   isbn?: string;
   series_name?: string;
+  /** 取得元。rakuten_kobo は電子書籍にのみ見つかった作品（出版社が配信元のことがある） */
+  source?: "rakuten_books" | "rakuten_kobo";
 }
 
 export interface StatsPeriod {
