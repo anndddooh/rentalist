@@ -135,7 +135,7 @@ export default function AddSeries() {
         <Icon name="search" className="h-[18px] w-[18px] shrink-0 text-ink-faint" strokeWidth={2} />
         <input
           className="flex-1 bg-transparent text-sm text-ink placeholder:text-ink-faint focus:outline-none"
-          placeholder="タイトルで検索（楽天ブックス）"
+          placeholder="タイトルで検索（楽天ブックス・楽天Kobo）"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
@@ -148,7 +148,7 @@ export default function AddSeries() {
         </button>
       </form>
       <p className="text-center text-xs text-ink-faint">
-        楽天ブックスから検索。タップでフォームに反映されます。
+        楽天ブックス・楽天Koboから検索。タップでフォームに反映されます。
       </p>
 
       {searching && (
@@ -180,6 +180,11 @@ export default function AddSeries() {
                   />
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-bold text-ink">{c.title}</div>
+                    {c.source === "rakuten_kobo" && (
+                      <span className="mt-0.5 inline-block rounded-full bg-brand-soft px-2 py-px text-[10px] font-bold text-brand-text">
+                        電子版
+                      </span>
+                    )}
                     <div className="text-[11px] text-ink-muted">
                       {[c.author, c.publisher].filter(Boolean).join(" ・ ")}
                     </div>
