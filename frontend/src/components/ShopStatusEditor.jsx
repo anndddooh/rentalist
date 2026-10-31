@@ -1,8 +1,10 @@
-import { useState } from "react";
-import { setAvailability } from "../api/series.js";
+import { useEffect, useState } from "react";
 import { useToast } from "../context/ToastContext.jsx";
+import { changeAvailability, subscribeAvailability } from "../lib/availabilitySync.js";
 import { errorMessage } from "../lib/errors.js";
 import { AVAILABILITY } from "./SeriesCard.jsx";
+
+const EMPTY = {};
 
 const CYCLE = {
   unknown: "available",
@@ -13,25 +15,34 @@ const CYCLE = {
 /**
  * シリーズのショップ別貸出状況を編集する。
  * statusMap は { [shopId]: "available"|"unavailable" }（不在は未確認）。
+ * 送信は lib/availabilitySync.js が担い、押した瞬間に表示を切り替える。
  */
-export default function ShopStatusEditor({ seriesId, shops, statusMap = {} }) {
+export default function ShopStatusEditor({ seriesId, shops, statusMap = EMPTY }) {
   const [local, setLocal] = useState(statusMap);
   const toast = useToast();
 
-  async function cycle(shopId) {
+  // 親が再取得したら追従する（以前は初回の値を持ち続けていた）
+  useEffect(() => setLocal(statusMap), [statusMap]);
+
+  useEffect(
+    () =>
+      subscribeAvailability((sid, shopId, status) => {
+        if (sid !== seriesId) return;
+        setLocal((prev) => {
+          const updated = { ...prev };
+          if (status === "unknown") delete updated[shopId];
+          else updated[shopId] = status;
+          return updated;
+        });
+      }),
+    [seriesId]
+  );
+
+  function cycle(shopId) {
     const current = local[shopId] || "unknown";
-    const next = CYCLE[current];
-    try {
-      await setAvailability(seriesId, shopId, next);
-      setLocal((prev) => {
-        const updated = { ...prev };
-        if (next === "unknown") delete updated[shopId];
-        else updated[shopId] = next;
-        return updated;
-      });
-    } catch (err) {
-      toast.error(errorMessage(err));
-    }
+    changeAvailability(seriesId, shopId, current, CYCLE[current], {
+      onError: (err) => toast.error(errorMessage(err)),
+    });
   }
 
   if (shops.length === 0) {

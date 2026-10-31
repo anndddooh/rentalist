@@ -7,6 +7,7 @@ import SeriesCover from "../components/SeriesCover.jsx";
 import ShopStatusEditor from "../components/ShopStatusEditor.jsx";
 import StarRating from "../components/StarRating.jsx";
 import { useToast } from "../context/ToastContext.jsx";
+import { overlayPending } from "../lib/availabilitySync.js";
 import { errorMessage } from "../lib/errors.js";
 
 export default function Wishlist() {
@@ -18,7 +19,9 @@ export default function Wishlist() {
 
   async function load() {
     try {
-      setSeries(await listSeries({ status: "wishlist" }));
+      const startedAt = Date.now();
+      const data = await listSeries({ status: "wishlist" });
+      setSeries(overlayPending(data, startedAt));
     } finally {
       setLoading(false);
     }
