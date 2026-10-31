@@ -11,14 +11,14 @@ import {
 } from "react-native";
 import Toast from "react-native-toast-message";
 import { addToCart } from "@/api/cart";
-import { setAvailability } from "@/api/series";
 import type { AvailabilityStatus, Series } from "@/api/types";
 import { AddSeriesButton, CartButton } from "@/components/HeaderButtons";
 import ScreenHeader from "@/components/ScreenHeader";
 import SeriesCard from "@/components/SeriesCard";
 import { useAuth } from "@/hooks/useAuth";
-import { useSeriesList, seriesListKey } from "@/hooks/useSeries";
+import { useSeriesList } from "@/hooks/useSeries";
 import { useShopsQuery } from "@/hooks/useShops";
+import { changeAvailability } from "@/lib/availabilitySync";
 import { errorMessage } from "@/lib/errors";
 
 // 貸出状況バッジをタップしたときの遷移順（frontend/src/pages/Home.jsx の移植）
@@ -49,7 +49,6 @@ export default function Home() {
   const { data: shops = [] } = useShopsQuery();
   const seriesQuery = useSeriesList("active", shopId);
   const series = seriesQuery.data ?? [];
-  const listKey = seriesListKey("active", shopId);
 
   const shopMode = shopId != null;
 
@@ -74,25 +73,12 @@ export default function Home() {
     },
   });
 
-  // 楽観更新: 先にキャッシュを書き換えてバッジ色を即時反映。失敗時はロールバック
-  async function handleCycleAvailability(target: Series) {
+  // 押した瞬間に全キャッシュを書き換えてバッジ色を即時反映（送信は共有キュー）
+  function handleCycleAvailability(target: Series) {
     if (shopId == null) return;
     const current = target.availability_status ?? "unknown";
-    const next = STATUS_CYCLE[current];
-    const patch = (status: AvailabilityStatus) =>
-      queryClient.setQueryData<Series[]>(listKey, (prev) =>
-        prev?.map((s) =>
-          s.id === target.id ? { ...s, availability_status: status } : s
-        )
-      );
-    patch(next);
     setStickyIds((prev) => new Set(prev).add(target.id));
-    try {
-      await setAvailability(target.id, shopId, next);
-    } catch (err) {
-      patch(current);
-      Toast.show({ type: "error", text1: errorMessage(err) });
-    }
+    changeAvailability(target.id, shopId, current, STATUS_CYCLE[current]);
   }
 
   function toggleFilter(key: AvailabilityStatus) {

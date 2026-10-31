@@ -1,12 +1,18 @@
 import { useCallback, useEffect, useState } from "react";
 import { addToCart } from "../api/cart.js";
-import { listSeries, setAvailability } from "../api/series.js";
+import { listSeries } from "../api/series.js";
 import { listShops } from "../api/shops.js";
 import PageHeader, { RoundButton } from "../components/PageHeader.jsx";
 import SeriesCard from "../components/SeriesCard.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useCart } from "../context/CartContext.jsx";
 import { useToast } from "../context/ToastContext.jsx";
+import {
+  changeAvailability,
+  overlayPending,
+  patchSeries,
+  subscribeAvailability,
+} from "../lib/availabilitySync.js";
 import { errorMessage } from "../lib/errors.js";
 
 // 貸出状況バッジをタップしたときの遷移順
@@ -43,11 +49,13 @@ export default function Home() {
   // 一覧をアンマウントしない（スクロール位置が飛ぶのを防ぐ）。
   const load = useCallback(async () => {
     try {
+      const startedAt = Date.now();
       const data = await listSeries({
         status: "active",
         shop: shopId || undefined,
       });
-      setSeries(data);
+      // 切替直後の取得は保存前の値のことがあるので、送信中・直近の切替で上書きする
+      setSeries(overlayPending(data, startedAt, shopId || null));
     } finally {
       setLoading(false);
     }
@@ -61,6 +69,20 @@ export default function Home() {
     load();
   }, [load]);
 
+  useEffect(
+    () =>
+      subscribeAvailability((seriesId, changedShopId, status) =>
+        setSeries((prev) =>
+          prev.map((s) =>
+            s.id === seriesId
+              ? patchSeries(s, changedShopId, status, shopId || null)
+              : s
+          )
+        )
+      ),
+    [shopId]
+  );
+
   async function handleRent(target) {
     try {
       await addToCart(target.id);
@@ -72,32 +94,18 @@ export default function Home() {
     }
   }
 
-  async function handleCycleAvailability(target) {
+  // 押した瞬間にバッジ色を切り替え（購読経由で series を更新）、送信は共有キューに任せる。
+  // sticky に積んで、フィルタ外のステータスへ切替えてもカードが消えないようにする。
+  function handleCycleAvailability(target) {
     const current = target.availability_status || "unknown";
-    const next = STATUS_CYCLE[current];
-    // 楽観更新: 先にローカル state を書き換えてバッジ色を即時反映。
-    // sticky に積んで、フィルタ外のステータスへ切替えてもカードが消えないようにする。
-    setSeries((prev) =>
-      prev.map((s) =>
-        s.id === target.id ? { ...s, availability_status: next } : s
-      )
-    );
     setStickyIds((prev) => {
       const nextSet = new Set(prev);
       nextSet.add(target.id);
       return nextSet;
     });
-    try {
-      await setAvailability(target.id, Number(shopId), next);
-    } catch (err) {
-      // 失敗時はロールバック
-      setSeries((prev) =>
-        prev.map((s) =>
-          s.id === target.id ? { ...s, availability_status: current } : s
-        )
-      );
-      toast.error(errorMessage(err));
-    }
+    changeAvailability(target.id, Number(shopId), current, STATUS_CYCLE[current], {
+      onError: (err) => toast.error(errorMessage(err)),
+    });
   }
 
   function toggleFilter(key) {
