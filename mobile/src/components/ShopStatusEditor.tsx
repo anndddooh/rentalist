@@ -1,9 +1,6 @@
-import { useState } from "react";
 import { Text, View } from "react-native";
-import Toast from "react-native-toast-message";
-import { setAvailability } from "@/api/series";
 import type { AvailabilityStatus, RentalShop, Series } from "@/api/types";
-import { errorMessage } from "@/lib/errors";
+import { changeAvailability } from "@/lib/availabilitySync";
 import AvailabilityBadge from "./AvailabilityBadge";
 
 const CYCLE: Record<AvailabilityStatus, AvailabilityStatus> = {
@@ -16,6 +13,8 @@ const CYCLE: Record<AvailabilityStatus, AvailabilityStatus> = {
  * シリーズのショップ別貸出状況を編集する
  * （frontend/src/components/ShopStatusEditor.jsx の移植）。
  * statusMap は { [shopId]: "available"|"unavailable" }（不在は未確認）。
+ * 表示はキャッシュ（statusMap）をそのまま使い、切替は lib/availabilitySync が
+ * 全キャッシュを書き換える。ローカル state に持つと再取得に追従せず古い値が残っていた。
  */
 export default function ShopStatusEditor({
   seriesId,
@@ -26,23 +25,9 @@ export default function ShopStatusEditor({
   shops: RentalShop[];
   statusMap?: Series["availability_map"];
 }) {
-  const [local, setLocal] =
-    useState<Record<string, AvailabilityStatus>>(statusMap);
-
-  async function cycle(shopId: number) {
-    const current = local[shopId] ?? "unknown";
-    const next = CYCLE[current];
-    try {
-      await setAvailability(seriesId, shopId, next);
-      setLocal((prev) => {
-        const updated = { ...prev };
-        if (next === "unknown") delete updated[shopId];
-        else updated[shopId] = next;
-        return updated;
-      });
-    } catch (err) {
-      Toast.show({ type: "error", text1: errorMessage(err) });
-    }
+  function cycle(shopId: number) {
+    const current = statusMap[shopId] ?? "unknown";
+    changeAvailability(seriesId, shopId, current, CYCLE[current]);
   }
 
   if (shops.length === 0) {
@@ -62,7 +47,7 @@ export default function ShopStatusEditor({
         >
           <Text className="text-sm text-ink-muted">{shop.name}</Text>
           <AvailabilityBadge
-            status={local[shop.id] ?? "unknown"}
+            status={statusMap[shop.id] ?? "unknown"}
             onPress={() => cycle(shop.id)}
             showCycleHint
           />

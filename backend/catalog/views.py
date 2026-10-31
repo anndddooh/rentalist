@@ -168,7 +168,9 @@ class SeriesViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["put"], url_path="availability")
     def availability(self, request, pk=None):
         """ショップ別の貸出状況を更新する。status=unknown はレコード削除。"""
-        series = self.get_object()
+        # get_object() だと一覧用の prefetch（表紙・貸出状況・カート）が走り
+        # 3 クエリ無駄になるため、所有者チェックだけで取得する。
+        series = get_object_or_404(Series, pk=pk, user=request.user)
         serializer = AvailabilityUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         shop = get_object_or_404(

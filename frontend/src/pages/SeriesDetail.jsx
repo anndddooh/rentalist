@@ -18,6 +18,7 @@ import { RoundButton } from "../components/PageHeader.jsx";
 import ShopStatusEditor from "../components/ShopStatusEditor.jsx";
 import StarRating from "../components/StarRating.jsx";
 import { useToast } from "../context/ToastContext.jsx";
+import { overlayPending } from "../lib/availabilitySync.js";
 import { errorMessage } from "../lib/errors.js";
 
 const STATUS_LABELS = {
@@ -67,7 +68,8 @@ export default function SeriesDetail() {
   const [bulkBusy, setBulkBusy] = useState(false);
 
   async function load() {
-    const data = await getSeries(id);
+    const startedAt = Date.now();
+    const data = overlayPending(await getSeries(id), startedAt);
     setSeries(data);
     setForm({
       title: data.title,
