@@ -521,6 +521,30 @@ def test_bulk_add_history_auto_completes_when_reaches_total_volumes(api, user):
     assert series.current_volume == 5
 
 
+def test_bulk_add_history_completes_wishlist_when_all_volumes_read(api, user):
+    series = make_series(user, total_volumes=5, status=Series.STATUS_WISHLIST)
+    resp = api.post(
+        f"/api/series/{series.id}/bulk_add_history/",
+        {"to_volume": 5},
+        format="json",
+    )
+    assert resp.status_code == 200
+    assert resp.data["status"] == "completed"
+    series.refresh_from_db()
+    assert series.status == Series.STATUS_COMPLETED
+
+
+def test_bulk_add_history_keeps_wishlist_when_partially_read(api, user):
+    series = make_series(user, total_volumes=5, status=Series.STATUS_WISHLIST)
+    resp = api.post(
+        f"/api/series/{series.id}/bulk_add_history/",
+        {"to_volume": 3},
+        format="json",
+    )
+    assert resp.status_code == 200
+    assert resp.data["status"] == "wishlist"
+
+
 def test_bulk_add_history_rejects_zero(api, user):
     series = make_series(user)
     resp = api.post(
