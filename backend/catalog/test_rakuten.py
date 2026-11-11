@@ -505,3 +505,19 @@ def test_retries_once_on_rate_limit():
     ):
         results = rakuten.search_series("メイキャッパー")
     assert [r["title"] for r in results] == ["メイキャッパー"]
+
+
+@override_settings(RAKUTEN_APP_ID="x", RAKUTEN_ACCESS_KEY="y")
+def test_find_cover_by_isbn_queries_books_api_with_isbn():
+    items = [{"title": "軍鶏 1", "largeImageUrl": "https://example.com/sh1_1_2.jpg"}]
+    with patch.object(rakuten.requests, "get", return_value=_fake_response(items)) as get:
+        url, provisional = rakuten.find_cover_by_isbn("978-4-06-376094-1")
+    assert url == "https://example.com/sh1_1_2.jpg"
+    assert provisional is False
+    assert get.call_args.kwargs["params"]["isbn"] == "9784063760941"
+
+
+@override_settings(RAKUTEN_APP_ID="x", RAKUTEN_ACCESS_KEY="y")
+def test_find_cover_by_isbn_returns_none_when_no_items():
+    with patch.object(rakuten.requests, "get", return_value=_fake_response([])):
+        assert rakuten.find_cover_by_isbn("9784063760941") == (None, False)
