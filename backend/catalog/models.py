@@ -64,10 +64,21 @@ class Series(models.Model):
         """次にレンタルすべき巻 = 読了済み + カート内 + 1。"""
         return self.current_volume + self.cart_count + 1
 
-    def recalculate_current_volume(self, commit=True):
-        """読破記録から current_volume を再計算し、完結遷移も行う。"""
+    def recalculate_current_volume(self, commit=True, promote_wishlist=False):
+        """読破記録から current_volume を再計算し、完結遷移も行う。
+
+        promote_wishlist=True のときは、wishlist でも全巻読破なら completed に移す
+        （既読巻の一括登録で「全巻 = 既読巻」となったケース向け）。
+        """
         agg = self.histories.aggregate(m=Max("volume_number"))
         self.current_volume = agg["m"] or 0
+        if (
+            promote_wishlist
+            and self.status == self.STATUS_WISHLIST
+            and self.total_volumes
+            and self.current_volume >= self.total_volumes
+        ):
+            self.status = self.STATUS_COMPLETED
         # 完結の自動遷移は active <-> completed の間でのみ行う（wishlist は対象外）
         if self.status in (self.STATUS_ACTIVE, self.STATUS_COMPLETED):
             if self.total_volumes and self.current_volume >= self.total_volumes:

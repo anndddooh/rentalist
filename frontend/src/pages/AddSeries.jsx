@@ -85,10 +85,13 @@ export default function AddSeries() {
       };
       const created = await createSeries(payload);
 
+      let finalStatus = created.status;
       const readUpTo = Number(read_up_to);
       if (Number.isInteger(readUpTo) && readUpTo >= 1) {
         try {
-          await bulkAddHistory(created.id, readUpTo);
+          const result = await bulkAddHistory(created.id, readUpTo);
+          // 全巻読破なら wishlist でも completed に変わるので、遷移先は結果で決める
+          finalStatus = result.status ?? finalStatus;
         } catch (bulkErr) {
           // シリーズは作れたが履歴投入で失敗。alert で確実にユーザに伝えてから
           // 詳細に遷移して再試行可能にする（setError では navigate で消えるため）。
@@ -100,7 +103,7 @@ export default function AddSeries() {
         }
       }
       toast.success(`「${created.title}」を登録しました`);
-      navigate(form.status === "wishlist" ? "/wishlist" : "/");
+      navigate(finalStatus === "wishlist" ? "/wishlist" : "/");
     } catch (err) {
       setError(errorMessage(err));
     } finally {
