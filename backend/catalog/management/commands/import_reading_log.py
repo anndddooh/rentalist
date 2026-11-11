@@ -1,6 +1,7 @@
 """外部の読書記録（例: サービス終了した Readee のエクスポート）を読破記録として取り込む。
 
-入力は JSON（ファイルパス、または "-" で標準入力）:
+入力は JSON（ファイルパス、"-" で標準入力、または --payload に gzip+base64 で直接渡す）。
+`dokku run` はコンテナに標準入力もローカルファイルも渡せないため、本番では --payload を使う:
 
     {"series": [
       {"title": "NARUTO -ナルト-",          # 新規作成時のシリーズ名
@@ -26,7 +27,12 @@
 例:
   python manage.py import_reading_log data.json --user hironori
   python manage.py import_reading_log - --user hironori --commit --covers < data.json
+  ssh dokku@<host> run <app> python manage.py import_reading_log --user hironori \
+      --payload "$(gzip -9c data.json | base64 | tr -d '\n')"
 """
+import base64
+import binascii
+import gzip
 import json
 import re
 import sys
@@ -55,7 +61,10 @@ class Command(BaseCommand):
     help = "外部の読書記録 JSON を読破記録として取り込む（デフォルト dry-run）"
 
     def add_arguments(self, parser):
-        parser.add_argument("source", help='入力 JSON のパス。"-" で標準入力')
+        parser.add_argument(
+            "source", nargs="?", help='入力 JSON のパス。"-" で標準入力（--payload 指定時は不要）'
+        )
+        parser.add_argument("--payload", help="入力 JSON を gzip 圧縮して base64 化した文字列")
         parser.add_argument("--user", required=True, help="取り込み先のユーザー名")
         parser.add_argument("--commit", action="store_true", help="DB に反映する")
         parser.add_argument(
@@ -64,14 +73,18 @@ class Command(BaseCommand):
         )
 
     # ------------------------------------------------------------------ 入出力
-    def _load(self, source):
+    def _load(self, source, payload=None):
+        if (source is None) == (payload is None):
+            raise CommandError("入力は source か --payload のどちらか一方を指定してください。")
         try:
-            if source == "-":
+            if payload is not None:
+                data = json.loads(gzip.decompress(base64.b64decode(payload)).decode("utf-8"))
+            elif source == "-":
                 data = json.load(sys.stdin)
             else:
                 with open(source, encoding="utf-8") as f:
                     data = json.load(f)
-        except (OSError, ValueError) as exc:
+        except (OSError, ValueError, binascii.Error, EOFError) as exc:
             raise CommandError(f"入力 JSON を読めません: {exc}") from exc
         entries = data.get("series") if isinstance(data, dict) else None
         if not isinstance(entries, list):
@@ -135,7 +148,7 @@ class Command(BaseCommand):
         except User.DoesNotExist as exc:
             raise CommandError(f"ユーザー {options['user']} が見つかりません。") from exc
 
-        entries = self._load(options["source"])
+        entries = self._load(options["source"], options["payload"])
         existing, plans, errors = self._plan(user, entries)
         self._report(existing, plans, errors)
 

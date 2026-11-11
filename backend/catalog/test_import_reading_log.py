@@ -150,3 +150,19 @@ def test_covers_skip_existing_and_provisional(tmp_path, alice):
         _run(tmp_path, [{"title": "既存", "volumes": [_vol(1, 1)]}], "--commit", "--covers")
     fake.assert_called_once_with("既存", 2)
     assert series.covers.count() == 1
+
+
+def test_payload_option_accepts_gzip_base64(alice):
+    import base64
+    import gzip
+
+    raw = json.dumps({"series": [{"title": "NARUTO", "volumes": [_vol(1, 1)]}]})
+    payload = base64.b64encode(gzip.compress(raw.encode("utf-8"))).decode()
+    call_command("import_reading_log", "--payload", payload, "--user", "alice", "--commit",
+                 stdout=StringIO())
+    assert Series.objects.get(title="NARUTO").histories.count() == 1
+
+
+def test_source_and_payload_are_exclusive(alice):
+    with pytest.raises(CommandError):
+        call_command("import_reading_log", "--user", "alice", stdout=StringIO())
