@@ -8,7 +8,8 @@
        "aliases": ["NARUTO", "ナルト"],      # 既存シリーズとの照合にだけ使う別名
        "author": "岸本斉史", "publisher": "集英社",
        "total_volumes": 72,                 # 完結済みなら全巻数、不明なら null
-       "volumes": [{"number": 1, "read_at": "2020-03-28T22:11:00+09:00"}, ...]}
+       "volumes": [{"number": 1, "read_at": "2020-03-28T22:11:00+09:00",
+                    "isbn": "9784088728407"}, ...]}  # isbn は任意（表紙取得の予備）
     ]}
 
 挙動:
@@ -20,7 +21,8 @@
     既存シリーズのステータス・全巻数は変更しない（current_volume の再計算のみ）。
   - 新規シリーズ: total_volumes があり全巻読んでいれば「読破済み」、それ以外は「進行中」。
   - --covers: 取り込んだシリーズの 1 巻と次に借りる巻（読破済みは 1 巻のみ）の表紙を
-    楽天から取得して保存する。既に表紙がある巻・発売前の仮表紙はスキップ。
+    楽天から取得して保存する。タイトル検索で見つからなければ入力の ISBN で引く。
+    既に表紙がある巻・発売前の仮表紙はスキップ。
 
 デフォルトは dry-run（DB を変更しない）。反映には --commit を付ける。
 
@@ -92,7 +94,7 @@ class Command(BaseCommand):
         for i, entry in enumerate(entries):
             if not entry.get("title"):
                 raise CommandError(f"series[{i}] に title がありません。")
-            volumes = {}
+            volumes, isbns = {}, {}
             for v in entry.get("volumes", []):
                 number = int(v["number"])
                 read_at = parse_datetime(v["read_at"])
@@ -102,7 +104,10 @@ class Command(BaseCommand):
                         "read_at はタイムゾーン付き ISO 8601）。"
                     )
                 volumes[number] = read_at  # 同じ巻の重複は後勝ち
+                if v.get("isbn"):
+                    isbns[number] = str(v["isbn"])
             entry["_volumes"] = volumes
+            entry["_isbns"] = isbns
         return entries
 
     # ------------------------------------------------------------------ 計画
@@ -190,12 +195,12 @@ class Command(BaseCommand):
                 RentalHistory.objects.bulk_create(to_create)
                 RentalHistory.objects.bulk_update(to_update, ["rented_at"])
                 series.recalculate_current_volume()
-                touched.append(series)
+                touched.append((series, entry["_isbns"]))
         return touched
 
     def _fetch_covers(self, series_list):
         fetched = skipped = missing = 0
-        for series in series_list:
+        for series, isbns in series_list:
             # next_volume はカートを参照するため最新状態で取り直す
             series = Series.objects.prefetch_related("cart_items").get(pk=series.pk)
             volumes = [1]
@@ -212,6 +217,8 @@ class Command(BaseCommand):
                     skipped += 1
                     continue
                 url, provisional = rakuten.find_volume_cover(series.title, volume)
+                if (url is None or provisional) and volume in isbns:
+                    url, provisional = rakuten.find_cover_by_isbn(isbns[volume])
                 if url is None or provisional:
                     missing += 1
                     self.stdout.write(f"  表紙なし: {series.title} {volume}巻")

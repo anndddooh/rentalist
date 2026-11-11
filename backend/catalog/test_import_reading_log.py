@@ -166,3 +166,19 @@ def test_payload_option_accepts_gzip_base64(alice):
 def test_source_and_payload_are_exclusive(alice):
     with pytest.raises(CommandError):
         call_command("import_reading_log", "--user", "alice", stdout=StringIO())
+
+
+def test_covers_fall_back_to_isbn_when_title_lookup_fails(tmp_path, alice):
+    with mock.patch(
+        "catalog.services.rakuten.find_volume_cover", return_value=(None, False)
+    ), mock.patch(
+        "catalog.services.rakuten.find_cover_by_isbn",
+        return_value=("https://e/isbn.jpg", False),
+    ) as by_isbn:
+        _run(tmp_path, [{
+            "title": "版違い", "total_volumes": 1,
+            "volumes": [{**_vol(1, 1), "isbn": "9784000000001"}],
+        }], "--commit", "--covers")
+    by_isbn.assert_called_once_with("9784000000001")
+    cover = Series.objects.get(title="版違い").covers.get()
+    assert cover.volume_number == 1 and cover.image_url == "https://e/isbn.jpg"
