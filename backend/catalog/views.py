@@ -116,6 +116,7 @@ class SeriesViewSet(viewsets.ModelViewSet):
 
         - 既存巻は unique_together 違反として ignore_conflicts でスキップ。
         - 投入後 recalculate_current_volume で current_volume と完結遷移を更新。
+          全巻読破になった場合は wishlist でも completed に移す。
         """
         series = self.get_object()  # 他ユーザー series は queryset でフィルタ→ 404
         try:
@@ -155,7 +156,7 @@ class SeriesViewSet(viewsets.ModelViewSet):
                 ignore_conflicts=True,
             )
             created = series.histories.count() - before
-        series.recalculate_current_volume()
+        series.recalculate_current_volume(promote_wishlist=True)
         return Response(
             {
                 "detail": f"{created}件の読破記録を追加しました。",
