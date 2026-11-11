@@ -410,6 +410,27 @@ def find_volume_cover(title, volume_number):
     return url, provisional
 
 
+def find_cover_by_isbn(isbn):
+    """ISBN で楽天ブックスを引き、(画像URL, 仮表紙フラグ) を返す。
+
+    タイトル検索で見つからない巻（版違い・表記ゆれ等）の救済用。外部の読書記録の
+    取り込みのように ISBN が分かっている場合に使う。見つからなければ (None, False)。
+    """
+    isbn = re.sub(r"[^0-9Xx]", "", isbn or "")
+    if not isbn or not _is_configured():
+        return None, False
+    params = {**_auth_params(), "isbn": isbn, "format": "json"}
+    try:
+        items = _fetch_items(RAKUTEN_ENDPOINT, params, "ISBN表紙取得")
+    except _LookupFailed:
+        return None, False
+    for item in items:
+        url = item.get("largeImageUrl", "") or item.get("mediumImageUrl", "")
+        if url:
+            return url, _is_provisional(item)
+    return None, False
+
+
 def find_volume_cover_cached(title, volume_number):
     """find_volume_cover の結果のうち「見つからない」「仮表紙」を TTL 付きでキャッシュする。
 
