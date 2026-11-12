@@ -91,6 +91,23 @@ class SeriesSerializer(serializers.ModelSerializer):
         """全ショップ分の貸出状況 {shop_id: status}。レコード不在のショップは含まない。"""
         return {a.shop_id: a.status for a in obj.availabilities.all()}
 
+    def validate_title(self, value):
+        """同じ作品（表記ゆれを吸収したタイトル一致）の二重登録を防ぐ。"""
+        key = rakuten.series_key(value)
+        if not key:
+            return value
+        user = self.context["request"].user
+        others = Series.objects.filter(user=user)
+        if self.instance is not None:
+            others = others.exclude(pk=self.instance.pk)
+        for other in others.only("id", "title", "status"):
+            if rakuten.series_key(other.title) == key:
+                raise serializers.ValidationError(
+                    f"「{other.title}」は既に登録されています"
+                    f"（{other.get_status_display()}）。"
+                )
+        return value
+
     def create(self, validated_data):
         validated_data["user"] = self.context["request"].user
         series = super().create(validated_data)

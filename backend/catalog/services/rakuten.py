@@ -199,9 +199,15 @@ _NON_VOLUME_EDITION_RE = re.compile(
 _KEY_STRIP_RE = re.compile(r"[\s・:：!！?？、,.。【】\[\]()（）〜~ー－―‐\-]")
 
 
-def _series_key(name):
-    """表記ゆれ（全角/半角・空白・記号）を吸収したシリーズ同一判定キー。"""
+def series_key(name):
+    """表記ゆれ（全角/半角・空白・記号）を吸収したシリーズ同一判定キー。
+
+    検索候補の集約のほか、シリーズの重複登録チェックにも使う。
+    """
     return _KEY_STRIP_RE.sub("", unicodedata.normalize("NFKC", name or "").lower())
+
+
+_series_key = series_key
 
 
 def _group_by_series(candidates):

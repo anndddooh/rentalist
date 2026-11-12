@@ -14,13 +14,20 @@ import {
 } from "react-native";
 import Toast from "react-native-toast-message";
 import { bulkAddHistory, createSeries, searchSeries } from "@/api/series";
-import type { RakutenCandidate } from "@/api/types";
+import type { RakutenCandidate, SeriesStatus } from "@/api/types";
 import CoverImage from "@/components/CoverImage";
 import { BrandButton, ErrorNotice, Field } from "@/components/form";
 import ScreenHeader from "@/components/ScreenHeader";
 import StarRating from "@/components/StarRating";
 import { errorMessage } from "@/lib/errors";
 import { useThemeColors } from "@/theme/colors";
+
+const STATUS_LABELS: Record<SeriesStatus, string> = {
+  active: "進行中",
+  wishlist: "いつか読みたい",
+  completed: "読破済み",
+  dropped: "中断",
+};
 
 const EMPTY_FORM = {
   title: "",
@@ -186,6 +193,33 @@ export default function AddSeries() {
             </Text>
             {candidates.map((c, i) => {
               const selected = selectedIndex === i;
+              const existing = c.existing_series;
+              if (existing) {
+                // 登録済みの作品は選ばせず、既存シリーズへ案内する（重複登録の防止）
+                return (
+                  <Pressable
+                    key={`${c.isbn ?? c.title}-${i}`}
+                    onPress={() => router.push(`/series/${existing.id}`)}
+                    className="flex-row items-center gap-3 rounded-[18px] bg-card p-2.5 opacity-70 shadow-sm"
+                  >
+                    <CoverImage url={c.cover_url} className="h-20 w-14" />
+                    <View className="flex-1">
+                      <Text className="text-sm font-bold text-ink">
+                        {c.title}
+                      </Text>
+                      <View className="mt-0.5 self-start rounded-full bg-inset px-2">
+                        <Text className="text-[10px] font-bold text-ink-muted">
+                          登録済み（{STATUS_LABELS[existing.status] ?? existing.status}）
+                        </Text>
+                      </View>
+                      <Text className="text-xs text-ink-muted">{c.author}</Text>
+                    </View>
+                    <Text className="self-center text-xs font-bold text-brand-text">
+                      開く ›
+                    </Text>
+                  </Pressable>
+                );
+              }
               return (
                 <Pressable
                   key={`${c.isbn ?? c.title}-${i}`}

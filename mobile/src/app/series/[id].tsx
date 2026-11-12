@@ -40,6 +40,7 @@ const STATUS_LABELS: Record<SeriesStatus, string> = {
   active: "進行中",
   wishlist: "いつか読みたい",
   completed: "読破済み",
+  dropped: "中断",
 };
 
 interface EditForm {
@@ -215,7 +216,7 @@ function SeriesDetailLoaded({ series }: { series: Series }) {
   }
 
   function openStatusPicker() {
-    const statuses: SeriesStatus[] = ["active", "wishlist", "completed"];
+    const statuses: SeriesStatus[] = ["active", "wishlist", "completed", "dropped"];
     const options = [...statuses.map((s) => STATUS_LABELS[s]), "キャンセル"];
     ActionSheetIOS.showActionSheetWithOptions(
       { title: "ステータス", options, cancelButtonIndex: options.length - 1 },
