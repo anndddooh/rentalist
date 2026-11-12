@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { createSeries, searchSeries } from "../api/series.js";
 import { bulkAddHistory } from "../api/history.js";
 import CoverImage from "../components/CoverImage.jsx";
@@ -19,6 +19,13 @@ const EMPTY_FORM = {
   favorite_score: 3,
   status: "active",
   read_up_to: "",
+};
+
+const STATUS_LABELS = {
+  active: "進行中",
+  wishlist: "いつか読みたい",
+  completed: "読破済み",
+  dropped: "中断",
 };
 
 // 「ONE PIECE 114」のような末尾の巻数表記を取り除いてシリーズ名にする
@@ -168,6 +175,33 @@ export default function AddSeries() {
         <ul className="space-y-2">
           {candidates.map((c, i) => {
             const selected = selectedIndex === i;
+            const existing = c.existing_series;
+            if (existing) {
+              // 登録済みの作品は選ばせず、既存シリーズへ案内する（重複登録の防止）
+              return (
+                <li key={`${c.isbn}-${i}`}>
+                  <Link
+                    to={`/series/${existing.id}`}
+                    className="flex w-full items-center gap-3 rounded-[18px] bg-card p-3 text-left opacity-70 shadow-card"
+                  >
+                    <CoverImage
+                      url={c.cover_url}
+                      alt={c.title}
+                      className="h-16 w-11 rounded-md"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-bold text-ink">{c.title}</div>
+                      <span className="mt-0.5 inline-block rounded-full bg-inset px-2 py-px text-[10px] font-bold text-ink-muted">
+                        登録済み（{STATUS_LABELS[existing.status] ?? existing.status}）
+                      </span>
+                    </div>
+                    <span className="shrink-0 self-center text-xs font-bold text-brand-text">
+                      開く ›
+                    </span>
+                  </Link>
+                </li>
+              );
+            }
             return (
               <li key={`${c.isbn}-${i}`}>
                 <button

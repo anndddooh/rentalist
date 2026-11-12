@@ -14,10 +14,30 @@ import { useSeriesList } from "@/hooks/useSeries";
 import { useShopsQuery } from "@/hooks/useShops";
 import { errorMessage } from "@/lib/errors";
 
+// 「いつか読みたい」と「中断」（読むのをやめた進行中シリーズ）を切り替えて表示する
+const TABS = {
+  wishlist: {
+    label: "いつか読みたい",
+    action: "読み始める",
+    done: (title: string) => `「${title}」を読み始めました`,
+    empty: "読みたいリストは空です。右上の＋からシリーズを追加できます。",
+  },
+  dropped: {
+    label: "中断",
+    action: "再開する",
+    done: (title: string) => `「${title}」を再開しました`,
+    empty: "中断中のシリーズはありません。シリーズ詳細のステータスで「中断」にできます。",
+  },
+} as const;
+type TabKey = keyof typeof TABS;
+
 /** frontend/src/pages/Wishlist.jsx の移植 */
 export default function Wishlist() {
   const queryClient = useQueryClient();
-  const seriesQuery = useSeriesList("wishlist");
+  const [tab, setTab] = useState<TabKey>("wishlist");
+  const wishlistQuery = useSeriesList("wishlist");
+  const droppedQuery = useSeriesList("dropped");
+  const seriesQuery = tab === "dropped" ? droppedQuery : wishlistQuery;
   const { data: shops = [] } = useShopsQuery();
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const count = seriesQuery.data?.length ?? 0;
@@ -28,7 +48,7 @@ export default function Wishlist() {
     onSuccess: (_data, target) => {
       Toast.show({
         type: "success",
-        text1: `「${target.title}」を読み始めました`,
+        text1: TABS[tab].done(target.title),
       });
       queryClient.invalidateQueries({ queryKey: ["series"] });
     },
@@ -38,10 +58,33 @@ export default function Wishlist() {
   return (
     <View className="flex-1 bg-surface">
       <ScreenHeader
-        subtitle={`いつか読みたい ${count}作品`}
+        subtitle={`${TABS[tab].label} ${count}作品`}
         title="読みたい"
         right={<AddSeriesButton />}
       />
+      <View className="mx-4 mb-2 flex-row rounded-full bg-inset p-1">
+        {(Object.keys(TABS) as TabKey[]).map((key) => {
+          const n = (key === "dropped" ? droppedQuery : wishlistQuery).data?.length;
+          return (
+            <Pressable
+              key={key}
+              onPress={() => setTab(key)}
+              className={`flex-1 items-center rounded-full py-2 ${
+                tab === key ? "bg-card shadow-sm" : ""
+              }`}
+            >
+              <Text
+                className={`text-[13px] font-bold ${
+                  tab === key ? "text-brand" : "text-ink-muted"
+                }`}
+              >
+                {TABS[key].label}
+                {n !== undefined ? ` ${n}` : ""}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
       <FlatList
         className="flex-1 bg-surface"
         contentContainerClassName="gap-3 px-4 pb-4 pt-1"
@@ -87,7 +130,7 @@ export default function Wishlist() {
                   className="mt-auto items-center rounded-full border-[1.5px] border-brand py-2 active:bg-brand-soft"
                 >
                   <Text className="text-sm font-bold text-brand">
-                    読み始める
+                    {TABS[tab].action}
                   </Text>
                 </Pressable>
               </View>
@@ -121,7 +164,7 @@ export default function Wishlist() {
           <Text className="py-10 text-center text-sm text-ink-faint">
             {seriesQuery.isLoading
               ? "読み込み中…"
-              : "Wishlist は空です。ホーム右上の＋からシリーズを追加できます。"}
+              : TABS[tab].empty}
           </Text>
         }
       />

@@ -25,12 +25,14 @@ const STATUS_LABELS = {
   active: "進行中",
   wishlist: "いつか読みたい",
   completed: "読破済み",
+  dropped: "中断",
 };
 
 const STATUS_OPTIONS = [
   ["active", "進行中"],
   ["wishlist", "読みたい"],
   ["completed", "読破"],
+  ["dropped", "中断"],
 ];
 
 export default function SeriesDetail() {
