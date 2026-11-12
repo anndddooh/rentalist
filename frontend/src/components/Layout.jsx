@@ -23,7 +23,7 @@ const MOBILE_NAV = [
 // デスクトップ左サイドバー
 const SIDEBAR_NAV = [
   { to: "/", label: "ホーム", icon: "home", end: true },
-  { to: "/wishlist", label: "いつか読みたい", icon: "bookmark" },
+  { to: "/wishlist", label: "読みたい・中断", icon: "bookmark" },
   { to: "/history", label: "履歴", icon: "history" },
   { to: "/completed", label: "読破", icon: "trophy" },
   { to: "/settings", label: "設定", icon: "settings" },

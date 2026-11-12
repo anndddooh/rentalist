@@ -10,10 +10,13 @@ class Series(models.Model):
     STATUS_ACTIVE = "active"
     STATUS_WISHLIST = "wishlist"
     STATUS_COMPLETED = "completed"
+    # 進行中だったが読むのをやめたシリーズ。ホームには出さず、読みたいタブにまとめる
+    STATUS_DROPPED = "dropped"
     STATUS_CHOICES = [
         (STATUS_ACTIVE, "進行中"),
         (STATUS_WISHLIST, "いつか読みたい"),
         (STATUS_COMPLETED, "読破済み"),
+        (STATUS_DROPPED, "中断"),
     ]
 
     user = models.ForeignKey(
@@ -79,7 +82,7 @@ class Series(models.Model):
             and self.current_volume >= self.total_volumes
         ):
             self.status = self.STATUS_COMPLETED
-        # 完結の自動遷移は active <-> completed の間でのみ行う（wishlist は対象外）
+        # 完結の自動遷移は active <-> completed の間でのみ行う（wishlist・dropped は対象外）
         if self.status in (self.STATUS_ACTIVE, self.STATUS_COMPLETED):
             if self.total_volumes and self.current_volume >= self.total_volumes:
                 self.status = self.STATUS_COMPLETED

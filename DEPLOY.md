@@ -236,9 +236,11 @@ crontab -e
 
 ```bash
 cd backend
-# 1. R2 から最新ダンプを取得（Cloudflare ダッシュボード or rclone/aws s3 cp）
-#    例: aws s3 cp s3://rentalist-backups/db-backups/rentalist-XXXX.json.gz . \
-#          --endpoint-url https://（アカウントID）.r2.cloudflarestorage.com
+# 1. R2 から最新ダンプを取得: Cloudflare ダッシュボード → R2 → rentalist-backups
+#    → db-backups/ から .json.gz をダウンロードする。
+#    （本番のバックアップ用トークンは VPS の IP からしか使えないため、手元から
+#     aws s3 cp / boto3 で取ると AccessDenied になる。2026-11-12 確認）
+#    ダウンロードしたファイル名は db-backups_rentalist-XXXX.json.gz のように接頭辞が付く。
 gunzip rentalist-XXXX.json.gz          # → rentalist-XXXX.json（loaddata は .json 拡張子が必要）
 
 # 2. 復旧先 DB を指定してスキーマを作成 → データ投入
@@ -249,6 +251,14 @@ export DATABASE_URL="postgresql://...（復旧先 Neon）...?sslmode=require"
 マイグレーションはリポジトリにあるので `migrate` → `loaddata` だけで戻る。
 （contenttypes / permission / session は除外済みで `migrate` が再生成する。）
 復旧確認後、Dokku の `DATABASE_URL` をこの新 DB に差し替える。
+
+**復元テスト実績（2026-11-12）**: 11/06 のバックアップ（1333 オブジェクト）を
+ローカル PostgreSQL 14 の空 DB に上記手順で戻し、エラーなく完了（loaddata 約22秒）。
+- モデル別件数がダンプと一致（series 110 / rentalhistory 829 / volumecover 320 /
+  shopavailability 66 / cartitem 3 / user 2 / invitetoken 2 / rentalshop 1）
+- 主キーのシーケンスは loaddata 後に最大 ID へ追従しており、復旧後の新規登録で ID 衝突しない
+- 履歴 → ユーザー・シリーズの関連が保たれている
+- ダウンロードしたダンプは本番データそのものなので、作業後に削除する
 
 ---
 

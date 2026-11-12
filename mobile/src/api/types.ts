@@ -1,6 +1,6 @@
 // backend/catalog/serializers.py・accounts の API レスポンス型
 
-export type SeriesStatus = "active" | "wishlist" | "completed";
+export type SeriesStatus = "active" | "wishlist" | "completed" | "dropped";
 export type AvailabilityStatus = "available" | "unavailable" | "unknown";
 
 export interface Series {
@@ -92,6 +92,8 @@ export interface RakutenCandidate {
   series_name?: string;
   /** 取得元。rakuten_kobo は電子書籍にのみ見つかった作品（出版社が配信元のことがある） */
   source?: "rakuten_books" | "rakuten_kobo";
+  /** 同じ作品が登録済みならその既存シリーズ（追加画面で重複登録を止める） */
+  existing_series?: { id: number; title: string; status: SeriesStatus } | null;
 }
 
 export interface StatsPeriod {

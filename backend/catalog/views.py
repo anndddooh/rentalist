@@ -56,7 +56,17 @@ class SeriesViewSet(viewsets.ModelViewSet):
     def search(self, request):
         """楽天ブックス・楽天Koboでシリーズ候補を検索する。"""
         query = request.query_params.get("q", "")
-        return Response(rakuten.search_series(query))
+        candidates = rakuten.search_series(query)
+        # 登録済みの作品には既存シリーズを添える（追加画面で重複登録を止めるため）
+        owned = {}
+        for s in Series.objects.filter(user=request.user).only("id", "title", "status"):
+            owned.setdefault(rakuten.series_key(s.title), s)
+        for cand in candidates:
+            hit = owned.get(rakuten.series_key(cand["title"]))
+            cand["existing_series"] = (
+                {"id": hit.id, "title": hit.title, "status": hit.status} if hit else None
+            )
+        return Response(candidates)
 
     @action(detail=True, methods=["get", "put"], url_path="cover")
     def cover(self, request, pk=None):
@@ -253,6 +263,9 @@ class CartItemViewSet(viewsets.ModelViewSet):
             CartItem.objects.filter(user=request.user).delete()
             newly_completed = []
             for series in affected.values():
+                if series.status == Series.STATUS_DROPPED:
+                    # 中断していたシリーズを借りた = 再開したとみなす
+                    series.status = Series.STATUS_ACTIVE
                 was_completed = series.status == Series.STATUS_COMPLETED
                 series.recalculate_current_volume()
                 if series.status == Series.STATUS_COMPLETED and not was_completed:
