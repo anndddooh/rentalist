@@ -18,7 +18,8 @@
     表示するだけで、自動では統合しない（重複作成の見落とし防止のため dry-run で確認する）。
   - 既存シリーズの巻: 読破記録があれば日付を入力値で上書き、無ければ追加する。
     入力に無い巻の記録には触れない（Rentalist で付けた記録を壊さない）。
-    既存シリーズのステータス・全巻数は変更しない（current_volume の再計算のみ）。
+    既存シリーズの全巻数は変更しない。ステータスは「いつか読みたい」だったものだけ
+    「進行中」にし（全巻読破なら「読破済み」）、あとは current_volume の再計算に任せる。
   - 新規シリーズ: total_volumes があり全巻読んでいれば「読破済み」、それ以外は「進行中」。
   - --covers: 取り込んだシリーズの 1 巻と次に借りる巻（読破済みは 1 巻のみ）の表紙を
     楽天から取得して保存する。タイトル検索で見つからなければ入力の ISBN で引く。
@@ -194,6 +195,9 @@ class Command(BaseCommand):
                         to_update.append(h)
                 RentalHistory.objects.bulk_create(to_create)
                 RentalHistory.objects.bulk_update(to_update, ["rented_at"])
+                if series.status == Series.STATUS_WISHLIST and entry["_volumes"]:
+                    # 読んだ記録が入るので「いつか読みたい」から外す（全巻読破なら下で読破済みに）
+                    series.status = Series.STATUS_ACTIVE
                 series.recalculate_current_volume()
                 touched.append((series, entry["_isbns"]))
         return touched
@@ -248,6 +252,8 @@ class Command(BaseCommand):
             line = f"- {series.title}（入力名: {p['entry']['title']}）: 追加 {len(add)}巻 / 日付更新 {len(upd)}巻"
             if add:
                 line += f" / 追加巻 {_ranges(add)}"
+            if series.status == Series.STATUS_WISHLIST and vols:
+                line += " / いつか読みたい → 進行中"
             w(line)
             if untouched:
                 dates = sorted({current[n].date().isoformat() for n in untouched})

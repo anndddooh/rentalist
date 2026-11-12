@@ -182,3 +182,18 @@ def test_covers_fall_back_to_isbn_when_title_lookup_fails(tmp_path, alice):
     by_isbn.assert_called_once_with("9784000000001")
     cover = Series.objects.get(title="版違い").covers.get()
     assert cover.volume_number == 1 and cover.image_url == "https://e/isbn.jpg"
+
+
+def test_wishlist_series_becomes_active_when_volumes_imported(tmp_path, alice):
+    wish = Series.objects.create(user=alice, title="シマウマ", status=Series.STATUS_WISHLIST)
+    done = Series.objects.create(user=alice, title="完結作", status=Series.STATUS_WISHLIST,
+                                 total_volumes=2)
+    output = _run(tmp_path, [
+        {"title": "シマウマ", "volumes": [_vol(1, 1), _vol(3, 3)]},
+        {"title": "完結作", "volumes": [_vol(1, 1), _vol(2, 2)]},
+    ], "--commit")
+    assert "いつか読みたい → 進行中" in output
+    wish.refresh_from_db()
+    done.refresh_from_db()
+    assert wish.status == Series.STATUS_ACTIVE
+    assert done.status == Series.STATUS_COMPLETED
