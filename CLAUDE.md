@@ -8,7 +8,7 @@
 ## 既知の決定・ハマり所（自動蒸留 / 2026-11-12 更新）
 
 - **貸出状況（貸出あり/なし/未確認）の切替は必ず共通キューを通す（2026-10-31）**: Web `frontend/src/lib/availabilitySync.js` / iOS `mobile/src/lib/availabilitySync.ts`。楽観的更新（iOS は一覧・詳細など全キャッシュを書き換え）＋ショップ単位の直列送信（通信中の押下は最終状態のみ）＋失敗時ロールバック。`setAvailability` を画面から直接呼ぶと、連打で到着順が入れ替わり画面遷移後に古い値へ戻る。同期処理化は応答待ちが残るため不採用。
-- **本番 API の Dokku デプロイ（`git push dokku main`）は Claude からは権限拒否される**: ユーザーが手元で実行する。2026-10-31 のクエリ削減（11→8本）は未デプロイの可能性あり。
+- **本番 API の Dokku デプロイ（`git push dokku main`）は Claude からは権限拒否される**: ユーザーが手元で実行する。本番に何が出ているかは `ssh dokku@167.172.65.18 config:get rentalist-api GIT_REV` で確認できる（2026-11-12 時点で main の 420fb2b、10/31 のクエリ削減も反映済み）。
 - **外部の読書記録の取り込みは `import_reading_log`（2026-11-11 Readee 移行で追加）**: デフォルト dry-run、`--commit` で反映、`--covers` で 1 巻と次巻の表紙取得。`dokku run` はコンテナに標準入力を渡さないので入力 JSON は `--payload "$(gzip -9c x.json | base64 | tr -d '\n')"` で渡す。既存シリーズとは正規化タイトル＋別名の完全一致のみで照合し、似た名前は警告だけ出すので dry-run の「似た既存シリーズ」「一致しなかった既存シリーズ」を見て別名を足す。変換スクリプトは `../readee-rescue/to_rentalist.py`。本番実行はユーザー手元（`../readee-rescue/run_import.sh backup` → dry-run → `commit`）で、Readee に無い既存巻の日付には触れない・Readee の抜け巻は直後の巻の日付で補完する方針（2026-11-11、本番実行は未完了の可能性あり）。
 - **古い（絶版）ISBN は楽天ブックスの ISBN 検索でも 0 件、openBD も書影なし、NDL サムネイルは VPS から 403**（2026-11-11 確認）。旧版の 1 巻表紙はアプリから手動で設定する。
 - **ローカル 5173/8000 は別アプリ（Cardfolio）が使うことがある**: 触らず別ポートで Rentalist を起動して Playwright 検証する。
