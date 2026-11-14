@@ -28,6 +28,7 @@
 - 並列化の効果は「同時 N 本送信」で測る（1 本だけでは差が出ない）。
 - Claude Code からは本番 VPS への root SSH・本番 `dokku run`・本番ログ読み取り・amend が権限拒否される。計測は curl と `dokku config:get` で行い、試験変更は一時ブランチで試す。楽天 API など VPS の IP 登録が要る API の実データ検証は staging の `dokku run rentalist-api-staging python -c ...` で行える（引数は dokku が eval し直すので base64 化＋括弧・引用符のエスケープが必要）。
 
+- **Dokku の release（migrate 自動実行）には `ps:set <app> procfile-path backend/Procfile` が必要（2026-11-15 判明）**: Dokku はリポジトリ直下の `Procfile` を探すが、Procfile は `backend/` にあるため、未設定だとデプロイ時に migrate が走らない（Web は buildpack が backend/ を直下にコピーするので動いてしまい気付きにくい）。staging は設定済み。デプロイ出力に「Executing release task from Procfile」が出れば有効。
 - **デプロイは Dokku（DigitalOcean VPS 167.172.65.18, Singapore）**: `git push dokku main` で buildpack 自動デプロイ。**`dokku config:set` で env を変えた後は `dokku ps:rebuild <app>` が必要**（buildpack が env をビルド時に焼き込むため、config:set だけでは反映されない）。ステージングは `rentalist-api-staging.167.172.65.18.nip.io` + Neon staging ブランチ。
 - **Neon DB**: Django 本番は Pooled URL（`-pooler`）で可。ただし **`pg_restore` は Direct URL（`-pooler` なし）必須**（pgbouncer transaction mode は startup parameters 不可）。
 - **楽天 API の3つの罠**: ① UUID 形式 applicationId は **accessKey + VPS の IP 登録が必須セット**（外すと `accessKey must be present`）。② `seriesName` はレーベル名（「ジャンプコミックス」等）が入るためシリーズ判定に使わない。③ エラーログに API キーが漏れるので `logger.warning("%s", exc)` 禁止 → `_log_api_failure()` ヘルパーを使う。スロットリングは 0.2s（`threading.Lock`）。
