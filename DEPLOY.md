@@ -84,6 +84,9 @@ dokku apps:create rentalist-api
 dokku buildpacks:add rentalist-api https://github.com/lstoll/heroku-buildpack-monorepo
 dokku buildpacks:add rentalist-api https://github.com/heroku/heroku-buildpack-python
 dokku config:set rentalist-api APP_BASE=backend
+# Procfile は backend/ にあるので場所を指定する。これが無いと Dokku が release
+#（python manage.py migrate）を見つけられず、デプロイ時に migrate が自動で走らない
+dokku ps:set rentalist-api procfile-path backend/Procfile
 
 # 環境変数
 dokku config:set rentalist-api \
@@ -279,6 +282,7 @@ iOS アプリ（`mobile/`）や検証ブランチを本番データを汚さず�
 ssh dokku@167.172.65.18 apps:create rentalist-api-staging
 ssh dokku@167.172.65.18 buildpacks:add rentalist-api-staging https://github.com/lstoll/heroku-buildpack-monorepo
 ssh dokku@167.172.65.18 buildpacks:add rentalist-api-staging https://github.com/heroku/heroku-buildpack-python
+ssh dokku@167.172.65.18 ps:set rentalist-api-staging procfile-path backend/Procfile   # 手順2-4と同じ理由
 ssh dokku@167.172.65.18 config:set rentalist-api-staging \
   APP_BASE=backend DEBUG=False SECRET_KEY=（新規生成） \
   ALLOWED_HOSTS=rentalist-api-staging.167.172.65.18.nip.io \
