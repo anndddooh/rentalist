@@ -6,7 +6,7 @@ import {
 } from "@tanstack/react-query";
 import * as ImagePicker from "expo-image-picker";
 import { Stack, router, useLocalSearchParams } from "expo-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ActionSheetIOS,
   KeyboardAvoidingView,
@@ -93,6 +93,14 @@ function SeriesDetailLoaded({ series }: { series: Series }) {
   }));
   const [error, setError] = useState("");
 
+  // 既読巻の一括登録・読破記録の削除などでサーバー側のステータスが変わったら、
+  // 編集フォームのステータス欄も追従させる（初期化時の値が残って保存で戻さないように）
+  useEffect(() => {
+    setForm((prev) =>
+      prev.status === series.status ? prev : { ...prev, status: series.status }
+    );
+  }, [series.status]);
+
   // 表紙設定
   const [coverVolume, setCoverVolume] = useState(() => String(displayVolume));
   const [coverInputUrl, setCoverInputUrl] = useState("");
@@ -136,8 +144,15 @@ function SeriesDetailLoaded({ series }: { series: Series }) {
         ...form,
         total_volumes: form.total_volumes ? Number(form.total_volumes) : null,
       }),
-    onSuccess: () => {
+    onSuccess: (updated) => {
       setError("");
+      // 全巻数の入力で読破済みに変わる等、サーバー側で決まった値をフォームにも反映する
+      // （フォームは画面を開いた時の値で初期化しているので、そのままだと古い値が残る）
+      setForm((prev) => ({
+        ...prev,
+        status: updated.status,
+        total_volumes: updated.total_volumes ? String(updated.total_volumes) : "",
+      }));
       Toast.show({ type: "success", text1: "保存しました。" });
       invalidateSeries();
     },

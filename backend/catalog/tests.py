@@ -142,8 +142,12 @@ def test_setting_total_volumes_later_triggers_completion(api, user):
         )
     series.refresh_from_db()
     assert series.status == Series.STATUS_ACTIVE  # まだ total_volumes が無い
-    resp = api.patch(f"/api/series/{series.id}/", {"total_volumes": 3}, format="json")
+    # 画面は「進行中」のままのフォームを丸ごと送る。応答は遷移後の状態を返すこと
+    resp = api.patch(
+        f"/api/series/{series.id}/", {"total_volumes": 3, "status": "active"}, format="json"
+    )
     assert resp.status_code == 200
+    assert resp.data["status"] == Series.STATUS_COMPLETED
     series.refresh_from_db()
     assert series.status == Series.STATUS_COMPLETED
 
