@@ -26,7 +26,7 @@ def test_series_scoped_to_user(api, other_user):
     make_series(other_user, title="他人の漫画")
     resp = api.get("/api/series/")
     assert resp.status_code == 200
-    assert resp.data["count"] == 0
+    assert resp.data == []
 
 
 def test_cart_add_uses_next_volume_and_increments(api, user):
@@ -173,7 +173,7 @@ def test_shop_availability_update_and_filter(api, user):
     assert resp.status_code == 200
 
     # shop 指定で一覧 → availability_status が注釈される
-    listed = api.get(f"/api/series/?shop={shop['id']}").data["results"]
+    listed = api.get(f"/api/series/?shop={shop['id']}").data
     by_id = {s["id"]: s for s in listed}
     assert by_id[series.id]["availability_status"] == "available"
     assert by_id[other.id]["availability_status"] == "unknown"  # レコード不在
@@ -193,7 +193,7 @@ def test_shop_availability_unknown_deletes_record(api, user):
         {"shop_id": shop["id"], "status": "unknown"},
         format="json",
     )
-    listed = api.get(f"/api/series/?shop={shop['id']}").data["results"]
+    listed = api.get(f"/api/series/?shop={shop['id']}").data
     assert listed[0]["availability_status"] == "unknown"
 
 
@@ -249,7 +249,7 @@ def test_series_list_includes_first_volume_cover_url(api, user):
     )
     resp = api.get("/api/series/")
     assert resp.status_code == 200
-    assert resp.data["results"][0]["first_volume_cover_url"] == "https://example.com/vol1.jpg"
+    assert resp.data[0]["first_volume_cover_url"] == "https://example.com/vol1.jpg"
 
 
 def test_series_list_first_volume_cover_url_is_null_when_uncached(api, user):
@@ -257,7 +257,7 @@ def test_series_list_first_volume_cover_url_is_null_when_uncached(api, user):
     make_series(user)
     resp = api.get("/api/series/")
     assert resp.status_code == 200
-    assert resp.data["results"][0]["first_volume_cover_url"] is None
+    assert resp.data[0]["first_volume_cover_url"] is None
 
 
 def test_series_list_next_cover_url_returns_next_volume_when_cached(api, user):
@@ -273,7 +273,7 @@ def test_series_list_next_cover_url_returns_next_volume_when_cached(api, user):
     )
     resp = api.get("/api/series/")
     assert resp.status_code == 200
-    assert resp.data["results"][0]["next_cover_url"] == "https://example.com/vol6.jpg"
+    assert resp.data[0]["next_cover_url"] == "https://example.com/vol6.jpg"
 
 
 def test_series_list_next_cover_url_falls_back_to_first_volume(api, user):
@@ -285,7 +285,7 @@ def test_series_list_next_cover_url_falls_back_to_first_volume(api, user):
     )
     resp = api.get("/api/series/")
     assert resp.status_code == 200
-    assert resp.data["results"][0]["next_cover_url"] == "https://example.com/vol1.jpg"
+    assert resp.data[0]["next_cover_url"] == "https://example.com/vol1.jpg"
 
 
 def test_series_list_next_cover_url_is_null_when_no_covers_cached(api, user):
@@ -293,7 +293,7 @@ def test_series_list_next_cover_url_is_null_when_no_covers_cached(api, user):
     make_series(user, current_volume=5)
     resp = api.get("/api/series/")
     assert resp.status_code == 200
-    assert resp.data["results"][0]["next_cover_url"] is None
+    assert resp.data[0]["next_cover_url"] is None
 
 
 def test_next_cover_is_fallback_true_when_next_volume_uncached(api, user):
@@ -305,7 +305,7 @@ def test_next_cover_is_fallback_true_when_next_volume_uncached(api, user):
     )
     resp = api.get("/api/series/")
     assert resp.status_code == 200
-    row = resp.data["results"][0]
+    row = resp.data[0]
     assert row["next_cover_url"] == "https://example.com/vol1.jpg"
     assert row["next_cover_is_fallback"] is True
 
@@ -319,7 +319,7 @@ def test_next_cover_is_fallback_false_when_next_volume_cached(api, user):
     )
     resp = api.get("/api/series/")
     assert resp.status_code == 200
-    assert resp.data["results"][0]["next_cover_is_fallback"] is False
+    assert resp.data[0]["next_cover_is_fallback"] is False
 
 
 def test_next_cover_is_fallback_true_when_no_covers_cached(api, user):
@@ -327,7 +327,7 @@ def test_next_cover_is_fallback_true_when_no_covers_cached(api, user):
     make_series(user, current_volume=5)
     resp = api.get("/api/series/")
     assert resp.status_code == 200
-    row = resp.data["results"][0]
+    row = resp.data[0]
     assert row["next_cover_url"] is None
     assert row["next_cover_is_fallback"] is True
 
@@ -453,7 +453,7 @@ def test_rental_shop_create_and_list_scoped_to_user(api, user, other_user):
 
     listed = api.get("/api/shops/")
     assert listed.status_code == 200
-    results = listed.data["results"]
+    results = listed.data
     names = [s["name"] for s in results]
     assert "TSUTAYA" in names
     assert "他人の店" not in names
@@ -586,3 +586,14 @@ def test_bulk_add_history_rejects_other_users_series(api, other_user):
     )
     assert resp.status_code == 404
     assert RentalHistory.objects.filter(series=series).count() == 0
+
+
+def test_series_list_returns_all_without_pagination(api, user):
+    """シリーズ一覧は 100 件を超えても全件返す（PAGE_SIZE=100 で切られないこと）。"""
+    Series.objects.bulk_create(
+        [Series(user=user, title=f"漫画{i}", favorite_score=1 if i == 0 else 5)
+         for i in range(120)]
+    )
+    data = api.get("/api/series/?status=active").data
+    assert len(data) == 120
+    assert "漫画0" in [s["title"] for s in data]  # お気に入り度最低（並びの最後）も含まれる
