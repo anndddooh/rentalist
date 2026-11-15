@@ -31,6 +31,10 @@ class SeriesViewSet(viewsets.ModelViewSet):
     """シリーズの CRUD ＋ 検索・表紙・貸出状況。"""
 
     serializer_class = SeriesSerializer
+    # 一覧は全件返す。DRF の PAGE_SIZE=100 で切られると、フロントは 1 ページ目しか
+    # 見ないので、お気に入り度の低いシリーズから順に画面に出なくなる（2026-11-15 の
+    # Readee 取り込みで進行中が 100 件を超えて発覚）。
+    pagination_class = None
 
     def get_queryset(self):
         qs = (
@@ -338,6 +342,7 @@ class RentalShopViewSet(viewsets.ModelViewSet):
     """レンタルショップのマスタ管理。"""
 
     serializer_class = RentalShopSerializer
+    pagination_class = None  # 全件返す（SeriesViewSet と同じ理由）
 
     def get_queryset(self):
         return RentalShop.objects.filter(user=self.request.user)

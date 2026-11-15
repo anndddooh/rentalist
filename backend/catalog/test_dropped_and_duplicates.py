@@ -53,8 +53,8 @@ def test_dropped_series_can_be_set_and_is_excluded_from_active_list(api, user):
     s = make_series(user, title="ゴールデンカムイ")
     assert api.patch(f"/api/series/{s.id}/", {"status": "dropped"},
                      format="json").status_code == 200
-    assert api.get("/api/series/?status=active").data["count"] == 0
-    assert api.get("/api/series/?status=dropped").data["count"] == 1
+    assert api.get("/api/series/?status=active").data == []
+    assert len(api.get("/api/series/?status=dropped").data) == 1
 
 
 def test_dropped_stays_dropped_even_if_all_volumes_read(api, user):
