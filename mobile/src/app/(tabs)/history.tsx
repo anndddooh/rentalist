@@ -3,6 +3,7 @@ import {
   useInfiniteQuery,
   useMutation,
   useQueryClient,
+  type InfiniteData,
 } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import {
@@ -14,7 +15,6 @@ import {
   Text,
   View,
 } from "react-native";
-import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import Toast from "react-native-toast-message";
 import {
   addHistory,
@@ -22,10 +22,11 @@ import {
   listHistory,
   listHistoryNextPage,
 } from "@/api/history";
-import type { RentalHistoryItem, Series } from "@/api/types";
+import type { Paginated, RentalHistoryItem, Series } from "@/api/types";
 import { BrandButton, ErrorNotice, Field } from "@/components/form";
 import ReadingStatsChart from "@/components/ReadingStatsChart";
 import ScreenHeader from "@/components/ScreenHeader";
+import SwipeToDelete from "@/components/SwipeToDelete";
 import { useSeriesListAll } from "@/hooks/useSeries";
 import { errorMessage } from "@/lib/errors";
 
@@ -105,11 +106,27 @@ export default function History() {
 
   const deleteMutation = useMutation({
     mutationFn: (entry: RentalHistoryItem) => deleteHistory(entry.id),
+    // 通信の完了を待たずに一覧から消す（失敗したら再取得で元に戻す）
+    onMutate: async (entry) => {
+      await queryClient.cancelQueries({ queryKey: ["history", "list"] });
+      queryClient.setQueriesData<InfiniteData<Paginated<RentalHistoryItem>>>(
+        { queryKey: ["history", "list"] },
+        (data) =>
+          data && {
+            ...data,
+            pages: data.pages.map((page) => ({
+              ...page,
+              count: Math.max(0, page.count - 1),
+              results: page.results.filter((r) => r.id !== entry.id),
+            })),
+          }
+      );
+    },
     onSuccess: () => {
       Toast.show({ type: "success", text1: "履歴を削除しました" });
-      invalidateHistory();
     },
     onError: (err) => Toast.show({ type: "error", text1: errorMessage(err) }),
+    onSettled: invalidateHistory,
   });
 
   function confirmDelete(entry: RentalHistoryItem) {
@@ -239,19 +256,7 @@ export default function History() {
         }
         renderItem={({ item }) => (
           <View className="overflow-hidden rounded-[16px] shadow-sm">
-            <ReanimatedSwipeable
-              renderRightActions={() => (
-                <Pressable
-                  onPress={() => confirmDelete(item)}
-                  className="w-20 items-center justify-center bg-rose-500"
-                >
-                  <Text className="text-sm font-semibold text-white">
-                    削除
-                  </Text>
-                </Pressable>
-              )}
-              overshootRight={false}
-            >
+            <SwipeToDelete onDelete={() => confirmDelete(item)}>
               <View className="flex-row items-center justify-between bg-card px-4 py-3.5">
                 <View className="flex-1">
                   <Text className="text-sm text-ink">
@@ -266,7 +271,7 @@ export default function History() {
                 </View>
                 <Text className="text-base text-ink-faint">›</Text>
               </View>
-            </ReanimatedSwipeable>
+            </SwipeToDelete>
           </View>
         )}
         ListEmptyComponent={
