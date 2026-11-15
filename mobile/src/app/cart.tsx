@@ -3,28 +3,17 @@ import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import { useState } from "react";
 import { Alert, FlatList, Pressable, Text, View } from "react-native";
-import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import Toast from "react-native-toast-message";
 import { checkout, clearCart, removeFromCart } from "@/api/cart";
 import type { CartItem } from "@/api/types";
 import Celebration from "@/components/Celebration";
 import { BrandButton } from "@/components/form";
 import ScreenHeader from "@/components/ScreenHeader";
+import SwipeToDelete from "@/components/SwipeToDelete";
 import { useCartQuery } from "@/hooks/useCart";
 import { errorMessage } from "@/lib/errors";
 
 /** スワイプで現れる削除アクション */
-function DeleteAction({ onPress }: { onPress: () => void }) {
-  return (
-    <Pressable
-      onPress={onPress}
-      className="w-20 items-center justify-center bg-rose-500"
-    >
-      <Text className="text-sm font-semibold text-white">削除</Text>
-    </Pressable>
-  );
-}
-
 export default function Cart() {
   const queryClient = useQueryClient();
   const { data: items = [], isLoading } = useCartQuery();
@@ -38,11 +27,18 @@ export default function Cart() {
 
   const removeMutation = useMutation({
     mutationFn: (item: CartItem) => removeFromCart(item.id),
-    onSuccess: () => {
+    // 通信の完了を待たずに一覧から消す（失敗したら再取得で元に戻す）
+    onMutate: async (item) => {
+      await queryClient.cancelQueries({ queryKey: ["cart"] });
+      queryClient.setQueryData<CartItem[]>(["cart"], (prev) =>
+        prev?.filter((c) => c.id !== item.id)
+      );
+    },
+    onError: (err) => Toast.show({ type: "error", text1: errorMessage(err) }),
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["cart"] });
       queryClient.invalidateQueries({ queryKey: ["series"] });
     },
-    onError: (err) => Toast.show({ type: "error", text1: errorMessage(err) }),
   });
 
   const clearMutation = useMutation({
@@ -109,12 +105,7 @@ export default function Cart() {
         contentContainerClassName="gap-2.5 px-4 pb-4 pt-1"
         renderItem={({ item }) => (
           <View className="overflow-hidden rounded-[18px] shadow-sm">
-            <ReanimatedSwipeable
-              renderRightActions={() => (
-                <DeleteAction onPress={() => removeMutation.mutate(item)} />
-              )}
-              overshootRight={false}
-            >
+            <SwipeToDelete onDelete={() => removeMutation.mutate(item)}>
               <View className="flex-row items-center justify-between gap-3 bg-card px-4 py-3.5">
                 <View className="flex-1">
                   <Text className="text-[15px] font-bold text-ink">
@@ -128,7 +119,7 @@ export default function Cart() {
                 </View>
                 <Text className="text-xs text-ink-faint">← スワイプで削除</Text>
               </View>
-            </ReanimatedSwipeable>
+            </SwipeToDelete>
           </View>
         )}
         ListEmptyComponent={
